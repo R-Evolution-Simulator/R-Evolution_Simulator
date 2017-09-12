@@ -268,9 +268,9 @@ class MainWindow(Tk):
 
     def world_map_update(self):
         """function which updates the screen"""
-        self.world_map.blit
         self.chunk_display()  # rappresentazione chunk
-        # self.creatures_display()
+        ######## self.creatures_display()
+        pyg.display.update()
         new_graph_tick = ceil(int(self.tick) / 100) * 100
         for window in self.diagram_windows:
             if window.show_tick:
