@@ -33,7 +33,7 @@ DEFAULT_CR_EATCOEFFMAX = 0.003  # massimo per eatCoeff
 
 
 class World:
-    """classe del mondo nel quale abitano le creature"""
+    """class of the world where creatures live"""
     def __init__(self, name, width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT, lifetime=DEFAULT_LIFETIME,
                  initialCreatures=DEFAULT_INITIALCREATURES, chunkDim=DEFAULT_CHUNKDIM,
                  ch_growthCoeff=DEFAULT_CH_GROWTHCOEFF, ch_foodMaxMax=DEFAULT_CH_FOODMAXMAX,
@@ -98,8 +98,8 @@ class World:
 
     def directorySetup(self):
         """
-        funzione che crea un nuova cartella per la simulazione
-        ed eventualmente ne sovrascrive una esistente
+        method which creates a new directory for the simulation
+        and deletes it if it already exists
         """
         try:
             os.makedirs(self.name)
@@ -115,7 +115,7 @@ class World:
 
     def __del__(self):
         """
-        chiusura simulazione e file
+        closing simulation and files
         """
         print(f"{self.name}: simulation ending...")
         print(f"        - deleting creatures")
@@ -144,7 +144,7 @@ class World:
 
     def creatureRandomization(self):
         """
-        funzione che restituisce un tupla con le caratteristiche di una nuova creatura random
+        function which returns a tuple with creature's characteristics
         """
         # calcolo delle caratteristiche della nuova creatura (random)
         x = rnd() * self.width
@@ -169,7 +169,7 @@ class World:
 
     def run(self):
         """
-        funzione che esegue ls simulazione per il numero di tick indicato
+        method which execute the simulation
         """
         print(f"{self.name}: simulation running...")
         for i in range(self.lifetime):
@@ -181,8 +181,7 @@ class World:
 
     def update(self):
         """
-        funzione che aggiorna le variabili del mondo ad ogni tick
-        e tutte le creature e chunk
+        method which update all the characteristics of creatures and chunks
         """
         self.tickCount += 1
         self.tickDead = set()
