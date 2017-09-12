@@ -1,6 +1,7 @@
 """ Unit tests for the geometry package """
-from nose.tools import assert_equal
+import nose
 from simplexnoise.geometry import Point
+from nose.tools import assert_equal
 
 
 class TestPoint(object):

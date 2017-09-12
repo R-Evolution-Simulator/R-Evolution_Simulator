@@ -16,4 +16,4 @@ for i in xrange(size):
 # Cast to numpy array so we can save 
 data = np.array(data).astype(np.uint8)
 # img = Image.fromarray(data, mode='L')
-# img.save('./noise_example.png')
+#img.save('./noise_example.png')

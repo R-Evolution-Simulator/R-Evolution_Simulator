@@ -9,12 +9,17 @@ from matplotlib.figure import Figure
 from time import time
 from PIL import ImageDraw, Image as Img
 from math import ceil
+import pygame as pyg
+
+pyg.init()
+from . import utility as utl
 
 MAX_SPEED = 100
 
 
 class MainWindow(Tk):
     """class of the main window"""
+
     def __init__(self, sim_name=""):
         Tk.__init__(self)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -63,7 +68,7 @@ class MainWindow(Tk):
         self.sim_height = int(sim_data[2])
         self.max_tick = int(sim_data[3])
         self.chunk_dim = int(sim_data[5])
-        
+
         # setup chunk
         self.chunk_list = []
         self.sim_name_info.config(text="Chunks loading...", fg="black")
@@ -98,10 +103,6 @@ class MainWindow(Tk):
         self.diagram_windows = []
         self.isPlaying = False
         self.last_frame_time = time()
-
-        # finestra ambiente
-        self.world_map = Canvas(self, width=self.sim_width * self.zoom / 10, height=self.sim_height * self.zoom / 10)
-        self.world_map.grid()
 
         # Button per controllo simulazione
         self.play_control_frame = Frame(self)
@@ -201,8 +202,7 @@ class MainWindow(Tk):
         imageFood.save(f"{self.sim_name}/backgroundFM.gif", "GIF")
         imageTemp.save(f"{self.sim_name}/backgroundT.gif", "GIF")
 
-        self.FM_background = PhotoImage(file=f"{self.sim_name}/backgroundFM.gif")
-        self.T_background = PhotoImage(file=f"{self.sim_name}/backgroundT.gif")
+        self.backgrounds = {"FM": utl.img_load(f"{self.sim_name}/backgroundFM.gif"), "T": utl.img_load(f"{self.sim_name}/backgroundT.gif")}
         del imageTemp, imageFood, drawFood, drawTemp
 
     def speed_change(self, speed_cursor):
@@ -224,10 +224,11 @@ class MainWindow(Tk):
 
     def set_zoom(self):
         """method which set to selected zoom"""
-        self.dysplayed_FM_background = self.FM_background.zoom(self.zoom)
-        self.dysplayed_T_background = self.T_background.zoom(self.zoom)
+        self.resized_backgrounds = dict()
+        for i in self.backgrounds:
+            self.resized_backgrounds[i] = utl.img_resize(self.backgrounds[i], self.zoom)
         self.zoom_label.configure(text=f"zoom: {self.zoom}0%")
-        self.world_map.configure(width=self.sim_width * self.zoom / 10, height=self.sim_height * self.zoom / 10)
+        self.world_map = pyg.display.set_mode((int(self.sim_width * self.zoom / 10), int(self.sim_height * self.zoom / 10)))
         self.world_map_update()
 
     def start_play(self):
@@ -267,9 +268,9 @@ class MainWindow(Tk):
 
     def world_map_update(self):
         """function which updates the screen"""
-        self.world_map.delete("all")
+        self.world_map.blit
         self.chunk_display()  # rappresentazione chunk
-        self.creatures_display()
+        # self.creatures_display()
         new_graph_tick = ceil(int(self.tick) / 100) * 100
         for window in self.diagram_windows:
             if window.show_tick:
@@ -284,18 +285,16 @@ class MainWindow(Tk):
 
     def chunk_display(self):
         """function which rapresents the chunks"""
-        if self.ch_show.get() == "FM":  # con il cibo al massimo
-            self.world_map.create_image(0, 0, image=self.dysplayed_FM_background, anchor=NW)
-        elif self.ch_show.get() == "T":  # con la temperatura
-            self.world_map.create_image(0, 0, image=self.dysplayed_T_background, anchor=NW)
-        elif self.ch_show.get() == "F":  # con il cibo in un certo momento
+        if self.ch_show.get() == "F":  # con il cibo in un certo momento
             for chunk in self.chunk_list:
-                self.world_map.create_rectangle(chunk.coord[0] * self.chunk_dim * self.zoom / 10, chunk.coord[1] * self.chunk_dim * self.zoom / 10, (chunk.coord[0] + 1) * self.chunk_dim * self.zoom / 10,
-                                                (chunk.coord[1] + 1) * self.chunk_dim * self.zoom / 10,
-                                                fill=('#%02x%02x%02x' % (0, int(chunk.foodHistory[int(self.tick) - 1] * 255 / 100), 0)))
+                pyg.draw.rect(self.world_map, pyg.Color(0, int(chunk.foodHistory[int(self.tick) - 1] * 255 / 100), 0, 255),
+                              pyg.Rect(chunk.coord[0] * self.chunk_dim * self.zoom / 10, chunk.coord[1] * self.chunk_dim * self.zoom / 10, self.chunk_dim * self.zoom / 10, self.chunk_dim * self.zoom / 10))
+        else:
+            self.world_map.blit(self.resized_backgrounds[self.ch_show.get()], (0, 0))
 
     def creatures_display(self):
         """function which rapresents the creatures"""
+
         def tick_creature_list():
             L = []
             for i in self.creature_list:
@@ -368,6 +367,7 @@ class MainWindow(Tk):
 
 class GraphicsWindow(Tk):
     """classe per la rappresentazione dei grafici"""
+
     def __init__(self, file, subj, father, subplots=1):
         Tk.__init__(self)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)

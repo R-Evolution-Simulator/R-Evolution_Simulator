@@ -1,8 +1,6 @@
 from __future__ import division
-
 import math
 import random
-
 from .geometry import Point
 
 # Constants to avoid magic numbers
