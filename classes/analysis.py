@@ -4,9 +4,6 @@ import shutil
 import PIL.Image as Image
 import PIL.ImageDraw as ImageDraw
 
-
-# perdonate la non troppo bella programmazione in questo file :)
-
 def analysis(simulationName):
     print(f"{simulationName}: analysis setup")
 
@@ -111,16 +108,28 @@ def analysis(simulationName):
 
     f = open(f"{simulationName}/chunkFoodMax.csv", "w")
     g = open(f"{simulationName}/chunkTemp.csv", "w")
+    """
     foodMaxClass = [0, 0, 0, 0, 0, 0, 0, 0]
     tempClass = [0, 0, 0, 0, 0, 0, 0, 0]
+    """
+    foodMaxClass = []
+    tempClass = []
+    for i in range(8):
+        foodMaxClass.append(0)
+        tempClass.append(0)
     for i in datiChunk:
         for j in i:
             foodMax = min(j[0], 99)
             temperatura = min(j[2], 99)
             foodMaxClass[int(foodMax / 12.5)] += 1
             tempClass[int((temperatura + 100) / 25)] += 1
-    f.write(f"{foodMaxClass[0]};{foodMaxClass[1]};{foodMaxClass[2]};{foodMaxClass[3]};{foodMaxClass[4]};{foodMaxClass[5]};{foodMaxClass[6]};{foodMaxClass[7]}\n")
-    g.write(f"{tempClass[0]};{tempClass[1]};{tempClass[2]};{tempClass[3]};{tempClass[4]};{tempClass[5]};{tempClass[6]};{tempClass[7]}\n")
+    foodMaxClass_string = f"{foodMaxClass[0]}"
+    tempClass_string = f"{tempClass[0]}"
+    for i in range(1,8):
+        foodMaxClass_string += f";{foodMaxClass[i]}"
+        tempClass_string += f";{tempClass[i]}"
+    f.write(f"{foodMaxClass_string}\n")
+    g.write(f"{tempClass_string}\n")
     f.close()
 
     # analisi disposizione
@@ -131,10 +140,10 @@ def analysis(simulationName):
     ff = open(f"{simulationName}/spread_foodmax.csv", "w")
     for i in range(0, lifetime, 100):
         l = tickCreatureList(i)
-        numberCreatureTemp = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]]
-        correctCreatureTemp = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]]
-        numberCreatureFood = [0, 0, 0, 0, 0, 0, 0, 0]
-        correctCreatureFood = [0, 0, 0, 0, 0, 0, 0, 0]
+        numberCreatureTemp = [[0 for x in range(8)] for y in range(3)]
+        correctCreatureTemp = [[0 for x in range(8)] for y in range(3)]
+        numberCreatureFood = [0 for x in range(8)]
+        correctCreatureFood = [0 for x in range(8)]
         for j in l:
             birth = max(j[1], 1)
             coord = (j[14][i - birth][0], j[14][i - birth][1])
@@ -148,15 +157,19 @@ def analysis(simulationName):
             correctCreatureFood[j] = numberCreatureFood[j] / foodMaxClass[j] * 100
             for k in range(3):
                 correctCreatureTemp[k][j] = numberCreatureTemp[k][j] / tempClass[j] * 100
-
-        fN.write(
-            f"{i};{numberCreatureTemp[0][0]};{correctCreatureTemp[0][0]};{numberCreatureTemp[0][1]};{correctCreatureTemp[0][1]};{numberCreatureTemp[0][2]};{correctCreatureTemp[0][2]};{numberCreatureTemp[0][3]};{correctCreatureTemp[0][3]};{numberCreatureTemp[0][4]};{correctCreatureTemp[0][4]};{numberCreatureTemp[0][5]};{correctCreatureTemp[0][5]};{numberCreatureTemp[0][6]};{correctCreatureTemp[0][6]};{numberCreatureTemp[0][7]};{correctCreatureTemp[0][7]}\n")
-        fl.write(
-            f"{i};{numberCreatureTemp[1][0]};{correctCreatureTemp[1][0]};{numberCreatureTemp[1][1]};{correctCreatureTemp[1][1]};{numberCreatureTemp[1][2]};{correctCreatureTemp[1][2]};{numberCreatureTemp[1][3]};{correctCreatureTemp[1][3]};{numberCreatureTemp[1][4]};{correctCreatureTemp[1][4]};{numberCreatureTemp[1][5]};{correctCreatureTemp[1][5]};{numberCreatureTemp[1][6]};{correctCreatureTemp[1][6]};{numberCreatureTemp[1][7]};{correctCreatureTemp[1][7]}\n")
-        fc.write(
-            f"{i};{numberCreatureTemp[2][0]};{correctCreatureTemp[2][0]};{numberCreatureTemp[2][1]};{correctCreatureTemp[2][1]};{numberCreatureTemp[2][2]};{correctCreatureTemp[2][2]};{numberCreatureTemp[2][3]};{correctCreatureTemp[2][3]};{numberCreatureTemp[2][4]};{correctCreatureTemp[2][4]};{numberCreatureTemp[2][5]};{correctCreatureTemp[2][5]};{numberCreatureTemp[2][6]};{correctCreatureTemp[2][6]};{numberCreatureTemp[2][7]};{correctCreatureTemp[2][7]}\n")
-        ff.write(
-            f"{i};{numberCreatureFood[0]};{correctCreatureFood[0]};{numberCreatureFood[1]};{correctCreatureFood[1]};{numberCreatureFood[2]};{correctCreatureFood[2]};{numberCreatureFood[3]};{correctCreatureFood[3]};{numberCreatureFood[4]};{correctCreatureFood[4]};{numberCreatureFood[5]};{correctCreatureFood[5]};{numberCreatureFood[6]};{correctCreatureFood[6]};{numberCreatureFood[7]};{correctCreatureFood[7]}\n")
+        fN_string = f"{i}"
+        fl_string = f"{i}"
+        fc_string = f"{i}"
+        ff_string = f"{i}"
+        for i in range(8):
+            fN_string += f";{numberCreatureTemp[0][i]};{correctCreatureTemp[0][i]}"
+            fl_string += f";{numberCreatureTemp[1][i]};{correctCreatureTemp[1][i]}"
+            fc_string += f";{numberCreatureTemp[2][i]};{correctCreatureTemp[2][i]}"
+            ff_string += f";{numberCreatureTemp[i]};{correctCreatureTemp[i]}"
+        fN.write(f"{fN_string}\n")
+        fl.write(f"{fl_string}\n")
+        fc.write(f"{fc_string}\n")
+        ff.write(f"{ff_string}\n")
     fN.close()
     fc.close()
     fl.close()
