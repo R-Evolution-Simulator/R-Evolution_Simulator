@@ -48,7 +48,9 @@ class Creature:
         self.deathCause = cause
         try:
             self.world.creaturesData.write(
-                f"{self.ID};{self.birthTick};{self.parentsID[0]},{self.parentsID[1]};{self.tempResistGen};{self.agility};{self.bigness};{self.sex};{self.fertility};{self.tempResist};{self.speed};{self.eatCoeff};{self.numControlGene};{self.deathTick};{self.deathCause};{self.tickHistory[:-1]}\n")
+                f"{self.ID};{self.birthTick};{self.parentsID[0]},{self.parentsID[1]};{self.tempResistGen};{round(self.agility,4)};"
+                f"{round(self.bigness,4)};{self.sex};{round(self.fertility,4)};{self.tempResist};{round(self.speed,4)};{round(self.eatCoeff,6)};"
+                f"{round(self.numControlGene,4)};{self.deathTick};{self.deathCause};{self.tickHistory[:-1]}\n")
         except ValueError:
             pass
 
