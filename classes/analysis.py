@@ -108,10 +108,6 @@ def analysis(simulationName):
 
     f = open(f"{simulationName}/chunkFoodMax.csv", "w")
     g = open(f"{simulationName}/chunkTemp.csv", "w")
-    """
-    foodMaxClass = [0, 0, 0, 0, 0, 0, 0, 0]
-    tempClass = [0, 0, 0, 0, 0, 0, 0, 0]
-    """
     foodMaxClass = []
     tempClass = []
     for i in range(8):
