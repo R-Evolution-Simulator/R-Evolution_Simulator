@@ -1,5 +1,4 @@
 # (R)EVOLUTION SIMULATOR to do:
-- VCS
 - Riorganizzazione codice con DOCSTRING
 - Graphics: Pygame
 - Riduzione spazio dati

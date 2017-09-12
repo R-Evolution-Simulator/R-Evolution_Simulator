@@ -14,7 +14,7 @@ MAX_SPEED = 100
 
 
 class MainWindow(Tk):
-    """costruttore della classe"""
+    """class of the main window"""
     def __init__(self, sim_name=""):
         Tk.__init__(self)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -30,7 +30,7 @@ class MainWindow(Tk):
         self.mainloop()
 
     def simulation_file_load(self, sim_name=""):
-        """funzione che carica i dati della simulazione"""
+        """method which upload the data of the simulation"""
         if sim_name == "":
             self.sim_name = self.sim_name_entry.get()
         else:
@@ -55,7 +55,7 @@ class MainWindow(Tk):
             self.simulation_start()
 
     def simulation_start(self):
-        """funzione che crea l'interfaccia grafica"""
+        """method which creates the graphic interface"""
         # setup finestra
         sim_data = self.file['simulationData'].readline().split(';')
         self.title(sim_data[0])
@@ -182,7 +182,7 @@ class MainWindow(Tk):
         self.set_zoom()
 
     def background_creation(self):
-        """creazione del background dell'ambiente"""
+        """method which creates the background of the world"""
         imageFood = Img.new("RGB", (int(self.sim_width / 10), int(self.sim_height / 10)))
         drawFood = ImageDraw.Draw(imageFood)
         imageTemp = Img.new("RGB", (int(self.sim_width / 10), int(self.sim_height / 10)))
@@ -207,25 +207,23 @@ class MainWindow(Tk):
 
     def speed_change(self, speed_cursor):
         """
-        funzione che permette di cambiare la velocità di
-        riproduzione della simulazione, associata al
-        widget speed_cursor
+        method which allow to change the speed of the simulation reproduction
         """
         self.speed = int(MAX_SPEED ** (float(speed_cursor) / 100))
         self.speed_label.config(text=f"T/s: {self.speed:02d}")
 
     def dec_zoom(self):
-        """funzione che diminuisce lo zoom"""
+        """method which decrease the zoom"""
         self.zoom = max(1, self.zoom - 1)
         self.set_zoom()
 
     def inc_zoom(self):
-        """funzione che aumenta lo zoom"""
+        """method which increase the zoom"""
         self.zoom += 1
         self.set_zoom()
 
     def set_zoom(self):
-        """funzione che imposta lo zoom scelto alle immagini"""
+        """method which set to selected zoom"""
         self.dysplayed_FM_background = self.FM_background.zoom(self.zoom)
         self.dysplayed_T_background = self.T_background.zoom(self.zoom)
         self.zoom_label.configure(text=f"zoom: {self.zoom}0%")
@@ -233,7 +231,7 @@ class MainWindow(Tk):
         self.world_map_update()
 
     def start_play(self):
-        """funzione che avvia o blocca la riproduzione della simulazione"""
+        """method which starts or stops the reproduction of the simulation"""
         self.isPlaying = not (self.isPlaying)
         if self.isPlaying:
             self.play_button.config(text="Pause")
@@ -244,8 +242,7 @@ class MainWindow(Tk):
     # update simulazione
     def play(self):
         """
-        funzione che riproduce la simulazione per il numero di tick indicati,
-        aggiornando le variabili a schermo
+        method which reproduces the simulation, updating the screen
         """
         while self.isPlaying:
             self.last_frame_time = time()
@@ -259,7 +256,9 @@ class MainWindow(Tk):
             self.fps_label.config(text=f"fps: {fps:04.1f}")
 
     def set_tick(self):
-        """funzione associata a set_tick_entry_get che imposta la simulazione ad un tick particolare"""
+        """
+        function which imposts a particular tick
+        """
         try:
             self.tick = int(self.set_tick_entry.get())
         except ValueError:
@@ -267,7 +266,7 @@ class MainWindow(Tk):
         self.world_map_update()
 
     def world_map_update(self):
-        """funzione che aggiorna la schermata"""
+        """function which updates the screen"""
         self.world_map.delete("all")
         self.chunk_display()  # rappresentazione chunk
         self.creatures_display()
@@ -284,7 +283,7 @@ class MainWindow(Tk):
         self.update()
 
     def chunk_display(self):
-        """funzione che rappresenta i chunk"""
+        """function which rapresents the chunks"""
         if self.ch_show.get() == "FM":  # con il cibo al massimo
             self.world_map.create_image(0, 0, image=self.dysplayed_FM_background, anchor=NW)
         elif self.ch_show.get() == "T":  # con la temperatura
@@ -296,7 +295,7 @@ class MainWindow(Tk):
                                                 fill=('#%02x%02x%02x' % (0, int(chunk.foodHistory[int(self.tick) - 1] * 255 / 100), 0)))
 
     def creatures_display(self):
-        """funzione che rappresenta le creature"""
+        """function which rapresents the creatures"""
         def tick_creature_list():
             L = []
             for i in self.creature_list:
@@ -349,7 +348,7 @@ class MainWindow(Tk):
             self.world_map.create_oval((coord[0] - dim / 2) * self.zoom / 10, (coord[1] - dim / 2) * self.zoom / 10, (coord[0] + dim / 2) * self.zoom / 10, (coord[1] + dim / 2) * self.zoom / 10, fill=('#%02x%02x%02x' % color))
 
     def graphics_window_create(self):
-        """funzione che crea un grafico"""
+        """function which creates a graphic window"""
         new_graph_subj = self.diagram_chioce.get()
         if new_graph_subj in ['agility', 'bigness', 'eatCoeff', 'fertility', 'numControlGene', 'speed']:
             new_window = GeneGraphicsWindow(self.file, new_graph_subj, self)
@@ -361,7 +360,7 @@ class MainWindow(Tk):
         new_window.mainloop()
 
     def on_closing(self):
-        """funzione di chiusura delle finestre"""
+        """function which closes the graphic window"""
         for window in self.diagram_windows:
             window.destroy()
         self.destroy()
