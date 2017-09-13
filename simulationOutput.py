@@ -1,3 +1,4 @@
-from classes.graphics import MainWindow
+from classes.graphics import Graphics
 
-a = MainWindow()
+a = Graphics()
+a.run()
