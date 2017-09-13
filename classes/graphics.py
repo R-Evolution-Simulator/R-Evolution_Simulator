@@ -26,9 +26,9 @@ class MainWindow(Tk):
         self.title("Simulation Load")  # titolo prima finestra: "Simulation Load"
         self.sim_name_entry = Entry(self)
         self.sim_name_entry.pack()
-        self.sim_name_button = Button(self, text="Load", command=self.simulation_file_load)  # Button che carica la simulazione
+        self.sim_name_button = Button(self, text="Load", command=self.simulation_file_load)# Button che carica la simulazione
         self.sim_name_button.pack(side=RIGHT)
-        self.sim_name_info = Label(self, text="Insert simulation name")  # Label dove inserire il nome della simulazione da rappresentare
+        self.sim_name_info = Label(self, text="Insert simulation name")# Label dove inserire il nome della simulazione da rappresentare
         self.sim_name_info.pack(side=LEFT)
         if sim_name != "":
             self.simulation_file_load(sim_name)
@@ -43,7 +43,8 @@ class MainWindow(Tk):
             # aperti i file della simulazione
         self.file = {}
         try:
-            for i in ['simulationData', 'chunkData', 'creaturesData', 'agility', 'bigness', 'eatCoeff', 'fertility', 'numControlGene', 'population', 'speed']:
+            for i in ['simulationData', 'chunkData', 'creaturesData', 'agility', 'bigness',
+                      'eatCoeff', 'fertility', 'numControlGene', 'population', 'speed']:
                 self.file[i] = open(f"{self.sim_name}/{i}.csv")
 
             for i in ['foodmax', 'temperature_c', 'temperature_l', 'temperature_N']:
@@ -136,42 +137,56 @@ class MainWindow(Tk):
 
         self.ch_set_labelframe = LabelFrame(self.ch_cr_set_frame, text="Chunk")
         self.ch_set_labelframe.pack(anchor=W, fill=X)
-        self.ch_FM_button = Radiobutton(self.ch_set_labelframe, text="Food Max", variable=self.ch_show, value="FM", command=self.world_map_update)
+        self.ch_FM_button = Radiobutton(self.ch_set_labelframe, text="Food Max", variable=self.ch_show,
+                                        value="FM", command=self.world_map_update)
         self.ch_FM_button.pack(anchor=W)
-        self.ch_T_button = Radiobutton(self.ch_set_labelframe, text="Temperature", variable=self.ch_show, value="T", command=self.world_map_update)
+        self.ch_T_button = Radiobutton(self.ch_set_labelframe, text="Temperature", variable=self.ch_show,
+                                       value="T", command=self.world_map_update)
         self.ch_T_button.pack(anchor=W)
-        self.ch_F_button = Radiobutton(self.ch_set_labelframe, text="Food", variable=self.ch_show, value="F", command=self.world_map_update)
+        self.ch_F_button = Radiobutton(self.ch_set_labelframe, text="Food", variable=self.ch_show,
+                                       value="F", command=self.world_map_update)
         self.ch_F_button.pack(anchor=W)
 
         self.cr_set_labelframe = LabelFrame(self.ch_cr_set_frame, text="Creatures")
         self.cr_set_labelframe.pack(anchor=W)
         self.cr_color_labelframe = LabelFrame(self.cr_set_labelframe, text="Color")
         self.cr_color_labelframe.pack(side=LEFT, anchor=NW, fill=Y)
-        self.cr_N_button = Radiobutton(self.cr_color_labelframe, text="None", variable=self.creatures_color_show, value="N", command=self.world_map_update)
+        self.cr_N_button = Radiobutton(self.cr_color_labelframe, text="None", variable=self.creatures_color_show,
+                                       value="N", command=self.world_map_update)
         self.cr_N_button.pack(anchor=W)
-        self.cr_S_button = Radiobutton(self.cr_color_labelframe, text="Sex", variable=self.creatures_color_show, value="S", command=self.world_map_update)
+        self.cr_S_button = Radiobutton(self.cr_color_labelframe, text="Sex", variable=self.creatures_color_show,
+                                       value="S", command=self.world_map_update)
         self.cr_S_button.pack(anchor=W)
-        self.cr_TR_button = Radiobutton(self.cr_color_labelframe, text="Temp Resist", variable=self.creatures_color_show, value="TR", command=self.world_map_update)
+        self.cr_TR_button = Radiobutton(self.cr_color_labelframe, text="Temp Resist",
+                                        variable=self.creatures_color_show, value="TR", command=self.world_map_update)
         self.cr_TR_button.pack(anchor=W)
 
         self.cr_dim_labelframe = LabelFrame(self.cr_set_labelframe, text="Dimension")
         self.cr_dim_labelframe.pack(side=LEFT, anchor=NW, fill=Y)
-        self.cr_N_button = Radiobutton(self.cr_dim_labelframe, text="None", variable=self.creatures_dim_show, value="N", command=self.world_map_update)
+        self.cr_N_button = Radiobutton(self.cr_dim_labelframe, text="None", variable=self.creatures_dim_show,
+                                       value="N", command=self.world_map_update)
         self.cr_N_button.pack(anchor=W)
-        self.cr_E_button = Radiobutton(self.cr_dim_labelframe, text="Energy", variable=self.creatures_dim_show, value="E", command=self.world_map_update)
+        self.cr_E_button = Radiobutton(self.cr_dim_labelframe, text="Energy", variable=self.creatures_dim_show,
+                                       value="E", command=self.world_map_update)
         self.cr_E_button.pack(anchor=W)
-        self.cr_A_button = Radiobutton(self.cr_dim_labelframe, text="Agility", variable=self.creatures_dim_show, value="A", command=self.world_map_update)
+        self.cr_A_button = Radiobutton(self.cr_dim_labelframe, text="Agility", variable=self.creatures_dim_show,
+                                       value="A", command=self.world_map_update)
         self.cr_A_button.pack(anchor=W)
-        self.cr_B_button = Radiobutton(self.cr_dim_labelframe, text="Bigness", variable=self.creatures_dim_show, value="B", command=self.world_map_update)
+        self.cr_B_button = Radiobutton(self.cr_dim_labelframe, text="Bigness", variable=self.creatures_dim_show,
+                                       value="B", command=self.world_map_update)
         self.cr_B_button.pack(anchor=W)
-        self.cr_EC_button = Radiobutton(self.cr_dim_labelframe, text="Eat Coeff", variable=self.creatures_dim_show, value="EC", command=self.world_map_update)
+        self.cr_EC_button = Radiobutton(self.cr_dim_labelframe, text="Eat Coeff", variable=self.creatures_dim_show,
+                                        value="EC", command=self.world_map_update)
         self.cr_EC_button.pack(anchor=W)
-        self.cr_S_button = Radiobutton(self.cr_dim_labelframe, text="Speed", variable=self.creatures_dim_show, value="S", command=self.world_map_update)
+        self.cr_S_button = Radiobutton(self.cr_dim_labelframe, text="Speed", variable=self.creatures_dim_show,
+                                       value="S", command=self.world_map_update)
         self.cr_S_button.pack(anchor=W)
-        self.cr_NCG_button = Radiobutton(self.cr_dim_labelframe, text="Num Control Gene", variable=self.creatures_dim_show, value="NCG", command=self.world_map_update)
+        self.cr_NCG_button = Radiobutton(self.cr_dim_labelframe, text="Num Control Gene",
+                                         variable=self.creatures_dim_show, value="NCG", command=self.world_map_update)
         self.cr_NCG_button.pack(anchor=W)
 
-        choices = ['agility', 'bigness', 'eatCoeff', 'fertility', 'numControlGene', 'speed', 'population', 'foodmax', 'temperature_c', 'temperature_l', 'temperature_N']
+        choices = ['agility', 'bigness', 'eatCoeff', 'fertility', 'numControlGene', 'speed',
+                   'population', 'foodmax', 'temperature_c', 'temperature_l', 'temperature_N']
         self.diagram_chioce = StringVar()
         self.diagram_chioce.set('agility')
         self.diagram_chioce_optionmenu = OptionMenu(self.ch_cr_set_frame, self.diagram_chioce, *choices)
@@ -190,18 +205,19 @@ class MainWindow(Tk):
         drawTemp = ImageDraw.Draw(imageTemp)
 
         for chunk in self.chunk_list:
-            drawFood.rectangle((chunk.coord[0] * self.chunk_dim / 10, chunk.coord[1] * self.chunk_dim / 10, (chunk.coord[0] + 1) * self.chunk_dim / 10, (chunk.coord[1] + 1) * self.chunk_dim / 10),
+            drawFood.rectangle((chunk.coord[0] * self.chunk_dim / 10, chunk.coord[1] * self.chunk_dim / 10,
+                                (chunk.coord[0] + 1) * self.chunk_dim / 10, (chunk.coord[1] + 1) * self.chunk_dim / 10),
                                fill=(0, int(chunk.foodMax * 255 / 100), 0))
             if chunk.temperature > 0:
-                drawTemp.rectangle((chunk.coord[0] * self.chunk_dim / 10, chunk.coord[1] * self.chunk_dim / 10, (chunk.coord[0] + 1) * self.chunk_dim / 10, (chunk.coord[1] + 1) * self.chunk_dim / 10),
+                drawTemp.rectangle((chunk.coord[0] * self.chunk_dim / 10, chunk.coord[1] * self.chunk_dim / 10,
+                                    (chunk.coord[0] + 1) * self.chunk_dim / 10, (chunk.coord[1] + 1) * self.chunk_dim / 10),
                                    fill=(255, int(255 - (chunk.temperature / 100 * 255)), int(255 - (chunk.temperature / 100 * 255))))
             else:
-                drawTemp.rectangle((chunk.coord[0] * self.chunk_dim / 10, chunk.coord[1] * self.chunk_dim / 10, (chunk.coord[0] + 1) * self.chunk_dim / 10, (chunk.coord[1] + 1) * self.chunk_dim / 10),
+                drawTemp.rectangle((chunk.coord[0] * self.chunk_dim / 10, chunk.coord[1] * self.chunk_dim / 10,
+                                    (chunk.coord[0] + 1) * self.chunk_dim / 10, (chunk.coord[1] + 1) * self.chunk_dim / 10),
                                    fill=(int(255 + (chunk.temperature / 100 * 255)), int(255 + (chunk.temperature / 100 * 255)), 255))
-
         imageFood.save(f"{self.sim_name}/backgroundFM.gif", "GIF")
         imageTemp.save(f"{self.sim_name}/backgroundT.gif", "GIF")
-
         self.backgrounds = {"FM": utl.img_load(f"{self.sim_name}/backgroundFM.gif"), "T": utl.img_load(f"{self.sim_name}/backgroundT.gif")}
         del imageTemp, imageFood, drawFood, drawTemp
 
@@ -288,7 +304,8 @@ class MainWindow(Tk):
         if self.ch_show.get() == "F":  # con il cibo in un certo momento
             for chunk in self.chunk_list:
                 pyg.draw.rect(self.world_map, pyg.Color(0, int(chunk.foodHistory[int(self.tick) - 1] * 255 / 100), 0, 255),
-                              pyg.Rect(chunk.coord[0] * self.chunk_dim * self.zoom / 10, chunk.coord[1] * self.chunk_dim * self.zoom / 10, self.chunk_dim * self.zoom / 10, self.chunk_dim * self.zoom / 10))
+                              pyg.Rect(chunk.coord[0] * self.chunk_dim * self.zoom / 10, chunk.coord[1] * self.chunk_dim * self.zoom / 10,
+                                       self.chunk_dim * self.zoom / 10, self.chunk_dim * self.zoom / 10))
         else:
             self.world_map.blit(self.resized_backgrounds[self.ch_show.get()], (0, 0))
 
@@ -344,7 +361,11 @@ class MainWindow(Tk):
             elif cr_dim == "S":
                 dim = i.speed * 5
 
-            self.world_map.create_oval((coord[0] - dim / 2) * self.zoom / 10, (coord[1] - dim / 2) * self.zoom / 10, (coord[0] + dim / 2) * self.zoom / 10, (coord[1] + dim / 2) * self.zoom / 10, fill=('#%02x%02x%02x' % color))
+            #self.world_map.create_oval((coord[0] - dim / 2) * self.zoom / 10, (coord[1] - dim / 2) * self.zoom / 10,
+                                       #(coord[0] + dim / 2) * self.zoom / 10, (coord[1] + dim / 2) * self.zoom / 10, fill=('#%02x%02x%02x' % color))
+            pyg.draw.circle(self.world_map,pyg.Color(color[0],color[1],color[2],255),(coord[0] * self.zoom / 10,
+                                    coord[1] * self.zoom / 10),dim * self.zoom / 10)
+
 
     def graphics_window_create(self):
         """function which creates a graphic window"""
