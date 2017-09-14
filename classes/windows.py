@@ -2,14 +2,15 @@
 import tkinter as tk
 from math import ceil
 from time import time
-
 import matplotlib
 import pygame as pyg
 from PIL import ImageDraw, Image as Img
-
 from . import frames as frm
 from . import utility as utl
+import os.path as pth
+from os import getcwd
 
+pyg.init()
 matplotlib.use("Tkagg")
 
 
@@ -17,14 +18,19 @@ class BaseTkWindow(tk.Tk):
     FRAMES = None
     TITLE = None
 
-    def __init__(self, father):
+    def __init__(self, canvas, name):
         super(BaseTkWindow, self).__init__()
-        self.father = father
+        self.canvas = canvas
+        self.name = name
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.title(self.TITLE)
 
     def on_closing(self):
         self.destroy()
+
+    def destroy(self):
+        self.canvas.windows.pop(self.name)
+        super(BaseTkWindow, self).destroy()
 
     def get_widget(self, frame, name):
         return self.frames[frame].widgets[name]
@@ -41,52 +47,60 @@ class LoadWindow(BaseTkWindow):
     """Loading interface for simulation replay"""
     TITLE = "Simulation Load"
 
-    def __init__(self, father, sim_name=None):
+    def __init__(self, canvas, name):
         self.FRAMES = {'load': (frm.Load, {'windows': (self,)}, {'row': 0, 'column': 0})}
-        super(LoadWindow, self).__init__(father)
+        super(LoadWindow, self).__init__(canvas, name)
         self.frames_load()
-        if sim_name:
-            self.simulation_file_load(sim_name)
 
-    def simulation_file_load(self, sim_name=None):
+    def simulation_file_load(self):
         """method which upload the data of the simulation"""
-        if sim_name:
-            self.sim_name = sim_name
-        else:
-            self.sim_name = self.get_widget('load', 'entry').get()
-        self.father.main_window = CanvasWindow(self.father, self.sim_name)
+        sim_name = self.get_widget('load', 'entry').get()
+        self.canvas.start_simulation = CanvasWindow(sim_name)
         self.destroy()
 
 
 class CanvasWindow(object):
     FILES_TO_LOAD = ['simulationData', 'chunkData', 'creaturesData']
-    START_SCREEN = (100, 100)
+    START_SCREEN = (322, 226)
+    START_LOGO = "data/logo.png"
     START_TICK = 1.0
     START_ZOOM = 10
     START_SPEED = 1
-    START_IS_PLAYING = False
     START_SHOWS = {'ch': 'FM', 'cc': 'TR', 'cd': 'E'}
     MAX_SPEED = 100
 
-    def __init__(self, father, sim_name):
-        self.father = father
-        self.sim_name = sim_name
+    def __init__(self, graphics):
+        self.graphics = graphics
         self.surface = pyg.display.set_mode(self.START_SCREEN)
+        self.logo = utl.img_load(pth.join(getcwd(), self.START_LOGO))
+        self.surface.blit(self.logo, (0, 0))
+        self.last_frame_time = time()
+        self.isPlaying = False
+        self.windows = dict()
+        pyg.display.update()
+
+    def load_window_creation(self):
+        self.windows['load'] = LoadWindow(self, 'load')
+        self.windows['load'].frames_load()
+
+    def control_window_creation(self):
+        self.windows['control'] = ControlWindow(self, 'control')
+        self.shows = dict()
+        for i in self.START_SHOWS:
+            self.shows[i] = tk.StringVar(master=self.windows['control'])
+            self.shows[i].set(self.START_SHOWS[i])
+        self.resize(0)
+        self.windows['control'].frames_load()
+
+    def start_simulation(self, sim_name):
+        self.sim_name = sim_name
         self.tick = self.START_TICK
         self.zoom = self.START_ZOOM
         self.speed = self.START_SPEED
-        self.isPlaying = self.START_IS_PLAYING
         self.max_speed = self.MAX_SPEED
-        self.last_frame_time = time()
         self._files_load()
         self._background_creation()
-        self.control_window = ControlWindow(self)
-        self.shows = dict()
-        for i in self.START_SHOWS:
-            self.shows[i] = tk.StringVar(master=self.control_window)
-            self.shows[i].set(self.START_SHOWS[i])
-        self.resize(0)
-        self.control_window.frames_load()
+        self.control_window_creation()
 
     def _files_load(self):
         self.files = dict()
@@ -146,18 +160,20 @@ class CanvasWindow(object):
         self.speed = int(self.max_speed ** (float(speed_exp) / 100))
         return self.speed
 
-    def play(self):
+    def run(self):
+        time_diff = time() - self.last_frame_time
         self.last_frame_time = time()
-        while self.isPlaying:
+        if self.isPlaying:
             self.update()
-            time_diff = time() - self.last_frame_time
-            self.last_frame_time = time()
             self.tick += time_diff * self.speed
             if int(self.tick) >= self.max_tick:
-                self.control_window.start_play()
-                break
-            self.control_window.set_fps(round(1.0 / time_diff, 1))
-            self.control_window.update()
+                self.windows['control'].start_play()
+            self.windows['control'].set_fps(round(1.0 / time_diff, 1))
+            self.windows['control'].update()
+        to_update = self.windows
+        for i in to_update:
+            to_update[i].update()
+        pyg.display.update()
 
     def set_tick(self, tick):
         self.tick = tick
@@ -177,10 +193,9 @@ class CanvasWindow(object):
                 if window.follow_play:
                     window.dyn_axes_set()'''
         try:
-            self.control_window.update_tick(self.tick)
+            self.windows['control'].update_tick(self.tick)
         except AttributeError:
             pass
-        pyg.display.update()
 
     def chunk_display(self):
         """function which rapresents the chunks"""
@@ -232,10 +247,9 @@ class ControlWindow(BaseTkWindow):
     MAX_SPEED = 100
     DEFAULT_GRAPH_TICK = 100
 
-    def __init__(self, canvas):
-        self.canvas = canvas
-        self.FRAMES = {'play_control': (frm.PlayControl, {'windows': (self, self.canvas)}, {'row': 1, 'column': 0}),
-                       'map_set': (frm.SetSuperFrame, {'windows': (self, self.canvas)}, {'row': 0, 'column': 1}), }
+    def __init__(self, canvas, name):
+        self.FRAMES = {'play_control': (frm.PlayControl, {'windows': (self, canvas)}, {'row': 1, 'column': 0}),
+                       'map_set': (frm.SetSuperFrame, {'windows': (self, canvas)}, {'row': 0, 'column': 1}), }
         super(ControlWindow, self).__init__(self.canvas)
         self.graph_tick = self.DEFAULT_GRAPH_TICK
         self.diagram_windows = []
@@ -265,11 +279,8 @@ class ControlWindow(BaseTkWindow):
         self.canvas.isPlaying = not (self.canvas.isPlaying)
         if self.canvas.isPlaying:
             self.get_widget('play_control', 'play').config(text="Pause")
-            self.update()
-            self.canvas.play()
         else:
             self.get_widget('play_control', 'play').config(text="Play")
-            self.update()
 
     def set_fps(self, fps):
         """
