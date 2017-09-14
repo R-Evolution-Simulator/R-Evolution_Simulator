@@ -1,17 +1,16 @@
 # import vari
 import tkinter as tk
-from . import frames as frm
+from math import ceil
+from time import time
 
 import matplotlib
+import pygame as pyg
+from PIL import ImageDraw, Image as Img
+
+from . import frames as frm
+from . import utility as utl
 
 matplotlib.use("Tkagg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-from time import time
-from PIL import ImageDraw, Image as Img
-from math import ceil
-import pygame as pyg
-from . import utility as utl
 
 
 class BaseTkWindow(tk.Tk):
@@ -23,7 +22,6 @@ class BaseTkWindow(tk.Tk):
         self.father = father
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.title(self.TITLE)
-        self._frames_load(self.FRAMES)
 
     def on_closing(self):
         self.destroy()
@@ -31,19 +29,22 @@ class BaseTkWindow(tk.Tk):
     def get_widget(self, frame, name):
         return self.frames[frame].widgets[name]
 
-    def _frames_load(self, frames_dict):
+    def frames_load(self):
         self.frames = {}
-        for i in frames_dict:
-            self.frames[i] = frames_dict[i][0](self, frames_dict[i][1])
+        for i in self.FRAMES:
+            new = self.FRAMES[i][0](self, **self.FRAMES[i][1])
+            new.grid(**self.FRAMES[i][2])
+            self.frames[i] = new
 
 
 class LoadWindow(BaseTkWindow):
     """Loading interface for simulation replay"""
-    FRAMES = {'load': (frm.Load, {'row': 0, 'column': 0})}
     TITLE = "Simulation Load"
 
     def __init__(self, father, sim_name=None):
+        self.FRAMES = {'load': (frm.Load, {'windows': (self,)}, {'row': 0, 'column': 0})}
         super(LoadWindow, self).__init__(father)
+        self.frames_load()
         if sim_name:
             self.simulation_file_load(sim_name)
 
@@ -63,7 +64,7 @@ class CanvasWindow(object):
     START_ZOOM = 10
     START_SPEED = 1
     START_IS_PLAYING = False
-    START_SHOWS = {'ch': "FM", 'cc': 'TR', 'cd': 'E'}
+    START_SHOWS = {'ch': 'FM', 'cc': 'TR', 'cd': 'E'}
     MAX_SPEED = 100
 
     def __init__(self, father, sim_name):
@@ -75,15 +76,16 @@ class CanvasWindow(object):
         self.speed = self.START_SPEED
         self.isPlaying = self.START_IS_PLAYING
         self.max_speed = self.MAX_SPEED
-        self.shows = dict()
-        for i in self.START_SHOWS:
-            self.shows[i] = tk.StringVar()
-            self.shows[i].set(self.START_SHOWS[i])
         self.last_frame_time = time()
         self._files_load()
         self._background_creation()
         self.control_window = ControlWindow(self)
+        self.shows = dict()
+        for i in self.START_SHOWS:
+            self.shows[i] = tk.StringVar(master=self.control_window)
+            self.shows[i].set(self.START_SHOWS[i])
         self.resize(0)
+        self.control_window.frames_load()
 
     def _files_load(self):
         self.files = dict()
@@ -163,7 +165,7 @@ class CanvasWindow(object):
     def update(self):
         """function which updates the screen"""
         self.chunk_display()
-        ######## self.creatures_display()
+        self.creatures_display()
         new_graph_tick = ceil(int(self.tick) / 100) * 100
         '''for window in self.diagram_windows:
             if window.show_tick:
@@ -173,17 +175,20 @@ class CanvasWindow(object):
             for window in self.diagram_windows:
                 if window.follow_play:
                     window.dyn_axes_set()'''
-        self.control_window.update_tick(self.tick)
+        try:
+            self.control_window.update_tick(self.tick)
+        except AttributeError:
+            pass
         pyg.display.update()
 
     def chunk_display(self):
         """function which rapresents the chunks"""
-        if self.shows['ch'].get() == "F":  # con il cibo in un certo momento
+        to_show = self.shows['ch'].get()
+        if to_show == "F":  # con il cibo in un certo momento
             for chunk in self.chunk_list:
-                pyg.draw.rect(self.surface, pyg.Color(0, int(chunk.foodHistory[int(self.tick) - 1] * 255 / 100), 0, 255),
-                              pyg.Rect(chunk.coord[0] * self.chunk_dim * self.zoom / 10, chunk.coord[1] * self.chunk_dim * self.zoom / 10, self.chunk_dim * self.zoom / 10, self.chunk_dim * self.zoom / 10))
+                chunk.draw(self.surface, self.tick, self.chunk_dim, self.zoom)
         else:
-            self.surface.blit(self.resized_backgrounds[self.shows['ch'].get()], (0, 0))
+            self.surface.blit(self.resized_backgrounds[to_show], (0, 0))
 
     def creatures_display(self):
         """function which rapresents the creatures"""
@@ -191,53 +196,15 @@ class CanvasWindow(object):
         def tick_creature_list():
             L = []
             for i in self.creature_list:
-                if i.birthTick <= int(self.tick) and i.deathTick >= int(self.tick):
+                if i.birthTick <= int(self.tick) <= i.deathTick:
                     L.append(i)
             return L
 
-        cr_col = self.creatures_color_show.get()
-        cr_dim = self.creatures_dim_show.get()
+        color = self.shows['cc'].get()
+        dim = self.shows['cd'].get()
 
-        for i in tick_creature_list():
-            birth = max(i.birthTick, 1)
-            coord = (i.tickHistory[int(self.tick) - birth][0], i.tickHistory[int(self.tick) - birth][1])
-
-            # display secondo il sesso
-            if cr_col == "N":
-                color = (255, 255, 255)
-            elif cr_col == "S":
-                if i.sex == 0:
-                    color = (255, 255, 0)
-                else:
-                    color = (0, 255, 255)
-
-            # display secondo la capacità di resistere alla temperatura
-            elif cr_col == "TR":
-                if i.tempResist == "c":
-                    color = (255, 0, 0)
-                elif i.tempResist == "l":
-                    color = (0, 0, 255)
-                elif i.tempResist == "N":
-                    color = (128, 128, 128)
-                elif i.tempResist == "n":
-                    color = (255, 255, 255)
-
-            if cr_dim == "N":
-                dim = 7
-            elif cr_dim == "E":
-                dim = i.tickHistory[int(self.tick) - birth][2] / 10
-            elif cr_dim == "A":
-                dim = i.agility / 5
-            elif cr_dim == "B":
-                dim = i.bigness / 7
-            elif cr_dim == "EC":
-                dim = i.eatCoeff * 42
-            elif cr_dim == "NCG":
-                dim = i.numControlGene / 9
-            elif cr_dim == "S":
-                dim = i.speed * 5
-
-            self.world_map.create_oval((coord[0] - dim / 2) * self.zoom / 10, (coord[1] - dim / 2) * self.zoom / 10, (coord[0] + dim / 2) * self.zoom / 10, (coord[1] + dim / 2) * self.zoom / 10, fill=('#%02x%02x%02x' % color))
+        for creature in tick_creature_list():
+            creature.draw(self.surface, int(self.tick), color, dim, self.zoom)
 
     def graphics_window_create(self):
         """function which creates a graphic window"""
@@ -262,13 +229,13 @@ class ControlWindow(BaseTkWindow):
     """class of the main window"""
     TITLE = "Replay Toolbar"
     MAX_SPEED = 100
-    FRAMES = {'play_control': (frm.PlayControl, {'row': 1, 'column': 0}),
-              'map_set': (frm.SetSuperFrame, {'row': 0, 'column': 1}), }
     DEFAULT_GRAPH_TICK = 100
 
     def __init__(self, canvas):
         self.canvas = canvas
-        super(ControlWindow, self).__init__(canvas)
+        self.FRAMES = {'play_control': (frm.PlayControl, {'windows': (self, self.canvas)}, {'row': 1, 'column': 0}),
+                       'map_set': (frm.SetSuperFrame, {'windows': (self, self.canvas)}, {'row': 0, 'column': 1}), }
+        super(ControlWindow, self).__init__(self.canvas)
         self.graph_tick = self.DEFAULT_GRAPH_TICK
         self.diagram_windows = []
 
@@ -527,18 +494,27 @@ class SpreadGraphicsWindow(GraphicsWindow):
 
 
 class ChunkD:
-    def __init__(self, chunkDataLine):
-        chunkData = chunkDataLine.split(';')
-        self.coord = [int(chunkData[0]), int(chunkData[1])]
-        self.foodMax = float(chunkData[2])
-        self.growthRate = float(chunkData[3])
-        self.temperature = float(chunkData[4])
-        self.foodHistory = chunkData[5].split(',')
+    def __init__(self, chunk_data_line):
+        chunk_data = chunk_data_line.split(';')
+        self.coord = [int(chunk_data[0]), int(chunk_data[1])]
+        self.foodMax = float(chunk_data[2])
+        self.growthRate = float(chunk_data[3])
+        self.temperature = float(chunk_data[4])
+        self.foodHistory = chunk_data[5].split(',')
         for i in range(len(self.foodHistory)):
             self.foodHistory[i] = int(self.foodHistory[i])
 
+    def draw(self, surface, tick, chunk_dim, zoom):
+        pyg.draw.rect(surface, pyg.Color(0, int(self.foodHistory[int(tick) - 1] * 255 / 100), 0, 255),
+                      pyg.Rect(self.coord[0] * chunk_dim * zoom / 10, self.coord[1] * chunk_dim * zoom / 10, chunk_dim * zoom / 10, chunk_dim * zoom / 10))
+
 
 class CreaturesD:
+    DEFAULT_COLORS = {'N': pyg.Color(255, 255, 255, 255),
+                      'S': (pyg.Color(255, 255, 0, 255), pyg.Color(0, 255, 255, 255)),
+                      'TR': {'c': pyg.Color(255, 0, 0, 255), 'l': pyg.Color(0, 0, 255, 255), 'N': pyg.Color(128, 128, 128, 255), 'n': pyg.Color(255, 255, 255, 255)}}
+    DEFAULT_DIMS = {'N': 7, 'A': 5, 'B': 7, 'EC': 42, 'NCG': 9, 'S': 5}
+
     def __init__(self, line):
         data_list = line.split(";")
         self.ID = int(data_list[0])
@@ -566,3 +542,27 @@ class CreaturesD:
             except ValueError:
                 data_list[14] = [[]]
         self.tickHistory = data_list[14]
+        self.colors = dict()
+        self.dims = dict()
+        self.color_dims_creation()
+
+    def color_dims_creation(self):
+        self.colors["N"] = self.DEFAULT_COLORS['N']
+        self.colors["S"] = self.DEFAULT_COLORS['S'][self.sex]
+
+        self.colors["TR"] = self.DEFAULT_COLORS['TR'][self.tempResist]
+
+        self.dims["N"] = self.DEFAULT_DIMS['N']
+        self.dims["A"] = self.agility / self.DEFAULT_DIMS['A']
+        self.dims["B"] = self.bigness / self.DEFAULT_DIMS['B']
+        self.dims["EC"] = self.eatCoeff * self.DEFAULT_DIMS['EC']
+        self.dims["NCG"] = self.numControlGene / self.DEFAULT_DIMS['NCG']
+        self.dims["S"] = self.speed * self.DEFAULT_DIMS['S']
+
+    def draw(self, surface, tick, color, dim, zoom):
+        birth = max(self.birthTick, 1)
+        coord = (int((self.tickHistory[tick - birth][0]) * zoom / 10), int(self.tickHistory[tick - birth][1] * zoom / 10))
+        if dim == 'E':
+            pyg.draw.circle(surface, self.colors[color], coord, int(self.tickHistory[tick - birth][2] / 10 * zoom / 10))
+        else:
+            pyg.draw.circle(surface, self.colors[color], coord, int(self.dims[dim] * zoom / 10))
