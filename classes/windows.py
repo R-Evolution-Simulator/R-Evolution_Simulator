@@ -60,6 +60,7 @@ class LoadWindow(BaseTkWindow):
 
 class CanvasWindow(object):
     FILES_TO_LOAD = ['simulationData', 'chunkData', 'creaturesData']
+    START_SCREEN = (100, 100)
     START_TICK = 1.0
     START_ZOOM = 10
     START_SPEED = 1
@@ -70,7 +71,7 @@ class CanvasWindow(object):
     def __init__(self, father, sim_name):
         self.father = father
         self.sim_name = sim_name
-        self.surface = pyg.display.set_mode()
+        self.surface = pyg.display.set_mode(self.START_SCREEN)
         self.tick = self.START_TICK
         self.zoom = self.START_ZOOM
         self.speed = self.START_SPEED
