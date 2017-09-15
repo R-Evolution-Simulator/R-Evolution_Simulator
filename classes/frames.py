@@ -1,5 +1,5 @@
 import tkinter as tk
-import PIL, os
+import os
 
 
 class BaseFrame(tk.Frame):
