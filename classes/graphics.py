@@ -1,13 +1,18 @@
-from . import windows as wndw
+
 import tkinter as tk
+from . import windows as wndw
 import threading as thr
 
 
 class Graphics(object):
     def __init__(self):
         # self._tkinter_thread()
-        self.main_window = wndw.CanvasWindow(self)
-        self.main_window.load_window_creation()
+        '''a=tk.Tk()
+        a.update()'''
+        self.main_window = wndw.MainMenuWindow(self)
+        '''d=tk.Button(a, text='ooo')
+        d.pack()
+        a.update()'''
 
     def _tkinter_thread(self):
         a = tk.Tk()
@@ -16,6 +21,4 @@ class Graphics(object):
         self.tkinter.start()
 
     def run(self):
-        while True:
-            print("i'm updating")
-            self.main_window.run()
+        self.main_window.mainloop()

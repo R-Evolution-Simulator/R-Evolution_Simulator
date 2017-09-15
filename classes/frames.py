@@ -1,4 +1,6 @@
 import tkinter as tk
+import PIL, os
+
 
 class BaseFrame(tk.Frame):
     WIDGETS = None
@@ -15,6 +17,22 @@ class BaseFrame(tk.Frame):
             self.widgets[i] = new
 
 
+class Logo(BaseFrame):
+    START_LOGO = "data/logo.gif"
+
+    def __init__(self, father):
+        self.photo = tk.PhotoImage(file=os.path.join(os.getcwd(), self.START_LOGO))
+        self.WIDGETS = {'image': (tk.Label, {'image': self.photo}, {})}
+        super(Logo, self).__init__(father)
+
+
+class MainMenuOptions(BaseFrame):
+    def __init__(self, father, windows):
+        self.WIDGETS = {'load': (tk.Button, {'text': "Load simulation", 'command': windows[0].load_window_creation}, {})
+                        }
+        super(MainMenuOptions, self).__init__(father)
+
+
 class Load(BaseFrame):
     def __init__(self, father, windows):
         self.WIDGETS = {'entry': (tk.Entry, {}, {}),
@@ -25,16 +43,16 @@ class Load(BaseFrame):
 
 class PlayControl(BaseFrame):
     def __init__(self, father, windows):
-        self.WIDGETS = {'play': (tk.Button, {'text': "Play", 'command': windows[0].start_play}, {'side': tk.LEFT}),
-                        'fps': (tk.Label, {'text': "fps: 00.0"}, {'side': tk.LEFT}),
-                        'tick_entry': (tk.Spinbox, {'from_': 1, 'to': windows[1].max_tick, 'width': 15}, {'side': tk.LEFT}),
-                        'tick_button': (tk.Button, {'text': "Set tick", 'command': windows[0].set_tick}, {'side': tk.LEFT}),
-                        'tick_label': (tk.Label, {'text': "Tick: 1"}, {'side': tk.LEFT}),
-                        'speed_label': (tk.Label, {'text': f"Tick/s: {windows[1].speed}"}, {'side': tk.LEFT}),
-                        'speed_slider': (tk.Scale, {'orient': tk.HORIZONTAL, 'showvalue': False, 'command': windows[0].speed_change}, {'side': tk.LEFT}),
-                        'dec_zoom': (tk.Button, {'text': "- 10%", 'command': windows[0].dec_zoom}, {'side': tk.LEFT}),
-                        'zoom': (tk.Label, {'text': f"zoom: {windows[1].zoom}0%"}, {'side': tk.LEFT}),
-                        'inc_zoom': (tk.Button, {'text': "+ 10%", 'command': windows[0].inc_zoom}, {'side': tk.LEFT}), }
+        self.WIDGETS = {'play': (tk.Button, {'text': "Play", 'command': windows[0].start_play}, {'side': tk.TOP}),
+                        'fps': (tk.Label, {'text': "fps: 00.0"}, {'side': tk.TOP}),
+                        'tick_entry': (tk.Spinbox, {'from_': 1, 'to': windows[1].max_tick, 'width': 15}, {'side': tk.TOP}),
+                        'tick_button': (tk.Button, {'text': "Set tick", 'command': windows[0].set_tick}, {'side': tk.TOP}),
+                        'tick_label': (tk.Label, {'text': "Tick: 1"}, {'side': tk.TOP}),
+                        'speed_slider': (tk.Scale, {'orient': tk.HORIZONTAL, 'showvalue': False, 'command': windows[0].speed_change}, {'side': tk.TOP}),
+                        'speed_label': (tk.Label, {'text': f"Tick/s: {windows[1].speed}"}, {'side': tk.TOP}),
+                        'inc_zoom': (tk.Button, {'text': "+ 10%", 'command': windows[0].inc_zoom}, {'side': tk.TOP}),
+                        'zoom': (tk.Label, {'text': f"zoom: {windows[1].zoom}0%"}, {'side': tk.TOP}),
+                        'dec_zoom': (tk.Button, {'text': "- 10%", 'command': windows[0].dec_zoom}, {'side': tk.TOP}), }
         super(PlayControl, self).__init__(father)
 
 
@@ -87,9 +105,9 @@ class CreatureSet(BaseLabelFrame):
     NAME = "Creatures"
 
     def __init__(self, father, windows):
-        self.WIDGETS = {'cl': (CreatureColorSet, {'windows': windows}, {'side': tk.LEFT, 'anchor': tk.NW, 'fill': tk.Y}),
-                        'dim': (CreatureDimSet, {'windows': windows}, {'side': tk.LEFT, 'anchor': tk.NW, 'fill': tk.Y}),
-               }
+        self.WIDGETS = {'cl': (CreatureColorSet, {'windows': windows}, {'side': tk.TOP, 'anchor': tk.NW, 'fill': tk.X}),
+                        'dim': (CreatureDimSet, {'windows': windows}, {'side': tk.TOP, 'anchor': tk.NW, 'fill': tk.X}),
+                        }
         super(CreatureSet, self).__init__(father)
 
 
