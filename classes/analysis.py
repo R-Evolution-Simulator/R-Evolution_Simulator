@@ -1,8 +1,6 @@
 import os
 import shutil
-
-import PIL.Image as Image
-import PIL.ImageDraw as ImageDraw
+import PIL
 
 def analysis(simulationName):
     print(f"{simulationName}: analysis setup")
@@ -179,10 +177,10 @@ def analysis(simulationName):
             os.makedirs(name)
 
     for tick in range(0, lifetime, 100):
-        imageFood = Image.new("RGB", (width, height))
-        drawFood = ImageDraw.Draw(imageFood)
-        imageTemp = Image.new("RGB", (width, height))
-        drawTemp = ImageDraw.Draw(imageTemp)
+        imageFood = PIL.Image.new("RGB", (width, height))
+        drawFood = PIL.ImageDraw.Draw(imageFood)
+        imageTemp = PIL.Image.new("RGB", (width, height))
+        drawTemp = PIL.ImageDraw.Draw(imageTemp)
 
         for i in range(len(datiChunk)):
             for j in range(len(datiChunk[i])):

@@ -1,16 +1,11 @@
 # import vari
 import tkinter as tk
-from math import ceil
 from time import time
-import pygame as pyg
-from PIL import ImageDraw, Image as Img
 from . import frames as frm
-from . import utility as utl
-import os
-
-
-# pyg.init()
+from .pygamecanvas import PygameCanvas, ChunkD, CreaturesD
+# import matplotlib
 # matplotlib.use("Tkagg")
+
 
 
 class BaseTkWindow(tk.Tk):
@@ -18,15 +13,19 @@ class BaseTkWindow(tk.Tk):
     TITLE = None
 
     def __init__(self, father):
-        super(BaseTkWindow, self).__init__()  # ERRORE QUI UNA ROBA STANA CHE NON SI CAPISCE CHE COS'E'
+        super(BaseTkWindow, self).__init__()
         self.father = father
+        self.windows = list()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.title(self.TITLE)
+        self.frames = {}
 
     def on_closing(self):
         self.destroy()
 
     def destroy(self):
+        for i in self.windows:
+            i.destroy()
         self.father.windows.remove(self)
         super(BaseTkWindow, self).destroy()
 
@@ -34,44 +33,34 @@ class BaseTkWindow(tk.Tk):
         return self.frames[frame].widgets[name]
 
     def frames_load(self):
-        self.frames = {}
         for i in self.FRAMES:
             new = self.FRAMES[i][0](self, **self.FRAMES[i][1])
             new.grid(**self.FRAMES[i][2])
             self.frames[i] = new
 
+    def update(self):
+        for i in self.windows:
+            i.update()
+        super(BaseTkWindow, self).update()
 
 class MainMenuWindow(BaseTkWindow):
     TITLE = "(R)Evolution Simulator"
 
-    def __init__(self, canvas):
+    def __init__(self, father):
         self.FRAMES = {'logo': (frm.Logo, {}, {'row': 0, 'column': 0}),
                        'options': (frm.MainMenuOptions, {'windows': (self,)}, {'row': 1, 'column': 0})}
-        super(MainMenuWindow, self).__init__(canvas)
+        super(MainMenuWindow, self).__init__(father)
         self.frames_load()
         self.windows = list()
         self.canvas = None
 
     def load_window_creation(self):
         new_load = LoadWindow(self)
-        new_load.frames_load()
-        new_load.update()
         self.windows.append(new_load)
 
-    def control_window_creation(self):
-        new_control = ControlWindow(self, self.canvas)
-        self.canvas.shows_init(new_control)
-        new_control.frames_load()
-        self.windows.append(new_control)
-
     def start_simulation(self, sim_name):
-        self.canvas = CanvasWindow(self, sim_name)
-        self.control_window_creation()
-
-    def update(self):
-        print('updating')
-        super(MainMenuWindow, self).update()
-
+        new_control = ControlWindow(self, sim_name)
+        self.windows.append(new_control)
 
 class LoadWindow(BaseTkWindow):
     """Loading interface for simulation replay"""
@@ -88,10 +77,11 @@ class LoadWindow(BaseTkWindow):
         self.destroy()
         self.father.start_simulation(sim_name)
 
-
-class CanvasWindow(object):
+class ControlWindow(BaseTkWindow):
+    """class of the main window"""
+    TITLE = "Replay Toolbar"
     FILES_TO_LOAD = ['simulationData', 'chunkData', 'creaturesData']
-    START_SCREEN = (400, 300)
+    DEFAULT_GRAPH_TICK = 100
     START_TICK = 1.0
     START_ZOOM = 10
     START_SPEED = 1
@@ -100,26 +90,27 @@ class CanvasWindow(object):
 
     def __init__(self, father, sim_name):
         self.father = father
-        self.surface = pyg.display.set_mode(self.START_SCREEN)
         self.sim_name = sim_name
         self.tick = self.START_TICK
         self.zoom = self.START_ZOOM
         self.speed = self.START_SPEED
         self.max_speed = self.MAX_SPEED
+        self.is_playing = False
         self._files_load()
-        self._background_creation()
-        self.last_frame_time = time()
-        self.isPlaying = False
         self.shows = dict()
-        self.time_diff = 0
-        pyg.display.update()
+        self.last_frame_time = time()
+        self.FRAMES = {'play_control': (frm.PlayControl, {}, {'row': 0, 'column': 0}),
+                       'map_set': (frm.SetSuperFrame, {'windows': (self,)}, {'row': 1, 'column': 0}), }
 
-    def shows_init(self, control):
-        self.control = control
+        super(ControlWindow, self).__init__(father)
         for i in self.START_SHOWS:
-            self.shows[i] = tk.StringVar(master=control)
+            self.shows[i] = tk.StringVar(master=self)
             self.shows[i].set(self.START_SHOWS[i])
+        self.frames_load()
+        self.canvas = PygameCanvas(self)
         self.resize(0)
+        self.graph_tick = self.DEFAULT_GRAPH_TICK
+        self.diagram_windows = []
 
     def _files_load(self):
         self.files = dict()
@@ -143,104 +134,29 @@ class CanvasWindow(object):
         for line in self.files['creaturesData']:
             self.creature_list.add(CreaturesD(line))
 
-    def _background_creation(self):
-        """method which creates the background of the world"""
-        image_food = Img.new("RGB", (int(self.sim_width / 10), int(self.sim_height / 10)))
-        draw_food = ImageDraw.Draw(image_food)
-        image_temp = Img.new("RGB", (int(self.sim_width / 10), int(self.sim_height / 10)))
-        draw_temp = ImageDraw.Draw(image_temp)
-
-        for chunk in self.chunk_list:
-            draw_food.rectangle((chunk.coord[0] * self.chunk_dim / 10, chunk.coord[1] * self.chunk_dim / 10, (chunk.coord[0] + 1) * self.chunk_dim / 10, (chunk.coord[1] + 1) * self.chunk_dim / 10),
-                                fill=(0, int(chunk.foodMax * 255 / 100), 0))
-            if chunk.temperature > 0:
-                draw_temp.rectangle((chunk.coord[0] * self.chunk_dim / 10, chunk.coord[1] * self.chunk_dim / 10, (chunk.coord[0] + 1) * self.chunk_dim / 10, (chunk.coord[1] + 1) * self.chunk_dim / 10),
-                                    fill=(255, int(255 - (chunk.temperature / 100 * 255)), int(255 - (chunk.temperature / 100 * 255))))
-            else:
-                draw_temp.rectangle((chunk.coord[0] * self.chunk_dim / 10, chunk.coord[1] * self.chunk_dim / 10, (chunk.coord[0] + 1) * self.chunk_dim / 10, (chunk.coord[1] + 1) * self.chunk_dim / 10),
-                                    fill=(int(255 + (chunk.temperature / 100 * 255)), int(255 + (chunk.temperature / 100 * 255)), 255))
-
-        image_food.save(f"{self.sim_name}/backgroundFM.gif", "GIF")
-        image_temp.save(f"{self.sim_name}/backgroundT.gif", "GIF")
-
-        self.backgrounds = {"FM": utl.img_load(f"{self.sim_name}/backgroundFM.gif"), "T": utl.img_load(f"{self.sim_name}/backgroundT.gif")}
-        del image_temp, image_food, draw_food, draw_temp
+    def update(self):
+        if self.is_playing:
+            self.tick += self.time_diff * self.speed
+            if int(self.tick) >= self.max_tick:
+                self.start_play()
+                self.tick = self.max_tick
+        shows = dict()
+        for i in self.shows:
+            shows[i] = self.shows[i].get()
+        self.canvas.update(int(self.tick), shows)
+        self.time_diff = time() - self.last_frame_time
+        self.last_frame_time = time()
+        try:
+            self.set_fps(round(1.0 / self.time_diff, 1))
+        except ZeroDivisionError:
+            pass
+        self.update_tick(int(self.tick))
+        super(ControlWindow, self).update()
 
     def resize(self, coeff):
         """method which set to selected zoom"""
         self.zoom = max(1, self.zoom + coeff)
-        self.resized_backgrounds = dict()
-        for i in self.backgrounds:
-            self.resized_backgrounds[i] = utl.img_resize(self.backgrounds[i], self.zoom)
-        self.surface = pyg.display.set_mode((int(self.sim_width * self.zoom / 10), int(self.sim_height * self.zoom / 10)))
-        self.update()
-
-    def change_speed(self, speed_exp):
-        self.speed = int(self.max_speed ** (float(speed_exp) / 100))
-        return self.speed
-
-    def play(self):
-
-        while self.isPlaying:
-            self.tick += self.time_diff * self.speed
-            self.update()
-            if int(self.tick) >= self.max_tick:
-                self.control.start_play()
-            try:
-                self.control.set_fps(round(1.0 / self.time_diff, 1))
-            except ZeroDivisionError:
-                pass
-            self.control.update()
-            self.time_diff = time() - self.last_frame_time
-            self.last_frame_time = time()
-
-    def set_tick(self, tick):
-        self.tick = tick
-        self.update()
-
-    def update(self):
-        """function which updates the screen"""
-        self.chunk_display()
-        self.creatures_display()
-        new_graph_tick = ceil(int(self.tick) / 100) * 100
-        '''for window in self.diagram_windows:
-            if window.show_tick:
-                window.tick_line_set()
-        if new_graph_tick != self.graph_tick:
-            self.graph_tick = new_graph_tick
-            for window in self.diagram_windows:
-                if window.follow_play:
-                    window.dyn_axes_set()'''
-        try:
-            self.control.update_tick(self.tick)
-        except AttributeError:
-            pass
-        pyg.display.update()
-
-    def chunk_display(self):
-        """function which rapresents the chunks"""
-        to_show = self.shows['ch'].get()
-        if to_show == "F":  # con il cibo in un certo momento
-            for chunk in self.chunk_list:
-                chunk.draw(self.surface, self.tick, self.chunk_dim, self.zoom)
-        else:
-            self.surface.blit(self.resized_backgrounds[to_show], (0, 0))
-
-    def creatures_display(self):
-        """function which rapresents the creatures"""
-
-        def tick_creature_list():
-            L = []
-            for i in self.creature_list:
-                if i.birthTick <= int(self.tick) <= i.deathTick:
-                    L.append(i)
-            return L
-
-        color = self.shows['cc'].get()
-        dim = self.shows['cd'].get()
-
-        for creature in tick_creature_list():
-            creature.draw(self.surface, int(self.tick), color, dim, self.zoom)
+        self.canvas.resize()
 
     def graphics_window_create(self):
         """function which creates a graphic window"""
@@ -254,53 +170,35 @@ class CanvasWindow(object):
         self.diagram_windows.append(new_window)
         new_window.mainloop()'''
 
-    def on_closing(self):
-        """function which closes the graphic window"""
-        '''for window in self.diagram_windows:
-            window.destroy()
-        self.destroy()'''
-
-
-class ControlWindow(BaseTkWindow):
-    """class of the main window"""
-    TITLE = "Replay Toolbar"
-    MAX_SPEED = 100
-    DEFAULT_GRAPH_TICK = 100
-
-    def __init__(self, father, canvas):
-        self.FRAMES = {'play_control': (frm.PlayControl, {'windows': (self, canvas)}, {'row': 0, 'column': 0}),
-                       'map_set': (frm.SetSuperFrame, {'windows': (self, canvas)}, {'row': 1, 'column': 0}), }
-        self.canvas = canvas
-        super(ControlWindow, self).__init__(father)
-        self.graph_tick = self.DEFAULT_GRAPH_TICK
-        self.diagram_windows = []
-
     def speed_change(self, speed_cursor):
         """
         method which allow to change the speed of the simulation reproduction
         """
-        self.get_widget('play_control', 'speed_label').config(text=f"T/s: {self.canvas.change_speed(speed_cursor):02d}")
+        self.speed = int(self.max_speed ** (float(speed_cursor) / 100))
+        self.get_widget('play_control', 'speed_label').config(text=f"T/s: {self.speed:02d}")
+
+    def set_tick(self, tick):
+        self.tick = tick
 
     def dec_zoom(self):
         """method which decrease the zoom"""
-        self.canvas.resize(-1)
+        self.resize(-1)
         self.set_zoom()
 
     def inc_zoom(self):
         """method which increase the zoom"""
-        self.canvas.resize(1)
+        self.resize(1)
         self.set_zoom()
 
     def set_zoom(self):
         """method which set to selected zoom"""
-        self.get_widget('play_control', 'zoom').configure(text=f"zoom: {self.canvas.zoom}0%")
+        self.get_widget('play_control', 'zoom').configure(text=f"zoom: {self.zoom}0%")
 
     def start_play(self):
         """method which starts or stops the reproduction of the simulation"""
-        self.canvas.isPlaying = not (self.canvas.isPlaying)
-        if self.canvas.isPlaying:
+        self.is_playing = not (self.is_playing)
+        if self.is_playing:
             self.get_widget('play_control', 'play').config(text="Pause")
-            self.canvas.play()
         else:
             self.get_widget('play_control', 'play').config(text="Play")
 
@@ -315,12 +213,16 @@ class ControlWindow(BaseTkWindow):
         function which imposts a particular tick
         """
         try:
-            self.canvas.set_tick(int(self.get_widget('play_control', 'tick_entry').get()))
+            self.tick = int(self.get_widget('play_control', 'tick_entry').get())
         except ValueError:
             pass
 
     def update_tick(self, tick):
-        self.get_widget('play_control', 'tick_label').config(text=f"Tick: {int(tick):04d}")
+        self.get_widget('play_control', 'tick_label').config(text=f"Tick: {tick:04d}")
+
+    def destroy(self):
+        self.canvas.destroy()
+        super(ControlWindow, self).destroy()
 
 
 '''class GraphicsWindow(tk.Tk):
@@ -527,76 +429,3 @@ class SpreadGraphicsWindow(GraphicsWindow):
         self.figure.subplots_adjust(hspace=.5)'''
 
 
-class ChunkD:
-    def __init__(self, chunk_data_line):
-        chunk_data = chunk_data_line.split(';')
-        self.coord = [int(chunk_data[0]), int(chunk_data[1])]
-        self.foodMax = float(chunk_data[2])
-        self.growthRate = float(chunk_data[3])
-        self.temperature = float(chunk_data[4])
-        self.foodHistory = chunk_data[5].split(',')
-        for i in range(len(self.foodHistory)):
-            self.foodHistory[i] = int(self.foodHistory[i])
-
-    def draw(self, surface, tick, chunk_dim, zoom):
-        pyg.draw.rect(surface, pyg.Color(0, int(self.foodHistory[int(tick) - 1] * 255 / 100), 0, 255),
-                      pyg.Rect(self.coord[0] * chunk_dim * zoom / 10, self.coord[1] * chunk_dim * zoom / 10, chunk_dim * zoom / 10, chunk_dim * zoom / 10))
-
-
-class CreaturesD:
-    DEFAULT_COLORS = {'N': pyg.Color(255, 255, 255, 255),
-                      'S': (pyg.Color(255, 255, 0, 255), pyg.Color(0, 255, 255, 255)),
-                      'TR': {'c': pyg.Color(255, 0, 0, 255), 'l': pyg.Color(0, 0, 255, 255), 'N': pyg.Color(128, 128, 128, 255), 'n': pyg.Color(255, 255, 255, 255)}}
-    DEFAULT_DIMS = {'N': 7, 'A': 5, 'B': 7, 'EC': 42, 'NCG': 9, 'S': 5}
-
-    def __init__(self, line):
-        data_list = line.split(";")
-        self.ID = int(data_list[0])
-        self.birthTick = int(data_list[1])
-        self.parentsID = (int(data_list[2].split(",")[0]), int(data_list[2].split(",")[1]))
-        self.tempResistGen = data_list[3]
-        self.agility = float(data_list[4])
-        self.bigness = float(data_list[5])
-        self.sex = int(data_list[6])
-        self.fertility = float(data_list[7])
-        self.tempResist = data_list[8]
-        self.speed = float(data_list[9])
-        self.eatCoeff = float(data_list[10])
-        self.numControlGene = float(data_list[11])
-        self.deathTick = float(data_list[12])
-        self.deathCause = data_list[13]
-        data_list[14] = data_list[14].split("/")
-        for i in range(len(data_list[14])):
-            data_list[14][i] = data_list[14][i].split(",")
-            try:
-                for j in [0, 1]:
-                    data_list[14][i][j] = float(data_list[14][i][j])
-                for j in [2, 3]:
-                    data_list[14][i][j] = int(data_list[14][i][j])
-            except ValueError:
-                data_list[14] = [[]]
-        self.tickHistory = data_list[14]
-        self.colors = dict()
-        self.dims = dict()
-        self.color_dims_creation()
-
-    def color_dims_creation(self):
-        self.colors["N"] = self.DEFAULT_COLORS['N']
-        self.colors["S"] = self.DEFAULT_COLORS['S'][self.sex]
-
-        self.colors["TR"] = self.DEFAULT_COLORS['TR'][self.tempResist]
-
-        self.dims["N"] = self.DEFAULT_DIMS['N']
-        self.dims["A"] = self.agility / self.DEFAULT_DIMS['A']
-        self.dims["B"] = self.bigness / self.DEFAULT_DIMS['B']
-        self.dims["EC"] = self.eatCoeff * self.DEFAULT_DIMS['EC']
-        self.dims["NCG"] = self.numControlGene / self.DEFAULT_DIMS['NCG']
-        self.dims["S"] = self.speed * self.DEFAULT_DIMS['S']
-
-    def draw(self, surface, tick, color, dim, zoom):
-        birth = max(self.birthTick, 1)
-        coord = (int((self.tickHistory[tick - birth][0]) * zoom / 10), int(self.tickHistory[tick - birth][1] * zoom / 10))
-        if dim == 'E':
-            pyg.draw.circle(surface, self.colors[color], coord, int(self.tickHistory[tick - birth][2] / 10 * zoom / 10))
-        else:
-            pyg.draw.circle(surface, self.colors[color], coord, int(self.dims[dim] * zoom / 10))

@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from . import windows as wndw
 import threading as thr
@@ -9,7 +8,7 @@ class Graphics(object):
         # self._tkinter_thread()
         '''a=tk.Tk()
         a.update()'''
-        self.main_window = wndw.MainMenuWindow(self)
+        self.windows = [wndw.MainMenuWindow(self), ]
         '''d=tk.Button(a, text='ooo')
         d.pack()
         a.update()'''
@@ -21,4 +20,8 @@ class Graphics(object):
         self.tkinter.start()
 
     def run(self):
-        self.main_window.mainloop()
+        try:
+            while True:
+                self.windows[0].update()
+        except IndexError:
+            pass
