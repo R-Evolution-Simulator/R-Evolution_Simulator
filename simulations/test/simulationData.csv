@@ -1,0 +1,1 @@
+test;400;300;1000;100;10;1000;0.0005;<noise.simplexnoise.noise.SimplexNoise object at 0x101850e48>;<noise.simplexnoise.noise.SimplexNoise object at 0x101c295c0>;100;100;3;0.02;1.5;2000;750;100;{'agility': (10, 60), 'bigness': (20, 80), 'fertility': (50, 250), 'numControlGene': (0, 100)};0.003;492;0.1

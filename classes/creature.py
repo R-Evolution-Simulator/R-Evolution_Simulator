@@ -174,7 +174,6 @@ class Creature:
         for i in self.chunkIn().chunkCreatureList:
 
             if i.reprodReady and i.sex != self.sex:
-
                 self.reproduction(i)
                 self.reprodReady = False
                 i.reprodReady = False
