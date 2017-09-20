@@ -225,7 +225,7 @@ class World:
         for j in names:
             f[j] = dict()
             s[j] = list()
-            for i in names[j]:
+            for i in range(names[j]):
                 f[j][i] = open(os.path.join(self.path, f"temperature_{i}.csv"), 'w')
                 s[j].append(str())
         for i in range(0, self.lifetime, 100):
@@ -243,11 +243,15 @@ class World:
                     data[w]['raw'][utl.data_number(w, j)][int((val * vars.PARTS) // (self.chunks_vars[w + '_max']))] += 1
 
                 x = 0
-                for k in vars.TEMPERATURE_FOOD_PARTS[w]:
+                for k in range(vars.TEMPERATURE_FOOD_PARTS[w]):
                     s[w][x] = str(i)
                     for j in range(vars.PARTS):
-                        data[w]['correct'][x][j] = data[w]['raw'][x][j] / chunks_f_t[w][j] * vars.ADJ_COEFF
-                        s[w][x] += vars.FILE_SEPARATOR + data[w]['raw'][x][j] + vars.FILE_SEPARATOR + data[w]['correct'][x][j]
+                        try:
+                            data[w]['correct'][x][j] = data[w]['raw'][x][j] / chunks_f_t[w][j] * vars.ADJ_COEFF
+                        except ZeroDivisionError:
+                            data[w]['correct'][x][j] = 0
+                            print('ops')
+                        s[w][x] += vars.FILE_SEPARATOR + str(data[w]['raw'][x][j]) + vars.FILE_SEPARATOR + str(data[w]['correct'][x][j])
                     f[w][k].write(s[w][x])
                     f[w][k].close()
                     x += 1
