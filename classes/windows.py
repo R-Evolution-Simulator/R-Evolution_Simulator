@@ -42,6 +42,11 @@ class BaseTkWindow(tk.Tk):
             new.grid(**self.FRAMES[i][2])
             self.frames[i] = new
 
+    def new_window_creation(self, wind_class, *args, **kwargs):
+        new = wind_class(self, *args, **kwargs)
+        self.windows.append(new)
+
+
     def update(self):
         for i in self.windows:
             i.update()
@@ -59,29 +64,31 @@ class MainMenuWindow(BaseTkWindow):
         self.windows = list()
         self.canvas = None
 
-    def load_window_creation(self):
-        new_load = LoadWindow(self)
-        self.windows.append(new_load)
+    def new_sim_window(self):
+        self.new_window_creation(NewSimWindow)
 
-    def start_simulation(self, sim_name):
-        new_control = ControlWindow(self, sim_name)
-        self.windows.append(new_control)
+    def load_sim_window(self):
+        self.new_window_creation(LoadSimWindow)
 
 
-class LoadWindow(BaseTkWindow):
+class NewSimWindow(BaseTkWindow):
+    pass
+
+
+class LoadSimWindow(BaseTkWindow):
     """Loading interface for simulation replay"""
     TITLE = "Simulation Load"
 
     def __init__(self, father):
-        self.FRAMES = {'load': (frm.Load, {'windows': (self,)}, {'row': 0, 'column': 0})}
-        super(LoadWindow, self).__init__(father)
+        self.FRAMES = {'load': (frm.LoadSim, {'windows': (self,)}, {'row': 0, 'column': 0})}
+        super(LoadSimWindow, self).__init__(father)
         self.frames_load()
 
     def simulation_file_load(self):
         """method which upload the data of the simulation"""
         sim_name = self.get_widget('load', 'entry').get()
         self.destroy()
-        self.father.start_simulation(sim_name)
+        self.father.new_window_creation(ControlWindow, sim_name)
 
 
 class ControlWindow(BaseTkWindow):
@@ -167,13 +174,11 @@ class ControlWindow(BaseTkWindow):
         """function which creates a graphic window"""
         subject = self.diagram_choice.get()
         if subject in ['agility', 'bigness', 'eatCoeff', 'fertility', 'numControlGene', 'speed']:
-            new_window = GraphicsWindow(self, subject, frm.GeneDiagram)
+            self.new_window_creation(GraphicsWindow, subject, frm.GeneDiagram)
         elif subject in ['foodmax', 'temperature_c', 'temperature_l', 'temperature_N']:
-            new_window = GraphicsWindow(self, subject, frm.SpreadDiagram)
+            self.new_window_creation(GraphicsWindow, subject, frm.SpreadDiagram)
         elif subject == 'population':
-            new_window = GraphicsWindow(self, subject, frm.PopulationDiagram)
-        self.windows.append(new_window)
-        print(subject)
+            self.new_window_creation(GraphicsWindow, subject, frm.PopulationDiagram)
 
     def speed_change(self, speed_cursor):
         """

@@ -14,6 +14,7 @@ class BaseFrame(tk.Frame):
     def __init__(self, father):
         super(BaseFrame, self).__init__(father)
         self.widgets = dict()
+        print(self.WIDGETS)
         self._widgets_load(self.WIDGETS)
 
     def _widgets_load(self, wid_list):
@@ -38,7 +39,7 @@ class BaseLabelFrame(tk.LabelFrame, BaseFrame):
     def __init__(self, father):
         super(BaseLabelFrame, self).__init__(father, text=self.NAME)
         self.widgets = dict()
-        self._widgets_load()
+        self._widgets_load(self.WIDGETS)
 
 
 class BaseSelectFrame(BaseLabelFrame):
@@ -89,12 +90,12 @@ class BaseDiagramCanvasFrame(BaseFrame):
             for i in range(len(self.data)):
                 self.data[i].append(float(line_list[i]))
 
-    def _widgets_load(self):
-        for i in self.WIDGETS:
-            new = self.WIDGETS[i][0](**self.WIDGETS[i][1])
+    def _widgets_load(self, wid_list):
+        for i in wid_list:
+            new = wid_list[i][0](**wid_list[i][1])
             new.show()
             wid = new.get_tk_widget()
-            wid.pack(**self.WIDGETS[i][2])
+            wid.pack(**wid_list[i][2])
             self.widgets[i] = new
 
     def subplot_creation(self, subplots):
@@ -244,13 +245,13 @@ class DiagramSet(BaseFrame):
         self.diagram_choice.set('agility')
         super(DiagramSet, self).__init__(father)
 
-    def _widgets_load(self):
+    def _widgets_load(self, wid_list):
         self.widgets = dict()
         self.widgets['menu'] = tk.OptionMenu(self, self.diagram_choice, *self.CHOICES)
         self.widgets['menu'].pack(anchor=tk.W, fill=tk.X)
-        for i in self.WIDGETS:
-            new = self.WIDGETS[i][0](self, **self.WIDGETS[i][1])
-            new.pack(**self.WIDGETS[i][2])
+        for i in wid_list:
+            new = wid_list[i][0](self, **wid_list[i][1])
+            new.pack(**wid_list[i][2])
             self.widgets[i] = new
 
 
