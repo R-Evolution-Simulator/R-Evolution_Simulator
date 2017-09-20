@@ -5,52 +5,30 @@ from random import random as rnd
 from noise.simplexnoise.noise import SimplexNoise
 from .chunk import Chunk
 from .creature import Creature
-
-DEFAULT_WIDTH = 600
-DEFAULT_HEIGHT = 450
-DEFAULT_CHUNKDIM = 10  # DIMENSIONE DEL CHUNK IN PIXEL
-DEFAULT_LIFETIME = 10000
-DEFAULT_INITIALCREATURES = 750
-
-DEFAULT_CH_GROWTHCOEFF = 0.0005  # INDICE DI CRESCITA DELL'ERBA
-DEFAULT_CH_FOODMAXMAX = 100  # massimo cibo possibile in un'area
-DEFAULT_CH_TEMPERATUREMAX = 100  # massima temperatura possibile in un'area
-
-DEFAULT_CR_VIEWRAY = 3  # raggio di vista in cui cercano cibo (in chunk)
-DEFAULT_CR_ENDECCOEFF = 0.02  # coefficiente di energia persa ogni tick  ( < 1 )
-DEFAULT_CR_ENINCCOEFF = 1.5  # coefficiente di energia guadagnata a ogni eat
-DEFAULT_CR_AVERAGEAGE = 2000  # media per calcolo eta' di morte per vecchiaia dell'organismo
-DEFAULT_CR_DEVIATIONAGEPROB = 750  # deviazione standard per calcolo eta' di morte per vecchiaia dell'organismo
-
-# coefficienti probabilita' di morte
-DEFAULT_CR_TEMPDEATHPROBCOEFF = 100
-
-# limiti dei valori dei geni
-DEFAULT_CR_GENESLIM = {"agility": (10, 60), "bigness": (20, 80), "fertility": (50, 250), "numControlGene": (0, 100)}  # valori per la fertilita'
-DEFAULT_CR_MUTATIONCOEFF = 0.1  # deve essere <1
-
-DEFAULT_CR_EATCOEFFMAX = 0.003  # massimo per eatCoeff
+from . import vars
 
 
 class World:
     """class of the world where creatures live"""
-    def __init__(self, name, width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT, lifetime=DEFAULT_LIFETIME,
-                 initialCreatures=DEFAULT_INITIALCREATURES, chunkDim=DEFAULT_CHUNKDIM,
-                 ch_growthCoeff=DEFAULT_CH_GROWTHCOEFF, ch_foodMaxMax=DEFAULT_CH_FOODMAXMAX,
-                 ch_temperatureMax=DEFAULT_CH_TEMPERATUREMAX,
-                 cr_viewRay=DEFAULT_CR_VIEWRAY,
-                 cr_enDecCoeff=DEFAULT_CR_ENDECCOEFF,
-                 cr_enIncCoeff=DEFAULT_CR_ENINCCOEFF,
-                 cr_averageAge=DEFAULT_CR_AVERAGEAGE,
-                 cr_deviationAgeProb=DEFAULT_CR_DEVIATIONAGEPROB,
 
-                 cr_tempDeathProbCoeff=DEFAULT_CR_TEMPDEATHPROBCOEFF,
+    def __init__(self, name, width=vars.DEFAULT_WIDTH, height=vars.DEFAULT_HEIGHT, lifetime=vars.DEFAULT_LIFETIME,
+                 initialCreatures=vars.DEFAULT_INITIALCREATURES, chunkDim=vars.DEFAULT_CHUNKDIM,
+                 ch_growthCoeff=vars.DEFAULT_CH_GROWTHCOEFF, ch_foodMaxMax=vars.DEFAULT_CH_FOODMAXMAX,
+                 ch_temperatureMax=vars.DEFAULT_CH_TEMPERATUREMAX,
+                 cr_viewRay=vars.DEFAULT_CR_VIEWRAY,
+                 cr_enDecCoeff=vars.DEFAULT_CR_ENDECCOEFF,
+                 cr_enIncCoeff=vars.DEFAULT_CR_ENINCCOEFF,
+                 cr_averageAge=vars.DEFAULT_CR_AVERAGEAGE,
+                 cr_deviationAgeProb=vars.DEFAULT_CR_DEVIATIONAGEPROB,
 
-                 cr_genesLim=DEFAULT_CR_GENESLIM, cr_mutationCoeff=DEFAULT_CR_MUTATIONCOEFF,
+                 cr_tempDeathProbCoeff=vars.DEFAULT_CR_TEMPDEATHPROBCOEFF,
 
-                 cr_eatCoeffMax=DEFAULT_CR_EATCOEFFMAX):
+                 cr_genesLim=vars.DEFAULT_CR_GENESLIM, cr_mutationCoeff=vars.DEFAULT_CR_MUTATIONCOEFF,
+
+                 cr_eatCoeffMax=vars.DEFAULT_CR_EATCOEFFMAX):
         print(f"{name}: simulation setup")
         self.name = name
+        self.path = os.path.join(vars.SIMULATIONS_PATH, name)
 
         self.width = width
         self.height = height
@@ -102,16 +80,16 @@ class World:
         and deletes it if it already exists
         """
         try:
-            os.makedirs(self.name)
+            os.makedirs(self.path)
         except FileExistsError:
             if "y" == input(f"Simulation \"{self.name}\" already exists. Overwrite it? y/n"):
-                shutil.rmtree(self.name)
-                os.makedirs(self.name)
+                shutil.rmtree(self.path)
+                os.makedirs(self.path)
             else:
                 exit()
-        self.simulationData = open(f"{self.name}/simulationData.csv", 'w')
-        self.creaturesData = open(f"{self.name}/creaturesData.csv", 'w')
-        self.chunkData = open(f"{self.name}/chunkData.csv", 'w')
+        self.simulationData = open(os.path.join(self.path, "simulationData.csv"), 'w')
+        self.creaturesData = open(os.path.join(self.path, "creaturesData.csv"), 'w')
+        self.chunkData = open(os.path.join(self.path, "chunkData.csv"), 'w')
 
     def __del__(self):
         """

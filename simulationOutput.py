@@ -1,4 +1,4 @@
-from classes.main import Graphics
+from classes.main import Main
 
-a = Graphics()
+a = Main()
 a.run()

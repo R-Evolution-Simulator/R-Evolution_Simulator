@@ -3,7 +3,7 @@ from . import windows as wndw
 import threading as thr
 
 
-class Graphics(object):
+class Main(object):
     def __init__(self):
         # self._tkinter_thread()
         '''a=tk.Tk()

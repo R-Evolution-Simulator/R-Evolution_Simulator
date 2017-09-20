@@ -5,7 +5,7 @@ import matplotlib as mpl
 from matplotlib.figure import Figure
 
 mpl.use("Tkagg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class BaseFrame(tk.Frame):
@@ -14,16 +14,24 @@ class BaseFrame(tk.Frame):
     def __init__(self, father):
         super(BaseFrame, self).__init__(father)
         self.widgets = dict()
-        self._widgets_load()
+        self._widgets_load(self.WIDGETS)
 
-    def _widgets_load(self):
-        for i in self.WIDGETS:
-            new = self.WIDGETS[i][0](self, **self.WIDGETS[i][1])
-            new.pack(**self.WIDGETS[i][2])
+    def _widgets_load(self, wid_list):
+        for i in wid_list:
+            new = wid_list[i][0](self, **wid_list[i][1])
+            new.pack(**wid_list[i][2])
             self.widgets[i] = new
 
     def get_widget(self, widget):
         return self.widgets[widget]
+
+
+class GridFrame(BaseFrame):
+    def _widgets_load(self, wid_list):
+        for i in wid_list:
+            new = wid_list[i][0](self, **wid_list[i][1])
+            new.grid(**wid_list[i][2])
+            self.widgets[i] = new
 
 
 class BaseLabelFrame(tk.LabelFrame, BaseFrame):
@@ -65,7 +73,6 @@ class BaseDiagramCanvasFrame(BaseFrame):
         self.set_subplot()
         self.set_titles()
         self.stat_axes_set(father.father.max_tick)
-        print(f'created {father, sim_name, subject, subplots}')
 
     def stat_axes_set(self, max_tick):
         for subplot in self.subplots:
@@ -124,17 +131,51 @@ class Logo(BaseFrame):
 
 class MainMenuOptions(BaseFrame):
     def __init__(self, father, windows):
-        self.WIDGETS = {'load': (tk.Button, {'text': "Load simulation", 'command': windows[0].load_window_creation}, {})
+        self.WIDGETS = {'new': (tk.Button, {'text': "New simulation", 'command': windows[0].new_sim_window}, {}),
+                        'load': (tk.Button, {'text': "Load simulation", 'command': windows[0].load_sim_window}, {})
                         }
         super(MainMenuOptions, self).__init__(father)
 
 
-class Load(BaseFrame):
+class LoadSim(BaseFrame):
     def __init__(self, father, windows):
         self.WIDGETS = {'entry': (tk.Entry, {}, {}),
                         'button': (tk.Button, {'text': "Load", 'command': windows[0].simulation_file_load}, {'side': tk.RIGHT}),
                         'label': (tk.Label, {'text': "Insert simulation name"}, {'side': tk.LEFT})}
-        super(Load, self).__init__(father)
+        super(LoadSim, self).__init__(father)
+
+
+class NewSim(GridFrame, BaseFrame):
+    def __init__(self, father):
+        self.name_var = tk.StringVar()
+        self.WIDGETS = {'name_label': (tk.Label, {'text': 'name'}, {'row': 0, 'column': 0}),
+                        'name': (tk.Entry, {'textvariable': self.name_var}, {'row': 0, 'column': 1})}
+        self.variables = dict()
+        self.row = 0
+        for i in vars.DFEAULT_SIM_VARIABLES:
+            self.variables[i] = self._add_widget(i, vars.DFEAULT_SIM_VARIABLES[i], 0)
+        super(NewSim, self).__init__(father)
+
+    def _add_widget(self, name, object, column):
+        self.WIDGETS[f'{name}_label'] = (tk.Label, {'text': name}, {'row': self.row, 'column': column})
+        if type(object) == int or type(object) == float:
+            variable = tk.StringVar()
+            variable.set(str(object))
+            self.WIDGETS[name] = (tk.Entry, {'textvariable': variable}, {'row': self.row, 'column': column + 1})
+            self.row += 1
+        elif type(object) == tuple or type(object) == list:
+            variable = list()
+            for i in range(len(object)):
+                new_variable = tk.StringVar()
+                new_variable.set(str(object[i]))
+                variable.append(new_variable)
+                self.WIDGETS[f'{name}_{i}'] = (tk.Entry, {'textvariable': new_variable}, {'row': self.row, 'column': column + i + 1})
+            self.row += 1
+        else:
+            variable = dict()
+            for i in object:
+                variable[i] = self._add_widget(i, object[i], column + 1)
+        return variable
 
 
 class PlayControl(BaseFrame):
