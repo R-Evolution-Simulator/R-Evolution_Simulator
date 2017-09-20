@@ -1,7 +1,13 @@
 from classes.analysis import analysis
 from classes.world import World
+from classes import vars
 
 name = "test"
-world = World(name, width=400, height=300, initialCreatures=100, lifetime=1000)
+lol = vars.DFEAULT_SIM_VARIABLES
+lol['width'] = 400
+lol['height'] = 300
+lol['initial_creatures'] = 100
+lol['lifetime'] = 100
+world = World(name, lol)
 world.run()
 analysis(name)

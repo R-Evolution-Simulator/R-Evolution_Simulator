@@ -1,35 +1,41 @@
 from .noise.simplexnoise.noise import normalize
+from . import vars
+from . import utility as utl
 
 
 class Chunk:
     """class of chunk (unity of territory)"""
+    NOISE_ATTRS = vars.CHUNK_NOISE_ATTRS
+    TO_RECORD = vars.TO_RECORD['chunk']
 
     def __init__(self, world, x, y):
-        '''construcot of Chunk'''
+        '''constructor of Chunk'''
         self.coord = (x, y)
-
         # food
         self.world = world
-        self.food_max = normalize(self.world.ch_foodMaxNoise.noise(x, y)) * self.world.ch_foodMaxMax  # l'erba massima in un territorio e' compresa tra 0 e max ed e' fissa
-        self.food = self.food_max / 2  # all'inizio il cibo e' al massimo
-        self.growth_rate = self.food_max * self.world.ch_growthCoeff  # la crescita e' direttamente proporzionale all'erba massima
-
-        # temperature
-        self.temperature = (normalize(self.world.ch_temperatureNoise.noise(x, y)) - 0.5) * self.world.ch_temperatureMax * 2  # la temperatura in un territorio e' compresa tra -max e max ed e' fissa
-        self.foodHistory = str()
-        self.chunkCreatureList = []
+        for i in self.NOISE_ATTRS:
+            self.__dict__[i] = normalize(self.world.noises[i].noise(x, y)) * self.world.chunks_vars[i + '_max']
+        self.food = self.foodmax / 2  # all'inizio il cibo e' al massimo
+        self.growth_rate = self.foodmax * self.world.chunks_vars['growth_coeff']  # la crescita e' direttamente proporzionale all'erba massima
+        self.food_history = list()
+        self.chunk_creature_list = []
 
     def update(self):
         '''chunk update method'''
         self.food *= (1 + self.growth_rate)  # ad ogni ciclo l'erba cresce
-        if self.food > self.food_max:  # finche' non raggiunge il massimo
-            self.food = self.food_max
+        if self.food > self.foodmax:  # finche' non raggiunge il massimo
+            self.food = self.foodmax
 
-        self.foodHistory += f"{int(self.food)},"
+        self.food_history.append((int(self.food),))
 
-    def __del__(self):
+    def death(self):
         """chunk destructor"""
+        to_write = str()
+        for i in self.TO_RECORD:
+            to_write += utl.add_to_write(self.__dict__[i], vars.ROUNDINGS['chunk'])
+        for i in self.food_history:
+            to_write += utl.history_to_write(i)
         try:
-            self.world.chunkData.write(f"{self.coord[0]};{self.coord[1]};{self.food_max};{self.growth_rate};{self.temperature};{self.foodHistory[:-1]}\n")
+            self.world.files['chunk_data'].write(to_write[:-1] + '\n')
         except ValueError:
             pass
