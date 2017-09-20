@@ -2,7 +2,7 @@ import os
 import shutil
 from random import random as rnd
 
-from noise.simplexnoise.noise import SimplexNoise
+from .noise.simplexnoise.noise import SimplexNoise
 from .chunk import Chunk
 from .creature import Creature
 from . import vars
