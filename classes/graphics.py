@@ -25,10 +25,10 @@ class CreaturesD:
     BORDER = vars.DEFAULT_CREATURES_BORDER
 
     def __init__(self, line):
-        data_list = line.split(";")
+        data_list = line.split(';')
         self.ID = int(data_list[0])
         self.birthTick = int(data_list[1])
-        self.parentsID = (int(data_list[2].split(",")[0]), int(data_list[2].split(",")[1]))
+        self.parentsID = (int(data_list[2].split(',')[0]), int(data_list[2].split(',')[1]))
         self.tempResistGen = data_list[3]
         self.agility = float(data_list[4])
         self.bigness = float(data_list[5])
@@ -40,9 +40,9 @@ class CreaturesD:
         self.numControlGene = float(data_list[11])
         self.deathTick = float(data_list[12])
         self.deathCause = data_list[13]
-        data_list[14] = data_list[14].split("/")
+        data_list[14] = data_list[14].split('/')
         for i in range(len(data_list[14])):
-            data_list[14][i] = data_list[14][i].split(",")
+            data_list[14][i] = data_list[14][i].split(',')
             try:
                 for j in [0, 1]:
                     data_list[14][i][j] = float(data_list[14][i][j])
@@ -56,17 +56,17 @@ class CreaturesD:
         self.color_dims_creation()
 
     def color_dims_creation(self):
-        self.colors["N"] = self.COLORS['N']
-        self.colors["S"] = self.COLORS['S'][self.sex]
+        self.colors['N'] = self.COLORS['N']
+        self.colors['S'] = self.COLORS['S'][self.sex]
 
-        self.colors["TR"] = self.COLORS['TR'][self.tempResist]
+        self.colors['TR'] = self.COLORS['TR'][self.tempResist]
 
-        self.dims["N"] = self.DIMS['N']
-        self.dims["A"] = self.agility / self.DIMS['A']
-        self.dims["B"] = self.bigness / self.DIMS['B']
-        self.dims["EC"] = self.eatCoeff * self.DIMS['EC']
-        self.dims["NCG"] = self.numControlGene / self.DIMS['NCG']
-        self.dims["S"] = self.speed * self.DIMS['S']
+        self.dims['N'] = self.DIMS['N']
+        self.dims['A'] = self.agility / self.DIMS['A']
+        self.dims['B'] = self.bigness / self.DIMS['B']
+        self.dims['EC'] = self.eatCoeff * self.DIMS['EC']
+        self.dims['NCG'] = self.numControlGene / self.DIMS['NCG']
+        self.dims['S'] = self.speed * self.DIMS['S']
 
     def draw(self, surface, tick, color, dim, zoom):
         birth = max(self.birthTick, 1)

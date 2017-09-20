@@ -9,48 +9,44 @@ from random import random as rnd
 class Creature:
     '''class of creatures'''
 
-    def __init__(self, world, x, y, parentsID, energy, tempResistGen, agility, bigness, sex, fertility, numControlGene, startCount=0):
+    def __init__(self, world, x, y, parents_ID, energy, sex, genes, start_count=0):
         '''creatures constructor'''
         self.world = world
-        self.ID = self.world.cr_creaturesIDCount
-        self.coord = [x, y]  # creatture's starting coord definition
-        self.parentsID = parentsID
-        self.tickHistory = ""
-        self.birthTick = self.world.tickCount - startCount  # creature's creation tick definition (startCount is used only during diversification at start)
+        self.ID = self.world.get_ID()
+        self.coord = [x, y]  # creature's starting coord definition
+        self.parents_ID = parents_ID
+        self.tick_history = str()
+        self.birth_tick = self.world.tick_count - start_count  # creature's creation tick definition (startCount is used only during diversification at start)
         self.energy = energy  # creature's starting energy definition
-        self.chunkIn().chunkCreatureList.append(self)  # creature's adding to the list of creatures in its chunk
-        self.reprodReady = False  # reproduction capacity set to false
-        self.deathDate = int(random.gauss(self.world.cr_averageAge, self.world.cr_deviationAgeProb))  # crearture's age of death definition
+        self.actual_chunk().chunkCreatureList.append(self)  # creature's adding to the list of creatures in its chunk
+        self.reprod_ready = False  # reproduction capacity set to false
+        self.death_date = int(random.gauss(self.world.cr_averageAge, self.world.cr_deviationAgeProb))  # crearture's age of death definition
         self.age = 0  # age set to 0
-        self.destChunk = [self.chunkCoord(0), self.chunkCoord(1)]
+        self.dest_chunk = [self.chunk_coord(0), self.chunk_coord(1)]
+        self.sex = sex
 
         # creature's genes definition
-        self.tempResistGen = tempResistGen  # it can be N (normal), c (short fur), l (long fur)
-        self.agility = agility
-        self.bigness = bigness
-        self.sex = sex
-        self.fertility = fertility
-        self.reprodCountdown = fertility
-        self.numControlGene = numControlGene
+        self.genes = genes
+        self.reprod_countdown = self.genes['fertility']
 
-        # phenotypic characteristics valuation
-        self.tempResist = self.tempResistCalc(self.tempResistGen)
-        self.speed = (self.agility / self.bigness) * 2
-        self.eatCoeff = self.bigness * self.world.cr_eatCoeffMax
-
-        self.world.cr_creaturesIDCount += 1
+        # phenotypical characteristics valuation
 
         self.world.newBorn.add(self)  # creature's adding to the list of creatures
 
+    def phenotype_calc(self):
+        self.genes['temp_resist'] = self.temp_resist_calc(self.genes['temp_resist_gen'])
+        self.genes['speed'] = (self.genes['agility'] / self.genes['bigness']) * 2
+        self.genes['eat_coeff'] = self.genes['bigness'] * self.world.cr_eatCoeffMax
+
     def __del__(self, cause="e"):
         """creature's destructor"""
-        self.deathTick = self.world.tickCount
-        self.deathCause = cause
+        self.death_tick = self.world.tickCount
+        self.death_cause = cause
         try:
             self.world.creaturesData.write(
-                f"{self.ID};{self.birthTick};{self.parentsID[0]},{self.parentsID[1]};{self.tempResistGen};{round(self.agility,4)};"
-                f"{round(self.bigness,4)};{self.sex};{round(self.fertility,4)};{self.tempResist};{round(self.speed,4)};{round(self.eatCoeff,6)};"
-                f"{round(self.numControlGene,4)};{self.deathTick};{self.deathCause};{self.tickHistory[:-1]}\n")
+                f"{self.ID};{self.birth_tick};{self.parents_ID[0]},{self.parents_ID[1]};{self.genes['temp_resist']Gen};{round(self.genes['agility'],4)};"
+                f"{round(self.genes['bigness'],4)};{self.sex};{round(self.genes['fertility'],4)};{self.genes['temp_resist']};{round(self.genes['speed'],4)};{round(self.genes['eat_coeff'],6)};"
+                f"{round(self.genes['num_control_gene'],4)};{self.death_tick};{self.death_cause};{self.tick_history[:-1]}\n")
         except ValueError:
             pass
 
@@ -58,18 +54,18 @@ class Creature:
         """creature update/AI method"""
 
         # reproduction control
-        if self.energy > 50 and self.reprodCountdown <= 0:
-            self.reprodReady = True
-            self.datingAgency()
+        if self.energy > 50 and self.reprod_countdown <= 0:
+            self.reprod_ready = True
+            self.dating_agency()
 
         else:
-            self.reprodReady = False
-            self.reprodCountdown -= 1
+            self.reprod_ready = False
+            self.reprod_countdown -= 1
 
         # food search
-        self.destCalc()
-        if not [self.chunkCoord(0),
-                self.chunkCoord(1)] == self.destChunk:
+        self.dest_calc()
+        if not [self.chunk_coord(0),
+                self.chunk_coord(1)] == self.dest_chunk:
             self.step()
 
         else:
@@ -80,44 +76,44 @@ class Creature:
         self.age += 1
 
         # death control
-        self.tickHistory += f"{round(self.coord[0],2)},{round(self.coord[1],2)},{int(self.energy)},{int(self.reprodReady)}/"
-        self.deathControl()
+        self.tick_history += f"{round(self.coord[0],2)},{round(self.coord[1],2)},{int(self.energy)},{int(self.reprod_ready)}/"
+        self.death_control()
 
-    def chunkIn(self):
+    def actual_chunk(self):
         """returns Chunk object in which the creature is"""
-        return self.world.chunkList[self.chunkCoord(0)][self.chunkCoord(1)]
+        return self.world.chunkList[self.chunk_coord(0)][self.chunk_coord(1)]
 
-    def deathControl(self):
+    def death_control(self):
         '''death control method'''
         if self.energy < 10:  # starvation death
             self.world.tickDead.add(self)
             self.__del__("s")
 
-        elif rnd() <= self.deathProbTemp():  # temperature death
+        elif rnd() <= self.death_prob_temp():  # temperature death
             self.world.tickDead.add(self)
             self.__del__("t")
 
-        elif self.age >= self.deathDate:  # death by age
+        elif self.age >= self.death_date:  # death by age
             self.world.tickDead.add(self)
             self.__del__("a")
 
-    def deathProbTemp(self):
+    def death_prob_temp(self):
         '''temperature death probabilities calc'''
         t = self.world.ch_temperatureMax
-        if self.tempResist == "c":
-            return ((self.chunkIn().temperature ** 2 / (4 * (self.world.ch_temperatureMax ** 2))) - (self.chunkIn().temperature / (2 * self.world.ch_temperatureMax)) + (1 / 4)) / self.world.cr_tempDeathProbCoeff
+        if self.genes['temp_resist'] == "c":
+            return ((self.actual_chunk().temperature ** 2 / (4 * (self.world.ch_temperatureMax ** 2))) - (self.actual_chunk().temperature / (2 * self.world.ch_temperatureMax)) + (1 / 4)) / self.world.cr_tempDeathProbCoeff
 
-        elif self.tempResist == "l":
-            return ((self.chunkIn().temperature ** 2 / (4 * (t ** 2))) + (self.chunkIn().temperature / (2 * t)) + (1 / 4)) / self.world.cr_tempDeathProbCoeff
+        elif self.genes['temp_resist'] == "l":
+            return ((self.actual_chunk().temperature ** 2 / (4 * (t ** 2))) + (self.actual_chunk().temperature / (2 * t)) + (1 / 4)) / self.world.cr_tempDeathProbCoeff
 
-        elif self.tempResist == "N" or self.tempResist == "n":
-            return ((self.chunkIn().temperature ** 2) / (self.world.ch_temperatureMax ** 2)) / self.world.cr_tempDeathProbCoeff
+        elif self.genes['temp_resist'] == "N" or self.genes['temp_resist'] == "n":
+            return ((self.actual_chunk().temperature ** 2) / (self.world.ch_temperatureMax ** 2)) / self.world.cr_tempDeathProbCoeff
 
-    def destCalc(self):
+    def dest_calc(self):
         '''most convenient chunk calc'''
 
-        x = self.chunkCoord(0)
-        y = self.chunkCoord(1)
+        x = self.chunk_coord(0)
+        y = self.chunk_coord(1)
         maxEn = float("-inf")
 
         for i in range(max(x - self.world.cr_viewRay, 0), min(x + self.world.cr_viewRay + 1, int(
@@ -125,57 +121,57 @@ class Creature:
             for j in range(max(y - self.world.cr_viewRay, 0), min(y + self.world.cr_viewRay + 1, int(
                             (self.world.height) / self.world.chunkDim))):
 
-                if self.world.chunkList[i][j].food * self.eatCoeff * self.world.cr_enIncCoeff - self.energyConsume(i,
-                                                                                                                   j) > maxEn:
+                if self.world.chunkList[i][j].food * self.genes['eat_coeff'] * self.world.cr_enIncCoeff - self.energy_consume(i,
+                                                                                                                              j) > maxEn:
                     maxEn = self.world.chunkList[i][
-                                j].food * self.eatCoeff * self.world.cr_enIncCoeff - self.energyConsume(i, j)
-                    self.destChunk = [i, j]
+                                j].food * self.genes['eat_coeff'] * self.world.cr_enIncCoeff - self.energy_consume(i, j)
+                    self.dest_chunk = [i, j]
 
-        self.destCoord = [(self.destChunk[0] + 0.5) * self.world.chunkDim, (
-            self.destChunk[1] + 0.5) * self.world.chunkDim]
+        self.dest_coord = [(self.dest_chunk[0] + 0.5) * self.world.chunkDim, (
+            self.dest_chunk[1] + 0.5) * self.world.chunkDim]
 
     def step(self):
         '''creature's new position calc'''
 
-        self.chunkIn().chunkCreatureList.remove(
+        self.actual_chunk().chunkCreatureList.remove(
             self)
 
-        self.coord[0] += (self.destCoord[0] - self.coord[0]) / math.sqrt((self.destCoord[0] - self.coord[0]) ** 2 + (
-            self.destCoord[1] - self.coord[1]) ** 2) * self.speed
-        self.coord[1] += (self.destCoord[1] - self.coord[1]) / math.sqrt(
-            (self.destCoord[0] - self.coord[0]) ** 2 + (self.destCoord[1] - self.coord[1]) ** 2) * self.speed
+        self.coord[0] += (self.dest_coord[0] - self.coord[0]) / math.sqrt((self.dest_coord[0] - self.coord[0]) ** 2 + (
+            self.dest_coord[1] - self.coord[1]) ** 2) * self.genes['speed']
+        self.coord[1] += (self.dest_coord[1] - self.coord[1]) / math.sqrt(
+            (self.dest_coord[0] - self.coord[0]) ** 2 + (self.dest_coord[1] - self.coord[1]) ** 2) * self.genes['speed']
 
-        self.chunkIn().chunkCreatureList.append(
+        self.actual_chunk().chunkCreatureList.append(
             self)
 
     def eat(self):
         '''energy and chunk's remaining food update'''
-        foodEaten = self.chunkIn().food * self.eatCoeff
-        self.energy += foodEaten * self.world.cr_enIncCoeff
-        self.chunkIn().food -= foodEaten
+        food_eaten = self.actual_chunk().food * self.genes['eat_coeff']
+        self.energy += food_eaten * self.world.cr_enIncCoeff
+        self.actual_chunk().food -= food_eaten
         self.energy = min(self.energy, 100)
 
-    def energyConsume(self, x, y):
+    def energy_consume(self, x, y):
         '''energy consumption to reach a chunk'''
 
         return (math.sqrt((x * self.world.chunkDim + 5 - self.coord[0]) ** 2 + (
-            y * self.world.chunkDim + 5 - self.coord[1]) ** 2) / self.speed) * self.world.cr_enDecCoeff * self.energy
+            y * self.world.chunkDim + 5 - self.coord[1]) ** 2) / self.genes['speed']) * self.world.cr_enDecCoeff * self.energy
 
-    def chunkCoord(self, i):
+    def chunk_coord(self, i):
         '''returns chunk cord of the creature chunk'''
         if i == 0:
             return min(int(self.coord[i] / self.world.chunkDim), int(self.world.width / self.world.chunkDim) - 1)
         else:
             return min(int(self.coord[i] / self.world.chunkDim), int(self.world.height / self.world.chunkDim) - 1)
 
-    def datingAgency(self):
+    def dating_agency(self):
         '''reproduction mate finder in the chunk. If there is someone "available", the creature reproduces itself'''
 
-        for i in self.chunkIn().chunkCreatureList:
+        for i in self.actual_chunk().chunkCreatureList:
 
             if i.reprodReady and i.sex != self.sex:
                 self.reproduction(i)
-                self.reprodReady = False
+                self.reprod_ready = False
                 i.reprodReady = False
 
     def reproduction(self, shelf):
@@ -184,17 +180,20 @@ class Creature:
         x = (self.coord[0] + shelf.coord[0]) / 2
         y = (self.coord[1] + shelf.coord[1]) / 2
         energy = (self.energy + shelf.energy) / 2
-        tempResistGen = self.tempResistGen[int(rnd() * 2)] + shelf.tempResistGen[
-            int(rnd() * 2)]
-        agility = (self.agility + shelf.agility) / 2 + random.gauss(0, self.world.cr_mutationCoeff)
-        bigness = (self.bigness + shelf.bigness) / 2 + random.gauss(0, self.world.cr_mutationCoeff)
         sex = int(rnd() * 2)
-        fertility = (self.fertility + shelf.fertility) / 2 + random.gauss(0, self.world.cr_mutationCoeff)
-        numControlGene = (self.numControlGene + shelf.numControlGene) / 2 + random.gauss(0, self.world.cr_mutationCoeff)
 
-        Creature(self.world, x, y, (self.ID, shelf.ID), energy, tempResistGen, agility, bigness, sex, fertility, numControlGene)
+        genes = dict()
 
-    def tempResistCalc(self, gen):
+        genes['temp_resist_gen'] = self.genes['temp_resist_gen'][int(rnd() * 2)] + shelf.genes['temp_resist_gen'][int(rnd() * 2)]
+        # TO Do: for to reproduce genes VVVV
+        genes['agility'] = (self.genes['agility'] + shelf.genes['agility']) / 2 + random.gauss(0, self.world.cr_mutationCoeff)
+        genes['bigness'] = (self.genes['bigness'] + shelf.genes['bigness']) / 2 + random.gauss(0, self.world.cr_mutationCoeff)
+        genes['fertility'] = (self.genes['fertility'] + shelf.genes['fertility']) / 2 + random.gauss(0, self.world.cr_mutationCoeff)
+        genes['num_control_gene'] = (self.genes['num_control_gene'] + shelf.genes['num_control_gene']) / 2 + random.gauss(0, self.world.cr_mutationCoeff)
+
+        Creature(self.world, x, y, (self.ID, shelf.ID), energy, sex, genes)
+
+    def temp_resist_calc(self, gen):
         '''creature's phenotipyc expression of the temperature calc'''
         if gen[0] == "N" or gen[1] == "N":
             return "N"
