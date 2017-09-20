@@ -67,15 +67,6 @@ class PygameCanvas(object):
         """function which updates the screen"""
         self.chunk_display(tick, shows)
         self.creatures_display(tick, shows)
-        new_graph_tick = ceil(int(tick) / 100) * 100
-        '''for window in self.diagram_windows:
-            if window.show_tick:
-                window.tick_line_set()
-        if new_graph_tick != self.graph_tick:
-            self.graph_tick = new_graph_tick
-            for window in self.diagram_windows:
-                if window.follow_play:
-                    window.dyn_axes_set()'''
         pyg.display.update()
 
     def chunk_display(self, tick, shows):

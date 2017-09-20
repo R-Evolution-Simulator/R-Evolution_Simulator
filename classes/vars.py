@@ -1,4 +1,5 @@
 import os
+import pygame as pyg
 
 SIMULATIONS_PATH = os.path.join(os.getcwd(), "simulations")
 
@@ -26,3 +27,11 @@ DFEAULT_SIM_VARIABLES = {'width': 600,
                                             'eat_coeff_max': 0.1,
                                             },
                          }
+
+DEFAULT_CREATURES_COLORS = {'N': pyg.Color(255, 255, 255, 255),
+                            'S': (pyg.Color(255, 255, 0, 255), pyg.Color(0, 255, 255, 255)),
+                            'TR': {'c': pyg.Color(255, 0, 0, 255), 'l': pyg.Color(0, 0, 255, 255), 'N': pyg.Color(128, 128, 128, 255), 'n': pyg.Color(255, 255, 255, 255)}}
+
+DEFAULT_CREATURES_DIMS = {'N': 7, 'A': 5, 'B': 7, 'EC': 42, 'NCG': 9, 'S': 5}
+
+DEFAULT_CREATURES_BORDER = {'color': pyg.Color(0, 0, 0, 255), 'width': 1}

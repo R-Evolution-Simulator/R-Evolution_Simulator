@@ -1,4 +1,5 @@
 import pygame as pyg
+from . import vars
 
 
 class ChunkD:
@@ -19,11 +20,9 @@ class ChunkD:
 
 
 class CreaturesD:
-    DEFAULT_COLORS = {'N': pyg.Color(255, 255, 255, 255),
-                      'S': (pyg.Color(255, 255, 0, 255), pyg.Color(0, 255, 255, 255)),
-                      'TR': {'c': pyg.Color(255, 0, 0, 255), 'l': pyg.Color(0, 0, 255, 255),
-                             'N': pyg.Color(128, 128, 128, 255), 'n': pyg.Color(255, 255, 255, 255)}}
-    DEFAULT_DIMS = {'N': 7, 'A': 5, 'B': 7, 'EC': 42, 'NCG': 9, 'S': 5}
+    COLORS = vars.DEFAULT_CREATURES_COLORS
+    DIMS = vars.DEFAULT_CREATURES_DIMS
+    BORDER = vars.DEFAULT_CREATURES_BORDER
 
     def __init__(self, line):
         data_list = line.split(";")
@@ -57,17 +56,17 @@ class CreaturesD:
         self.color_dims_creation()
 
     def color_dims_creation(self):
-        self.colors["N"] = self.DEFAULT_COLORS['N']
-        self.colors["S"] = self.DEFAULT_COLORS['S'][self.sex]
+        self.colors["N"] = self.COLORS['N']
+        self.colors["S"] = self.COLORS['S'][self.sex]
 
-        self.colors["TR"] = self.DEFAULT_COLORS['TR'][self.tempResist]
+        self.colors["TR"] = self.COLORS['TR'][self.tempResist]
 
-        self.dims["N"] = self.DEFAULT_DIMS['N']
-        self.dims["A"] = self.agility / self.DEFAULT_DIMS['A']
-        self.dims["B"] = self.bigness / self.DEFAULT_DIMS['B']
-        self.dims["EC"] = self.eatCoeff * self.DEFAULT_DIMS['EC']
-        self.dims["NCG"] = self.numControlGene / self.DEFAULT_DIMS['NCG']
-        self.dims["S"] = self.speed * self.DEFAULT_DIMS['S']
+        self.dims["N"] = self.DIMS['N']
+        self.dims["A"] = self.agility / self.DIMS['A']
+        self.dims["B"] = self.bigness / self.DIMS['B']
+        self.dims["EC"] = self.eatCoeff * self.DIMS['EC']
+        self.dims["NCG"] = self.numControlGene / self.DIMS['NCG']
+        self.dims["S"] = self.speed * self.DIMS['S']
 
     def draw(self, surface, tick, color, dim, zoom):
         birth = max(self.birthTick, 1)
@@ -75,5 +74,13 @@ class CreaturesD:
             int((self.tickHistory[tick - birth][0]) * zoom / 10), int(self.tickHistory[tick - birth][1] * zoom / 10))
         if dim == 'E':
             pyg.draw.circle(surface, self.colors[color], coord, int(self.tickHistory[tick - birth][2] / 10 * zoom / 10))
+            try:
+                pyg.draw.circle(surface, self.BORDER['color'], coord, int(self.tickHistory[tick - birth][2] / 10 * zoom / 10), self.BORDER['width'])
+            except ValueError:
+                pass
         else:
             pyg.draw.circle(surface, self.colors[color], coord, int(self.dims[dim] * zoom / 10))
+            try:
+                pyg.draw.circle(surface, self.BORDER['color'], coord, int(self.tickHistory[tick - birth][2] / 10 * zoom / 10), self.BORDER['width'])
+            except ValueError:
+                pass

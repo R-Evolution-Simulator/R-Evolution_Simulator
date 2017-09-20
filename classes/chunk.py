@@ -1,4 +1,4 @@
-from noise.simplexnoise.noise import normalize
+from .noise.simplexnoise.noise import normalize
 
 
 class Chunk:
