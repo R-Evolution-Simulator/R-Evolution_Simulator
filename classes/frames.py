@@ -14,7 +14,6 @@ class BaseFrame(tk.Frame):
     def __init__(self, father):
         super(BaseFrame, self).__init__(father)
         self.widgets = dict()
-        print(self.WIDGETS)
         self._widgets_load(self.WIDGETS)
 
     def _widgets_load(self, wid_list):

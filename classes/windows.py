@@ -72,12 +72,17 @@ class MainMenuWindow(BaseTkWindow):
 
 
 class NewSimWindow(BaseTkWindow):
-    pass
+    TITLE = "New Simulation"
+
+    def __init__(self, father):
+        self.FRAMES = {'new': (frm.NewSim, {}, {'row': 0, 'column': 0})}
+        super(NewSimWindow, self).__init__(father)
+        self.frames_load()
 
 
 class LoadSimWindow(BaseTkWindow):
     """Loading interface for simulation replay"""
-    TITLE = "Simulation Load"
+    TITLE = "Load Simulation"
 
     def __init__(self, father):
         self.FRAMES = {'load': (frm.LoadSim, {'windows': (self,)}, {'row': 0, 'column': 0})}
