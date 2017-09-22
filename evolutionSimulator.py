@@ -7,7 +7,7 @@ lol = vars.DFEAULT_SIM_VARIABLES
 lol['width'] = 400
 lol['height'] = 300
 lol['initial_creatures'] = 100
-lol['lifetime'] = 100
+lol['lifetime'] = 500
 world = World(name, lol)
 world.run()
 analysis(name)

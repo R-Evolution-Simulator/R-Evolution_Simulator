@@ -51,28 +51,40 @@ class World:
         try:
             os.makedirs(self.path)
         except FileExistsError:
-            shutil.rmtree(self.path)
-            os.makedirs(self.path)
-            '''if "y" == input(f"Simulation \"{self.name}\" already exists. Overwrite it? y/n"):
+            if "y" == input(f"Simulation \"{self.name}\" already exists. Overwrite it? y/n"):
                 shutil.rmtree(self.path)
                 os.makedirs(self.path)
             else:
-                exit()'''
+                exit()
         self.files['simulation_data'] = open(os.path.join(self.path, "simulationData.csv"), 'w')
         self.files['creatures_data'] = open(os.path.join(self.path, "creaturesData.csv"), 'w')
         self.files['chunk_data'] = open(os.path.join(self.path, "chunkData.csv"), 'w')
 
     def death(self):
+        print(f"{self.name}: simulation ending...")
+        print(f"        - deleting chunks")
         for i in self.chunk_list:
             for j in i:
                 j.death()
+        print(f"        - deleting creatures")
         for i in self.creature_list:
             i.death()
-
+        to_write = str()
+        for i in self.TO_RECORD:
+            to_write += utl.add_to_write(self.__dict__[i], vars.ROUNDINGS['simulation'])
+        try:
+            self.files['simulation_data'].write(to_write[:-1])
+        except ValueError:
+            pass
+        print(f"        - closing files")
+        for i in self.files:
+            self.files[i].close()
+        print(f"{self.name}: simulation ended")
+    '''
     def __del__(self):
-        """
-        closing simulation and files
-        """
+
+        #closing simulation and files
+
         print(f"{self.name}: simulation ending...")
         print(f"        - deleting creatures")
         for i in self.creature_list:
@@ -80,6 +92,8 @@ class World:
                 i.__del__()
             except AttributeError:
                 print("--error closing creature")
+
+
         print(f"        - deleting chunks")
         for i in self.chunk_list:
             for j in i:
@@ -98,6 +112,7 @@ class World:
         for i in self.files:
             self.files[i].close()
         print(f"{self.name}: simulation ended")
+    '''
 
     def creature_randomization(self):
         """
