@@ -205,3 +205,6 @@ class Creature:
 
         else:
             return "n"
+
+    def __del__(self):
+        pass

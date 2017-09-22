@@ -61,26 +61,12 @@ class World:
         self.files['chunk_data'] = open(os.path.join(self.path, "chunkData.csv"), 'w')
 
     def death(self):
-        print(f"{self.name}: simulation ending...")
-        print(f"        - deleting chunks")
         for i in self.chunk_list:
             for j in i:
                 j.death()
-        print(f"        - deleting creatures")
         for i in self.creature_list:
             i.death()
-        to_write = str()
-        for i in self.TO_RECORD:
-            to_write += utl.add_to_write(self.__dict__[i], vars.ROUNDINGS['simulation'])
-        try:
-            self.files['simulation_data'].write(to_write[:-1])
-        except ValueError:
-            pass
-        print(f"        - closing files")
-        for i in self.files:
-            self.files[i].close()
-        print(f"{self.name}: simulation ended")
-    '''
+
     def __del__(self):
 
         #closing simulation and files
@@ -92,6 +78,7 @@ class World:
                 i.__del__()
             except AttributeError:
                 print("--error closing creature")
+
 
 
         print(f"        - deleting chunks")
@@ -112,7 +99,7 @@ class World:
         for i in self.files:
             self.files[i].close()
         print(f"{self.name}: simulation ended")
-    '''
+
 
     def creature_randomization(self):
         """
@@ -160,8 +147,10 @@ class World:
         # update delle creature
         for i in self.alive_creatures:
             i.update()  # viene aggiornata ogni creatura
+        '''
         for i in self.new_born:
             i.update()
+        '''
         self.creature_list = self.creature_list | self.new_born
         self.alive_creatures = self.alive_creatures | self.new_born
         self.alive_creatures -= self.tick_dead
@@ -251,8 +240,14 @@ class World:
                 for k in ['raw', 'correct']:
                     data[w][k] = [[0 for x in range(vars.PARTS)] for y in range(vars.TEMPERATURE_FOOD_PARTS[w])]
                 for j in l:
-                    birth = max(j.birth_tick, 1)
-                    coord = (j.tick_history[i - birth][0], j.tick_history[i - birth][1])
+                    birth = max(j.birth_tick, 0)
+                    try:
+                        coord = (j.tick_history[i - birth][0], j.tick_history[i - birth][1])
+                    except IndexError:
+                        print(j.tick_history)
+                        print(len(j.tick_history))
+                        print(i-birth)
+                        print(j.death_tick)
                     chunk_coord = (int(coord[0] / self.chunk_dim), int(coord[1] / self.chunk_dim))
                     val = min(self.chunk_list[chunk_coord[0]][chunk_coord[1]].__dict__[w], self.chunks_vars[w + '_max'] - 1)
                     data[w]['raw'][utl.data_number(w, j)][int((val * vars.PARTS) // (self.chunks_vars[w + '_max']))] += 1
@@ -261,12 +256,17 @@ class World:
                 for k in range(vars.TEMPERATURE_FOOD_PARTS[w]):
                     s[w][x] = str(i)
                     for j in range(vars.PARTS):
-                        try:
-                            data[w]['correct'][x][j] = data[w]['raw'][x][j] / chunks_f_t[w][j] * vars.ADJ_COEFF
-                        except ZeroDivisionError:
+                        if chunks_f_t[w][j] == 0:
                             data[w]['correct'][x][j] = 0
-                            print('ops')
+                        else:
+                            data[w]['correct'][x][j] = data[w]['raw'][x][j] / chunks_f_t[w][j] * vars.ADJ_COEFF
+                        #try:
+                            #data[w]['correct'][x][j] = data[w]['raw'][x][j] / chunks_f_t[w][j] * vars.ADJ_COEFF
+                        #except ZeroDivisionError:
+                            #data[w]['correct'][x][j] = 0
+                            #print('ops')
                         s[w][x] += vars.FILE_SEPARATOR + str(data[w]['raw'][x][j]) + vars.FILE_SEPARATOR + str(data[w]['correct'][x][j])
+                    f[w][k] = open(os.path.join(self.path, f"{j}_{i}.csv"), 'w')
                     f[w][k].write(s[w][x])
                     f[w][k].close()
                     x += 1

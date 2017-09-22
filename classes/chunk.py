@@ -39,3 +39,6 @@ class Chunk:
             self.world.files['chunk_data'].write(to_write[:-1] + '\n')
         except ValueError:
             pass
+
+    def __del__(self):
+        pass
