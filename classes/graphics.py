@@ -1,15 +1,16 @@
 import pygame as pyg
 from . import vars
+from ast import literal_eval
 
 
 class ChunkD:
     def __init__(self, chunk_data_line):
         chunk_data = chunk_data_line.split(';')
-        self.coord = [int(chunk_data[0]), int(chunk_data[1])]
-        self.foodMax = float(chunk_data[2])
-        self.growthRate = float(chunk_data[3])
-        self.temperature = float(chunk_data[4])
-        self.foodHistory = chunk_data[5].split(',')
+        self.coord = literal_eval(chunk_data[0])
+        self.foodMax = float(chunk_data[1])
+        self.growthRate = float(chunk_data[2])
+        self.temperature = float(chunk_data[3])
+        self.foodHistory = chunk_data[4].split('/')
         for i in range(len(self.foodHistory)):
             self.foodHistory[i] = int(self.foodHistory[i])
 
@@ -28,14 +29,14 @@ class CreaturesD:
         data_list = line.split(';')
         self.ID = int(data_list[0])
         self.birthTick = int(data_list[1])
-        self.parentsID = (int(data_list[2].split(',')[0]), int(data_list[2].split(',')[1]))
-        self.tempResistGen = data_list[3]
-        self.agility = float(data_list[4])
-        self.bigness = float(data_list[5])
-        self.sex = int(data_list[6])
+        self.parentsID = literal_eval(data_list[2])
+        self.sex = int(data_list[3])
+        self.tempResistGen = data_list[4]
+        self.agility = float(data_list[5])
+        self.bigness = float(data_list[6])
         self.fertility = float(data_list[7])
-        self.tempResist = data_list[8]
-        self.speed = float(data_list[9])
+        self.speed = float(data_list[8])
+        self.tempResist = data_list[9]
         self.eatCoeff = float(data_list[10])
         self.numControlGene = float(data_list[11])
         self.deathTick = float(data_list[12])
