@@ -43,6 +43,26 @@ class Creature:
         """creature's destructor"""
         self.death_tick = self.world.tick_count
         self.death_cause = cause
+        if self.birth_tick <= 0:
+            if len(self.tick_history) == self.world.tick_count:
+                print("Creature died: EVERYTHING OK (1)")
+            else:
+                print("Creature died: NOT OK!")
+                print(f"     - actual age: {self.age}")
+                print(f"     - actual age 2: {self.death_tick-max(self.birth_tick,0)}")
+                print(f"     - tick_history lenght: {len(self.tick_history)}")
+                print(f"     - birth tick: {self.birth_tick}")
+                print(f"     - death tick: {self.death_tick}")
+        else:
+            if len(self.tick_history) == self.death_tick - self.birth_tick:
+                print("Creature died: EVERYTHING OK (2)")
+            else:
+                print("Creature died: NOT OK!")
+                print(f"     - actual age: {self.age}")
+                print(f"     - actual age 2: {self.death_tick-max(self.birth_tick,0)}")
+                print(f"     - tick_history lenght: {len(self.tick_history)}")
+                print(f"     - birth tick: {self.birth_tick}")
+                print(f"     - death tick: {self.death_tick}")
         to_write = str()
         for i in self.TO_RECORD:
             to_write += utl.add_to_write(self.__dict__[i], vars.ROUNDINGS['creature'])
