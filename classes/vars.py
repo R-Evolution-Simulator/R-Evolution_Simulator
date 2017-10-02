@@ -5,8 +5,7 @@ SIMULATIONS_PATH = os.path.join(os.getcwd(), "simulations")
 
 # simulation
 
-DFEAULT_SIM_VARIABLES = {'width': 600,
-                         'height': 450,
+DFEAULT_SIM_VARIABLES = {'dimension': (60, 45), # in chunks
                          'chunk_dim': 10,
                          'lifetime': 10000,
                          'initial_creatures': 750,
@@ -30,7 +29,9 @@ DFEAULT_SIM_VARIABLES = {'width': 600,
                                             },
                          }
 
-CHUNK_NOISE_ATTRS = ['temperature', 'foodmax']
+CHUNK_ATTRS = ['temperature', 'foodmax']
+
+NUM_GENES_LIST = ["agility", "bigness", "fertility", "speed", "eat_coeff", "num_control_gene"]
 
 # files
 
@@ -38,7 +39,7 @@ FILE_SEPARATOR = ';'
 
 HISTORY_SEPARATORS = (',', '/')
 
-TO_RECORD = {'simulation': ['name', 'width', 'height', 'lifetime', 'initial_creatures', 'chunk_dim', 'tick_count', 'chunks_vars', 'creatures_vars', 'ID_count'],
+TO_RECORD = {'simulation': ['name', 'dimension', 'lifetime', 'initial_creatures', 'chunk_dim', 'tick_count', 'chunks_vars', 'creatures_vars', 'ID_count'],
              'creature': ['ID', 'birth_tick', 'parents_ID', 'sex', 'genes', 'death_tick', 'death_cause'],
              'chunk': ['coord', 'foodmax', 'growth_rate', 'temperature']}
 
@@ -52,7 +53,7 @@ PERCENTILE_PARTS = 4
 
 PARTS = 8
 
-TEMPERATURE_FOOD_PARTS = {'temperature': 3, 'foodmax': 1}
+CHUNK_ATTRS_PARTS = {'temperature': 3, 'foodmax': 1}
 
 ADJ_COEFF = 100
 

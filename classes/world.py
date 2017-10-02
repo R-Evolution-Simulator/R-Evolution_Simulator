@@ -23,7 +23,8 @@ class World:
                        'temperature': SimplexNoise(num_octaves=6, persistence=0.1, dimensions=2, noise_scale=700)}
         self.ID_count = 0
         self.files = dict()
-        self.chunk_list = [[0 for x in range(0, self.height, self.chunk_dim)] for y in range(0, self.width, self.chunk_dim)]  # viene riempita una matrice di 0
+        self.chunk_list = [[None for x in range(self.dimension[1])] for y in
+                           range(self.dimension[0])]  # viene riempita una matrice di 0
         self.creature_list = set()
         self.alive_creatures = set()
         self.tick_dead = set()
@@ -33,7 +34,7 @@ class World:
         print(f"        - creating chunks")
         for i in range(len(self.chunk_list)):  # quindi ogni 0 e' sostituito con un Chunk
             for j in range(len(self.chunk_list[0])):
-                self.chunk_list[i][j] = Chunk(self, i, j)
+                self.chunk_list[i][j] = Chunk(self, (i, j))
 
         print(f"        - creating creatures")
         for i in range(self.initial_creatures):
@@ -69,7 +70,7 @@ class World:
 
     def __del__(self):
 
-        #closing simulation and files
+        # closing simulation and files
 
         print(f"{self.name}: simulation ending...")
         print(f"        - deleting creatures")
@@ -78,8 +79,6 @@ class World:
                 i.__del__()
             except AttributeError:
                 print("--error closing creature")
-
-
 
         print(f"        - deleting chunks")
         for i in self.chunk_list:
@@ -100,14 +99,14 @@ class World:
             self.files[i].close()
         print(f"{self.name}: simulation ended")
 
-
     def creature_randomization(self):
         """
         function which returns a tuple with creature's characteristics
         """
         # calcolo delle caratteristiche della nuova creatura (random)
-        x = rnd() * self.width
-        y = rnd() * self.height
+        coord = [0, 0]
+        for i in range(2):
+            coord[i] = rnd() * self.dimension[i] * self.chunk_dim
         energy = 50 + rnd() * 100
         sex = int(rnd() * 2)
         lims = self.creatures_vars['genes_lim']
@@ -117,7 +116,7 @@ class World:
             genes[i] = rnd() * (lims[i][1] - lims[i][0])
 
         # creazione della creatura con le caratteristiche calcolate
-        return (self, x, y, (0, 0), energy, sex, genes, int(rnd() * (self.creatures_vars['average_age'] / 2)))
+        return (self, coord, (0, 0), energy, sex, genes, int(rnd() * (self.creatures_vars['average_age'] / 2)))
 
     def run(self):
         """
@@ -145,50 +144,54 @@ class World:
                 j.update()  # viene aggiornata ogni unita' di territorio
 
         # update delle creature
+
+        j = 0
         for i in self.alive_creatures:
-            i.update()  # viene aggiornata ogni creatura
+            j += 1
+            i.update(self.tick_count)  # viene aggiornata ogni creatura
+        if not j == len(self.alive_creatures):
+            print('-----    ERROR')
         '''
         for i in self.new_born:
             i.update()
         '''
-        self.creature_list = self.creature_list | self.new_born
-        self.alive_creatures = self.alive_creatures | self.new_born
-        self.alive_creatures -= self.tick_dead
+        self.creature_list = self.creature_list.union(self.new_born)
+        self.alive_creatures = self.alive_creatures.union(self.new_born)
+        self.alive_creatures.difference(self.tick_dead)
 
     def get_ID(self):
         self.ID_count += 1
         return self.ID_count
 
-    def tick_creature_list(self, tick, attr=None):
-        L = list()
+    def tick_creature_list(self, tick, gene=None):
+        l = list()
         for i in self.creature_list:
-            if i.birth_tick <= tick and i.death_tick >= tick:
-                if attr:
-                    L.append(i.genes[attr])
-                    return sorted(L)
-                else:
-                    L.append(i)
-                return L
+            if i.birth_tick <= tick <= i.death_tick:
+                l.append(i)
+        if gene:
+            s = list()
+            for i in l:
+                s.append(i.genes[gene])
+            return sorted(s)
+        return l
 
     def analysis(self):
         print(f"{self.name}: analysis setup")
 
         # analisi caratteristiche
         print(f"{self.name}: genes analysis")
-        names = ["agility", "bigness", "fertility", "speed", "eat_coeff", "num_control_gene"]
 
-        for k in names:
-            f = open(os.path.join(self.path, f"{k}.csv"), 'w')
+        for k in vars.NUM_GENES_LIST:
+            self.files[k] = open(os.path.join(self.path, f"{k}.csv"), 'w')
             for i in range(0, self.lifetime, vars.TIME_INTERVAL):
                 l = self.tick_creature_list(i, k)
                 to_write = str(i)
                 for j in range(0, vars.PERCENTILE_PARTS + 1):
                     to_write += vars.FILE_SEPARATOR + str(l[round((j / vars.PERCENTILE_PARTS) * (len(l) - 1))])
                 to_write += vars.FILE_SEPARATOR + str(sum(l) / float(len(l))) + '\n'
-                f.write(to_write)
-            f.close()
+                self.files[k].write(to_write)
 
-        f = open(os.path.join(self.path, f"population.csv"), 'w')
+        self.files['population'] = open(os.path.join(self.path, f"population.csv"), 'w')
         for i in range(0, self.lifetime, vars.TIME_INTERVAL):
             deaths = [0, 0, 0]
             born = 0
@@ -202,13 +205,12 @@ class World:
                         deaths[1] += 1
                     elif j.death_cause == "a":
                         deaths[2] += 1
-            f.write(str(i) + vars.FILE_SEPARATOR + str(born) + vars.FILE_SEPARATOR + str(deaths[0]) + vars.FILE_SEPARATOR + str(deaths[1]) + vars.FILE_SEPARATOR + str(deaths[2]) + '\n')
-        f.close()
+            self.files['population'].write(str(i) + vars.FILE_SEPARATOR + str(born) + vars.FILE_SEPARATOR + str(
+                deaths[0]) + vars.FILE_SEPARATOR + str(deaths[1]) + vars.FILE_SEPARATOR + str(deaths[2]) + '\n')
 
-        names = ['foodmax', 'temperature']
-        chunks_f_t = dict()
-        for k in names:
-            f = open(os.path.join(self.path, f"{k}.csv"), 'w')
+        chunk_attrs_spread = dict()
+        for k in vars.CHUNK_ATTRS:
+            self.files[k] = open(os.path.join(self.path, f"{k}.csv"), 'w')
             parts = [0 for x in range(vars.PARTS)]
             for i in self.chunk_list:
                 for j in i:
@@ -217,106 +219,46 @@ class World:
             string = str()
             for i in range(0, 8):
                 string += str(parts[i]) + vars.FILE_SEPARATOR
-            chunks_f_t[k] = parts
-            f.write(string[:-1] + '\n')
-            f.close()
+            chunk_attrs_spread[k] = parts
+            self.files[k].write(string[:-1] + '\n')
 
             # analisi disposizione
         print(f"{self.name}: spreading and deaths analysis")
-        names = vars.TEMPERATURE_FOOD_PARTS
-        f = dict()
-        s = dict()
-        for j in names:
-            f[j] = dict()
-            s[j] = list()
-            for i in range(names[j]):
-                f[j][i] = open(os.path.join(self.path, f"temperature_{i}.csv"), 'w')
-                s[j].append(str())
+        files = dict()
+        strings = dict()
+        for j in vars.CHUNK_ATTRS_PARTS:
+            files[j] = list()
+            strings[j] = list()
+            for i in range(vars.CHUNK_ATTRS_PARTS[j]):
+                files[j].append(open(os.path.join(self.path, f"{j}_{i}.csv"), 'w'))
+                strings[j].append(str())
         for i in range(0, self.lifetime, 100):
             l = self.tick_creature_list(i)
             data = dict()
-            for w in ['temperature', 'foodmax']:
+            for w in vars.CHUNK_ATTRS:
                 data[w] = dict()
                 for k in ['raw', 'correct']:
-                    data[w][k] = [[0 for x in range(vars.PARTS)] for y in range(vars.TEMPERATURE_FOOD_PARTS[w])]
+                    data[w][k] = [[0 for x in range(vars.PARTS)] for y in range(vars.CHUNK_ATTRS_PARTS[w])]
                 for j in l:
                     birth = max(j.birth_tick, 0)
-                    try:
-                        coord = (j.tick_history[i - birth][0], j.tick_history[i - birth][1])
-                    except IndexError:
-                        print(j.tick_history)
-                        print(len(j.tick_history))
-                        print(i-birth)
-                        print(j.death_tick)
+                    coord = (j.tick_history[i - birth][0], j.tick_history[i - birth][1])
                     chunk_coord = (int(coord[0] / self.chunk_dim), int(coord[1] / self.chunk_dim))
+                    print(chunk_coord)
                     val = min(self.chunk_list[chunk_coord[0]][chunk_coord[1]].__dict__[w], self.chunks_vars[w + '_max'] - 1)
-                    data[w]['raw'][utl.data_number(w, j)][int((val * vars.PARTS) // (self.chunks_vars[w + '_max']))] += 1
+                    data[w]['raw'][utl.data_number(w, j)][
+                        int((val * vars.PARTS) // (self.chunks_vars[w + '_max']))] += 1
 
                 x = 0
-                for k in range(vars.TEMPERATURE_FOOD_PARTS[w]):
-                    s[w][x] = str(i)
+                for k in range(vars.CHUNK_ATTRS_PARTS[w]):
+                    strings[w][x] = str(i)
                     for j in range(vars.PARTS):
-                        if chunks_f_t[w][j] == 0:
+                        if chunk_attrs_spread[w][j] == 0:
                             data[w]['correct'][x][j] = 0
                         else:
-                            data[w]['correct'][x][j] = data[w]['raw'][x][j] / chunks_f_t[w][j] * vars.ADJ_COEFF
-                        #try:
-                            #data[w]['correct'][x][j] = data[w]['raw'][x][j] / chunks_f_t[w][j] * vars.ADJ_COEFF
-                        #except ZeroDivisionError:
-                            #data[w]['correct'][x][j] = 0
-                            #print('ops')
-                        s[w][x] += vars.FILE_SEPARATOR + str(data[w]['raw'][x][j]) + vars.FILE_SEPARATOR + str(data[w]['correct'][x][j])
-                    f[w][k] = open(os.path.join(self.path, f"{j}_{i}.csv"), 'w')
-                    f[w][k].write(s[w][x])
-                    f[w][k].close()
+                            data[w]['correct'][x][j] = data[w]['raw'][x][j] / chunk_attrs_spread[w][j] * vars.ADJ_COEFF
+                        strings[w][x] += vars.FILE_SEPARATOR + str(data[w]['raw'][x][j]) + vars.FILE_SEPARATOR + str(
+                            data[w]['correct'][x][j])
+                    files[w][k] = open(os.path.join(self.path, f"{j}_{i}.csv"), 'w')
+                    files[w][k].write(strings[w][x])
+                    self.files[w + '_' + str(k)] = files[w][k]
                     x += 1
-
-        '''os.chdir(self.path)
-        for name in ["TempFrames", "FoodMaxFrames"]:
-            try:
-                os.makedirs(name)
-            except FileExistsError:
-                shutil.rmtree(name)
-                os.makedirs(name)
-
-        for tick in range(0, lifetime, 100):
-            imageFood = PIL.Image.new("RGB", (width, height))
-            drawFood = PIL.ImageDraw.Draw(imageFood)
-            imageTemp = PIL.Image.new("RGB", (width, height))
-            drawTemp = PIL.ImageDraw.Draw(imageTemp)
-
-            for i in range(len(datiChunk)):
-                for j in range(len(datiChunk[i])):
-                    drawFood.rectangle((i * chunkDim, j * chunkDim, (i + 1) * chunkDim, (j + 1) * chunkDim), fill=(0, int(datiChunk[i][j][0]), 0), outline="black")
-
-            for i in tick_creature_list(tick):
-                birth = max(i[1], 1)
-                coord = (i[14][tick - birth][0], i[14][tick - birth][1])
-                energy = i[14][tick - birth][2]
-                drawFood.ellipse((coord[0] - energy / 20, coord[1] - energy / 20, coord[0] + energy / 20, coord[1] + energy / 20), fill=(255, 0, 0), outline="black")
-
-            for i in range(len(datiChunk)):
-                for j in range(len(datiChunk[i])):
-                    temperature = datiChunk[i][j][2]
-                    if temperature > 0:
-                        drawTemp.rectangle((i * chunkDim, j * chunkDim, (i + 1) * chunkDim, (j + 1) * chunkDim), fill=(255, int(255 - (temperature / 100 * 255)), int(255 - (temperature / 100 * 255))), outline="black")
-                    else:
-                        drawTemp.rectangle((i * chunkDim, j * chunkDim, (i + 1) * chunkDim, (j + 1) * chunkDim), fill=(int(255 + (temperature / 100 * 255)), int(255 + (temperature / 100 * 255)), 255), outline="black")
-
-            for i in tick_creature_list(tick):
-                birth = max(i[1], 1)
-                coord = (i[14][tick - birth][0], i[14][tick - birth][1])
-                energy = i[14][tick - birth][2]
-                x = i[8]
-                if x == "N" or x == "n":
-                    drawTemp.ellipse((coord[0] - energy / 20, coord[1] - energy / 20, coord[0] + energy / 20, coord[1] + energy / 20), fill=(255, 255, 255), outline="black")
-
-                elif x == "l":
-                    drawTemp.ellipse((coord[0] - energy / 20, coord[1] - energy / 20, coord[0] + energy / 20, coord[1] + energy / 20), fill=(0, 0, 255), outline="black")
-
-                elif x == "c":
-                    drawTemp.ellipse((coord[0] - energy / 20, coord[1] - energy / 20, coord[0] + energy / 20, coord[1] + energy / 20), fill=(255, 0, 0), outline="black")
-            imageFood.save(f"FoodMaxFrames/FrameF{tick}.jpg", "JPEG")
-            imageTemp.save(f"TempFrames/FrameT{tick}.jpg", "JPEG")
-            del imageTemp, imageFood, drawFood, drawTemp
-        os.chdir("..")'''

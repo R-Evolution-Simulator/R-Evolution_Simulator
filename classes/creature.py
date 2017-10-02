@@ -9,18 +9,19 @@ class Creature:
     '''class of creatures'''
     TO_RECORD = vars.TO_RECORD['creature']
 
-    def __init__(self, world, x, y, parents_ID, energy, sex, genes, start_count=0):
+    def __init__(self, world, start_coord, parents_ID, energy, sex, genes, start_count=0):
         '''creatures constructor'''
         self.world = world
         self.ID = self.world.get_ID()
-        self.coord = [x, y]  # creature's starting coord definition
+        self.coord = start_coord  # creature's starting coord definition
         self.parents_ID = parents_ID
         self.tick_history = list()
         self.birth_tick = self.world.tick_count - start_count  # creature's creation tick definition (startCount is used only during diversification at start)
         self.energy = energy  # creature's starting energy definition
         self.actual_chunk().chunk_creature_list.append(self)  # creature's adding to the list of creatures in its chunk
         self.reprod_ready = False  # reproduction capacity set to false
-        self.death_date = int(random.gauss(self.world.creatures_vars['average_age'], self.world.creatures_vars['dev_age_prob']))  # crearture's age of death definition
+        self.death_date = int(random.gauss(self.world.creatures_vars['average_age'], self.world.creatures_vars[
+            'dev_age_prob']))  # crearture's age of death definition
         self.age = 0  # age set to 0
         self.dest_chunk = [self.chunk_coord(0), self.chunk_coord(1)]
         self.sex = sex
@@ -45,7 +46,8 @@ class Creature:
         self.death_cause = cause
         if self.birth_tick <= 0:
             if len(self.tick_history) == self.world.tick_count:
-                print("Creature died: EVERYTHING OK (1)")
+                pass
+                # print("Creature died: EVERYTHING OK (1)")
             else:
                 print("Creature died: NOT OK!")
                 print(f"     - actual age: {self.age}")
@@ -53,9 +55,11 @@ class Creature:
                 print(f"     - tick_history lenght: {len(self.tick_history)}")
                 print(f"     - birth tick: {self.birth_tick}")
                 print(f"     - death tick: {self.death_tick}")
+                pass
         else:
             if len(self.tick_history) == self.death_tick - self.birth_tick:
-                print("Creature died: EVERYTHING OK (2)")
+                pass
+                # print("Creature died: EVERYTHING OK (2)")
             else:
                 print("Creature died: NOT OK!")
                 print(f"     - actual age: {self.age}")
@@ -63,6 +67,7 @@ class Creature:
                 print(f"     - tick_history lenght: {len(self.tick_history)}")
                 print(f"     - birth tick: {self.birth_tick}")
                 print(f"     - death tick: {self.death_tick}")
+                pass
         to_write = str()
         for i in self.TO_RECORD:
             to_write += utl.add_to_write(self.__dict__[i], vars.ROUNDINGS['creature'])
@@ -73,7 +78,7 @@ class Creature:
         except ValueError:
             pass
 
-    def update(self):
+    def update(self, tick):
         """creature update/AI method"""
 
         # reproduction control
@@ -99,7 +104,8 @@ class Creature:
         self.age += 1
 
         # death control
-        self.tick_history.append((round(self.coord[0], 2), round(self.coord[1], 2), int(self.energy), int(self.reprod_ready)))
+        self.tick_history.append(
+            (round(self.coord[0], 2), round(self.coord[1], 2), int(self.energy), int(self.reprod_ready)))
         self.death_control()
 
     def actual_chunk(self):
@@ -124,14 +130,17 @@ class Creature:
         '''temperature death probabilities calc'''
         t = self.world.chunks_vars['temperature_max']
         if self.genes['temp_resist'] == "c":
-            return ((self.actual_chunk().temperature ** 2 / (4 * (self.world.chunks_vars['temperature_max'] ** 2))) - (self.actual_chunk().temperature / (2 * self.world.chunks_vars['temperature_max'])) + (1 / 4)) / \
+            return ((self.actual_chunk().temperature ** 2 / (4 * (self.world.chunks_vars['temperature_max'] ** 2))) - (
+            self.actual_chunk().temperature / (2 * self.world.chunks_vars['temperature_max'])) + (1 / 4)) / \
                    self.world.creatures_vars['temp_death_prob_coeff']
 
         elif self.genes['temp_resist'] == "l":
-            return ((self.actual_chunk().temperature ** 2 / (4 * (t ** 2))) + (self.actual_chunk().temperature / (2 * t)) + (1 / 4)) / self.world.creatures_vars['temp_death_prob_coeff']
+            return ((self.actual_chunk().temperature ** 2 / (4 * (t ** 2))) + (
+            self.actual_chunk().temperature / (2 * t)) + (1 / 4)) / self.world.creatures_vars['temp_death_prob_coeff']
 
         elif self.genes['temp_resist'] == "N" or self.genes['temp_resist'] == "n":
-            return ((self.actual_chunk().temperature ** 2) / (self.world.chunks_vars['temperature_max'] ** 2)) / self.world.creatures_vars['temp_death_prob_coeff']
+            return ((self.actual_chunk().temperature ** 2) / (self.world.chunks_vars['temperature_max'] ** 2)) / \
+                   self.world.creatures_vars['temp_death_prob_coeff']
 
     def dest_calc(self):
         '''most convenient chunk calc'''
@@ -140,11 +149,15 @@ class Creature:
         y = self.chunk_coord(1)
         maxEn = float("-inf")
 
-        for i in range(max(x - self.world.creatures_vars['view_ray'], 0), min(x + self.world.creatures_vars['view_ray'] + 1, self.world.width // self.world.chunk_dim)):
-            for j in range(max(y - self.world.creatures_vars['view_ray'], 0), min(y + self.world.creatures_vars['view_ray'] + 1, self.world.height // self.world.chunk_dim)):
+        for i in range(max(x - self.world.creatures_vars['view_ray'], 0),
+                       min(x + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[0])):
+            for j in range(max(y - self.world.creatures_vars['view_ray'], 0),
+                           min(y + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[1])):
 
-                if self.world.chunk_list[i][j].food * self.genes['eat_coeff'] * self.world.creatures_vars['en_inc_coeff'] - self.energy_consume(i, j) > maxEn:
-                    maxEn = self.world.chunk_list[i][j].food * self.genes['eat_coeff'] * self.world.creatures_vars['en_inc_coeff'] - self.energy_consume(i, j)
+                if self.world.chunk_list[i][j].food * self.genes['eat_coeff'] * self.world.creatures_vars[
+                    'en_inc_coeff'] - self.energy_consume(i, j) > maxEn:
+                    maxEn = self.world.chunk_list[i][j].food * self.genes['eat_coeff'] * self.world.creatures_vars[
+                        'en_inc_coeff'] - self.energy_consume(i, j)
                     self.dest_chunk = [i, j]
 
         self.dest_coord = [(self.dest_chunk[0] + 0.5) * self.world.chunk_dim, (
@@ -174,14 +187,13 @@ class Creature:
     def energy_consume(self, x, y):
         '''energy consumption to reach a chunk'''
 
-        return (math.sqrt((x * self.world.chunk_dim + 5 - self.coord[0]) ** 2 + (y * self.world.chunk_dim + 5 - self.coord[1]) ** 2) / self.genes['speed']) * self.world.creatures_vars['en_dec_coeff'] * self.energy
+        return (math.sqrt(
+            (x * self.world.chunk_dim + 5 - self.coord[0]) ** 2 + (y * self.world.chunk_dim + 5 - self.coord[1]) ** 2) /
+                self.genes['speed']) * self.world.creatures_vars['en_dec_coeff'] * self.energy
 
     def chunk_coord(self, i):
         '''returns chunk cord of the creature chunk'''
-        if i == 0:
-            return min(int(self.coord[i] / self.world.chunk_dim), int(self.world.width / self.world.chunk_dim) - 1)
-        else:
-            return min(int(self.coord[i] / self.world.chunk_dim), int(self.world.height / self.world.chunk_dim) - 1)
+        return min(int(self.coord[i] / self.world.chunk_dim), self.world.dimension[i]) - 1
 
     def dating_agency(self):
         '''reproduction mate finder in the chunk. If there is someone "available", the creature reproduces itself'''
@@ -195,22 +207,19 @@ class Creature:
 
     def reproduction(self, shelf):
         '''reproduction method'''
-
-        x = (self.coord[0] + shelf.coord[0]) / 2
-        y = (self.coord[1] + shelf.coord[1]) / 2
-        energy = (self.energy + shelf.energy) / 2
-        sex = int(rnd() * 2)
-
         genes = dict()
-
-        genes['temp_resist_gen'] = self.genes['temp_resist_gen'][int(rnd() * 2)] + shelf.genes['temp_resist_gen'][int(rnd() * 2)]
-        # TO Do: for to reproduce genes VVVV
-        genes['agility'] = (self.genes['agility'] + shelf.genes['agility']) / 2 + random.gauss(0, self.world.creatures_vars['mutation_coeff'])
-        genes['bigness'] = (self.genes['bigness'] + shelf.genes['bigness']) / 2 + random.gauss(0, self.world.creatures_vars['mutation_coeff'])
-        genes['fertility'] = (self.genes['fertility'] + shelf.genes['fertility']) / 2 + random.gauss(0, self.world.creatures_vars['mutation_coeff'])
-        genes['num_control_gene'] = (self.genes['num_control_gene'] + shelf.genes['num_control_gene']) / 2 + random.gauss(0, self.world.creatures_vars['mutation_coeff'])
-
-        Creature(self.world, x, y, (self.ID, shelf.ID), energy, sex, genes)
+        start_coord = [0, 0]
+        sex = int(rnd() * 2)
+        for i in range(2):
+            start_coord[i] = (self.coord[i] + shelf.coord[i]) / 2
+        energy = (self.energy + shelf.energy) / 2
+        for i in self.genes:
+            try:
+                genes[i] = (self.genes[i] + shelf.genes[i]) / 2 + random.gauss(0, self.world.creatures_vars[
+                    'mutation_coeff'])
+            except TypeError:
+                genes[i] = self.genes[i][int(rnd() * 2)] + shelf.genes[i][int(rnd() * 2)]
+        Creature(self.world, start_coord, (self.ID, shelf.ID), energy, sex, genes)
 
     def temp_resist_calc(self, gen):
         '''creature's phenotipyc expression of the temperature calc'''

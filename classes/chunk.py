@@ -5,16 +5,16 @@ from . import utility as utl
 
 class Chunk:
     """class of chunk (unity of territory)"""
-    NOISE_ATTRS = vars.CHUNK_NOISE_ATTRS
+    NOISE_ATTRS = vars.CHUNK_ATTRS
     TO_RECORD = vars.TO_RECORD['chunk']
 
-    def __init__(self, world, x, y):
+    def __init__(self, world, coord):
         '''constructor of Chunk'''
-        self.coord = (x, y)
+        self.coord = coord
         # food
         self.world = world
         for i in self.NOISE_ATTRS:
-            self.__dict__[i] = normalize(self.world.noises[i].noise(x, y)) * self.world.chunks_vars[i + '_max']
+            self.__dict__[i] = normalize(self.world.noises[i].noise(*coord)) * self.world.chunks_vars[i + '_max']
         self.food = self.foodmax / 2  # all'inizio il cibo e' al massimo
         self.growth_rate = self.foodmax * self.world.chunks_vars['growth_coeff']  # la crescita e' direttamente proporzionale all'erba massima
         self.food_history = list()
