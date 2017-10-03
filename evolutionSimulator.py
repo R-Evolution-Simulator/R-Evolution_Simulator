@@ -9,4 +9,4 @@ lol['initial_creatures'] = 100
 lol['lifetime'] = 500
 world = World(name, lol)
 world.run()
-analysis(name)
+del(world)

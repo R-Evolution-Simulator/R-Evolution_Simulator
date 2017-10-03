@@ -49,34 +49,25 @@ class Creature:
                 pass
                 # print("Creature died: EVERYTHING OK (1)")
             else:
-                print("Creature died: NOT OK!")
+                '''print("Creature died: NOT OK!")
                 print(f"     - actual age: {self.age}")
                 print(f"     - actual age 2: {self.death_tick-max(self.birth_tick,0)}")
                 print(f"     - tick_history lenght: {len(self.tick_history)}")
                 print(f"     - birth tick: {self.birth_tick}")
-                print(f"     - death tick: {self.death_tick}")
-                pass
+                print(f"     - death tick: {self.death_tick}")'''
+                raise AttributeError
         else:
             if len(self.tick_history) == self.death_tick - self.birth_tick:
                 pass
                 # print("Creature died: EVERYTHING OK (2)")
             else:
-                print("Creature died: NOT OK!")
+                '''print("Creature died: NOT OK!")
                 print(f"     - actual age: {self.age}")
                 print(f"     - actual age 2: {self.death_tick-max(self.birth_tick,0)}")
                 print(f"     - tick_history lenght: {len(self.tick_history)}")
                 print(f"     - birth tick: {self.birth_tick}")
-                print(f"     - death tick: {self.death_tick}")
-                pass
-        to_write = str()
-        for i in self.TO_RECORD:
-            to_write += utl.add_to_write(self.__dict__[i], vars.ROUNDINGS['creature'])
-        for i in self.tick_history:
-            to_write += utl.history_to_write(i)
-        try:
-            self.world.files['creatures_data'].write(to_write[:-1] + '\n')
-        except ValueError:
-            pass
+                print(f"     - death tick: {self.death_tick}")'''
+                raise AttributeError
 
     def update(self, tick):
         """creature update/AI method"""
@@ -236,4 +227,12 @@ class Creature:
             return "n"
 
     def __del__(self):
-        pass
+        to_write = str()
+        for i in self.TO_RECORD:
+            to_write += utl.add_to_write(self.__dict__[i], vars.ROUNDINGS['creature'])
+        for i in self.tick_history:
+            to_write += utl.history_to_write(i)
+        try:
+            self.world.files['creatures_data'].write(to_write[:-1] + '\n')
+        except ValueError:
+            pass

@@ -68,6 +68,7 @@ class World:
         for i in self.creature_list:
             i.death()
 
+
     def __del__(self):
 
         # closing simulation and files
@@ -76,7 +77,7 @@ class World:
         print(f"        - deleting creatures")
         for i in self.creature_list:
             try:
-                i.__del__()
+                del(i)
             except AttributeError:
                 print("--error closing creature")
 
@@ -84,7 +85,7 @@ class World:
         for i in self.chunk_list:
             for j in i:
                 try:
-                    j.__del__()
+                    del(j)
                 except AttributeError:
                     print("error")
         to_write = str()
