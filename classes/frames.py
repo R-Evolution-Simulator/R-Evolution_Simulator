@@ -1,5 +1,5 @@
 import tkinter as tk
-from . import vars
+from . import var
 import os
 import matplotlib as mpl
 from matplotlib.figure import Figure
@@ -80,7 +80,7 @@ class BaseDiagramCanvasFrame(BaseFrame):
 
     def data_init(self):
         """funzione per la lettura dei file con i dati"""
-        file = open(os.path.join(vars.SIMULATIONS_PATH, self.sim_name, f"{self.subject}.csv"))
+        file = open(os.path.join(var.SIMULATIONS_PATH, self.sim_name, f"{self.subject}.csv"))
         self.data = [[] for i in range(len(file.readline().split(';')))]
         file.seek(0)
         for line in file:
@@ -152,8 +152,8 @@ class NewSim(GridFrame, BaseFrame):
                         'name': (tk.Entry, {'textvariable': self.name_var}, {'row': 0, 'column': 1})}
         self.variables = dict()
         self.row = 0
-        for i in vars.DFEAULT_SIM_VARIABLES:
-            self.variables[i] = self._add_widget(i, vars.DFEAULT_SIM_VARIABLES[i], 0)
+        for i in var.DFEAULT_SIM_VARIABLES:
+            self.variables[i] = self._add_widget(i, var.DFEAULT_SIM_VARIABLES[i], 0)
         super(NewSim, self).__init__(father)
 
     def _add_widget(self, name, object, column):

@@ -1,12 +1,12 @@
 from .noise.simplexnoise.noise import normalize
-from . import vars
+from . import var
 from . import utility as utl
 
 
 class Chunk:
     """class of chunk (unity of territory)"""
-    NOISE_ATTRS = vars.CHUNK_ATTRS
-    TO_RECORD = vars.TO_RECORD['chunk']
+    NOISE_ATTRS = var.CHUNK_ATTRS
+    TO_RECORD = var.TO_RECORD['chunk']
 
     def __init__(self, world, coord):
         '''constructor of Chunk'''
@@ -32,7 +32,7 @@ class Chunk:
         """chunk destructor"""
         to_write = str()
         for i in self.TO_RECORD:
-            to_write += utl.add_to_write(self.__dict__[i], vars.ROUNDINGS['chunk'])
+            to_write += utl.add_to_write(self.__dict__[i], var.ROUNDINGS['chunk'])
         for i in self.food_history:
             to_write += utl.history_to_write(i)
         try:

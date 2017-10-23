@@ -4,7 +4,7 @@ from time import time
 from . import frames as frm
 from .canvas import PygameCanvas
 from .graphics import CreaturesD, ChunkD
-from . import vars
+from . import var
 import os
 from math import ceil
 
@@ -132,7 +132,7 @@ class ControlWindow(BaseTkWindow):
         self.files = dict()
         try:
             for i in self.FILES_TO_LOAD:
-                self.files[i] = open(os.path.join(vars.SIMULATIONS_PATH, self.sim_name, f"{i}.csv"))
+                self.files[i] = open(os.path.join(var.SIMULATIONS_PATH, self.sim_name, f"{i}.csv"))
         except FileNotFoundError:
             print(f"ERROR: couldn't find '{self.sim_name}' files")
             exit(1)

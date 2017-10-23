@@ -1,5 +1,5 @@
 import pygame as pyg
-from . import vars
+from . import var
 from ast import literal_eval
 
 
@@ -21,9 +21,9 @@ class ChunkD:
 
 
 class CreaturesD:
-    COLORS = vars.DEFAULT_CREATURES_COLORS
-    DIMS = vars.DEFAULT_CREATURES_DIMS
-    BORDER = vars.DEFAULT_CREATURES_BORDER
+    COLORS = var.DEFAULT_CREATURES_COLORS
+    DIMS = var.DEFAULT_CREATURES_DIMS
+    BORDER = var.DEFAULT_CREATURES_BORDER
 
     def __init__(self, line):
         data_list = line.split(';')

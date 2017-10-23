@@ -1,5 +1,5 @@
 import pygame as pyg
-from . import vars
+from . import var
 
 
 def img_load(path):
@@ -23,17 +23,17 @@ def add_to_write(object, rounding):
     else:
         if rounding:
             try:
-                return str(round(object, rounding)) + vars.FILE_SEPARATOR
+                return str(round(object, rounding)) + var.FILE_SEPARATOR
             except TypeError:
                 pass
-        return str(object) + vars.FILE_SEPARATOR
+        return str(object) + var.FILE_SEPARATOR
 
 
 def history_to_write(history):
     to_write = str()
     for i in history:
-        to_write += str(i) + vars.HISTORY_SEPARATORS[0]
-    to_write = to_write[:-1] + vars.HISTORY_SEPARATORS[1]
+        to_write += str(i) + var.HISTORY_SEPARATORS[0]
+    to_write = to_write[:-1] + var.HISTORY_SEPARATORS[1]
     return to_write
 
 

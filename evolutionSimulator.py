@@ -1,9 +1,9 @@
 from classes.analysis import analysis
 from classes.world import World
-from classes import vars
+from classes import var
 
 name = "asdf"
-lol = vars.DFEAULT_SIM_VARIABLES
+lol = var.DFEAULT_SIM_VARIABLES
 lol['dimension'] = (20, 15)
 lol['initial_creatures'] = 100
 lol['lifetime'] = 500

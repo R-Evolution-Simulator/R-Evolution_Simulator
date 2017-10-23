@@ -2,7 +2,7 @@ from math import ceil
 import pygame as pyg
 from PIL import ImageDraw, Image as Img
 from . import utility as utl
-from . import vars
+from . import var
 import os
 
 
@@ -48,8 +48,8 @@ class PygameCanvas(object):
                                     fill=(int(255 + (chunk.temperature / 100 * 255)),
                                           int(255 + (chunk.temperature / 100 * 255)), 255))
 
-        backgrounds_paths = {'FM': os.path.join(vars.SIMULATIONS_PATH, self.father.sim_name, "backgroundFM.gif"),
-                             'T': os.path.join(vars.SIMULATIONS_PATH, self.father.sim_name, "backgroundT.gif")}
+        backgrounds_paths = {'FM': os.path.join(var.SIMULATIONS_PATH, self.father.sim_name, "backgroundFM.gif"),
+                             'T': os.path.join(var.SIMULATIONS_PATH, self.father.sim_name, "backgroundT.gif")}
 
         image_food.save(backgrounds_paths['FM'], "GIF")
         image_temp.save(backgrounds_paths['T'], "GIF")

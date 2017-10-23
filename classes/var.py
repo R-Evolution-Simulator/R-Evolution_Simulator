@@ -1,11 +1,12 @@
 import os
 import pygame as pyg
+from . import genes as gns
 
 SIMULATIONS_PATH = os.path.join(os.getcwd(), "simulations")
 
 # simulation
 
-DFEAULT_SIM_VARIABLES = {'dimension': (60, 45), # in chunks
+DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                          'chunk_dim': 10,
                          'lifetime': 10000,
                          'initial_creatures': 750,
@@ -22,16 +23,16 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45), # in chunks
                                             'genes_lim': {'agility': (10, 60),
                                                           'bigness': (20, 80),
                                                           'fertility': (50, 250),
-                                                          'num_control_gene': (0, 100)
+                                                          'num_control': (0, 100)
                                                           },
-                                            'mutation_coeff': 0.1,
+                                            'mutation_coeff': 0.05,
                                             'eat_coeff_max': 0.003,
                                             },
                          }
 
 CHUNK_ATTRS = ['temperature', 'foodmax']
 
-NUM_GENES_LIST = ["agility", "bigness", "fertility", "speed", "eat_coeff", "num_control_gene"]
+CREATURES_GENES_CLASSES = {'agility': gns.Agility, 'bigness': gns.Bigness, 'fertility': gns.Fertility, 'num_control': gns.NumControl, 'temp_resist': gns.TempResist}
 
 # files
 
@@ -39,9 +40,11 @@ FILE_SEPARATOR = ';'
 
 HISTORY_SEPARATORS = (',', '/')
 
-TO_RECORD = {'simulation': ['name', 'dimension', 'lifetime', 'initial_creatures', 'chunk_dim', 'tick_count', 'chunks_vars', 'creatures_vars', 'ID_count'],
-             'creature': ['ID', 'birth_tick', 'parents_ID', 'sex', 'genes', 'death_tick', 'death_cause'],
-             'chunk': ['coord', 'foodmax', 'growth_rate', 'temperature']}
+TO_RECORD = {
+    'simulation': ['name', 'dimension', 'lifetime', 'initial_creatures', 'chunk_dim', 'tick_count', 'chunks_vars',
+                   'creatures_vars', 'ID_count'],
+    'creature': ['ID', 'birth_tick', 'parents_ID', 'sex', 'genes', 'death_tick', 'death_cause'],
+    'chunk': ['coord', 'foodmax', 'growth_rate', 'temperature']}
 
 ROUNDINGS = {'simulation': None, 'creature': 4, 'chunk': 4}
 
@@ -57,11 +60,12 @@ CHUNK_ATTRS_PARTS = {'temperature': 3, 'foodmax': 1}
 
 ADJ_COEFF = 100
 
-#graphics
+# graphics
 
 DEFAULT_CREATURES_COLORS = {'N': pyg.Color(255, 255, 255, 255),
                             'S': (pyg.Color(255, 255, 0, 255), pyg.Color(0, 255, 255, 255)),
-                            'TR': {'c': pyg.Color(255, 0, 0, 255), 'l': pyg.Color(0, 0, 255, 255), 'N': pyg.Color(128, 128, 128, 255), 'n': pyg.Color(255, 255, 255, 255)}}
+                            'TR': {'c': pyg.Color(255, 0, 0, 255), 'l': pyg.Color(0, 0, 255, 255),
+                                   'N': pyg.Color(128, 128, 128, 255), 'n': pyg.Color(255, 255, 255, 255)}}
 
 DEFAULT_CREATURES_DIMS = {'N': 7, 'A': 5, 'B': 7, 'EC': 42, 'NCG': 9, 'S': 5}
 
