@@ -219,6 +219,7 @@ class World:
 
         :return:
         """
+        # TODO: Revise analysis and find why it doesn't work
         print(f"{self.name}: analysis setup")
 
         # analisi caratteristiche
