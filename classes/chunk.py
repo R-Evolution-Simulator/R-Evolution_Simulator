@@ -12,9 +12,12 @@ class Chunk:
 
     def __init__(self, world, coord):
         """
-        chunk initialiser
+        Creates a new chunk object given the coords
+
         :param world: world object where the chunk is
+        :type world: World
         :param coord: tuple with the coordinates of the chunk
+        :type coord: tuple
         """
         self.coord = coord
         # food
@@ -22,14 +25,16 @@ class Chunk:
         for i in self.NOISE_ATTRS:
             self.__dict__[i] = normalize(self.world.noises[i].noise(*coord)) * self.world.chunks_vars[i + '_max']
         self.food = self.foodmax / 2  # all'inizio il cibo e' al massimo
-        self.growth_rate = self.foodmax * self.world.chunks_vars['growth_coeff']  # la crescita e' direttamente proporzionale all'erba massima
+        self.growth_rate = self.foodmax * self.world.chunks_vars[
+            'growth_coeff']  # la crescita e' direttamente proporzionale all'erba massima
         self.food_history = list()
         self.chunk_creature_list = []
 
     def update(self):
         """
-        it updates the parameters of the chunk
-        :return:
+        Updates the parameters of the chunk
+
+        :return
         """
         self.food *= (1 + self.growth_rate)  # ad ogni ciclo l'erba cresce
         if self.food > self.foodmax:  # finche' non raggiunge il massimo
@@ -39,8 +44,9 @@ class Chunk:
 
     def death(self):
         """
-        it saves the data of the chunk before the death
-        :return:
+        Saves the data of the chunk before the death
+
+        :return
         """
         to_write = str()
         for i in self.TO_RECORD:
@@ -54,7 +60,8 @@ class Chunk:
 
     def __del__(self):
         """
-        destructor
-        :return:
+        Destructs the chunk object
+
+        :return
         """
         pass
