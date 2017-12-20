@@ -153,7 +153,7 @@ class World:
         energy = 50 + rnd() * 100
         sex = int(rnd() * 2)
         lims = self.creatures_vars['genes_lim']
-        genes_cls = var.CREATURES_GENES_CLASSES
+        genes_cls = var.CREATURES_GENES
         genes = dict()
         for i in genes_cls:
             new_gene = genes_cls[i]()
@@ -220,7 +220,16 @@ class World:
 
         :return:
         """
-        # TODO: Revise analysis and find why it doesn't work
+        # TODO: Revise analysis and find why it doesn't work (maybe rewrite it from beginning)
+        '''
+        SCHEMINO:
+        
+        - Analisi dei geni:
+            - Numerici: Per ogni tick calcola i percentili e la media
+            - Mendeliani
+        - Analisi della popolazione
+        - Analisi spreading
+        '''
         print(f"{self.name}: analysis setup")
 
         # analisi caratteristiche
