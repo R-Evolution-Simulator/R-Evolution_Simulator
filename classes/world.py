@@ -18,7 +18,7 @@ class World:
         Creates new simulation
         
         :param name: name of the simulation
-        :param sim_variables: 
+        :param sim_variables: dict 
         """
         print(f"{name}: simulation setup")
         self.name = name
