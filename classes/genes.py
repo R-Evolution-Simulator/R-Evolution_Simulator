@@ -21,7 +21,6 @@ class BaseGene(object):
     def reproduce(self, other, sigma):
         return None
 
-    @property
     def get(self):
         return self.phenotype
 
@@ -37,7 +36,7 @@ class MendelGene(BaseGene):
         super(MendelGene, self).randomize()
 
     def _phenotype_calc(self):
-        self.phenotype = self.genotype
+        self.phenotype = self.genotype[0] + self.genotype[1]
 
     def reproduce(self, other, sigma):
         return type(self)(gen=[self.genotype[int(rnd() * 2)], other.genotype[int(rnd() * 2)]])
@@ -64,7 +63,7 @@ class TempResist(MendelGene):
         elif not self.genotype[0] == self.genotype[1]:
             phen = 'n'
         else:
-            phen = self.genotype[0].value()
+            phen = self.genotype[0].value
         self.phenotype = phen
 
 
@@ -84,11 +83,11 @@ class NumControl(NumberGene):
     pass
 
 
-class Speed(BaseGene):
+class Speed(NumberGene):
     def __init__(self, agility, bigness):
-        super(Speed, self).__init__(phen=((agility.get() / bigness.get()) * 2))
+        super(Speed, self).__init__(gen=((agility.get() / bigness.get()) * 2))
 
 
-class EatCoeff(BaseGene):
+class EatCoeff(NumberGene):
     def __init__(self, bigness, max):
-        super(Speed, self).__init__(phen=(bigness.get() * max))
+        super(EatCoeff, self).__init__(gen=(bigness.get() * max))
