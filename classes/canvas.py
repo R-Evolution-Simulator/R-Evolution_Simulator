@@ -10,6 +10,10 @@ class PygameCanvas(object):
     START_RESOLUTION = (100, 100)
 
     def __init__(self, father):
+        """
+        initialiser of the pygame canvas
+        :param father: the simulation window
+        """
         self.father = father
         self.surface = None
         self.backgrounds = dict()
@@ -18,10 +22,17 @@ class PygameCanvas(object):
         self._background_creation()
 
     def destroy(self):
+        """
+        it closes the simulation
+        :return:
+        """
         pyg.quit()
 
     def _background_creation(self):
-        """method which creates the background of the world"""
+        """
+        it creates the background of the world
+        :return:
+        """
         image_food = Img.new("RGB", (int(self.father.sim_width / 10), int(self.father.sim_height / 10)))
         draw_food = ImageDraw.Draw(image_food)
         image_temp = Img.new("RGB", (int(self.father.sim_width / 10), int(self.father.sim_height / 10)))
@@ -58,19 +69,33 @@ class PygameCanvas(object):
         del image_temp, image_food, draw_food, draw_temp
 
     def resize(self):
+        """
+        it changes the size of the window
+        :return:
+        """
         for i in self.backgrounds:
             self.resized_backgrounds[i] = utl.img_resize(self.backgrounds[i], self.father.zoom)
         self.surface = pyg.display.set_mode(
             (int(self.father.sim_width * self.father.zoom / 10), int(self.father.sim_height * self.father.zoom / 10)))
 
     def update(self, tick, shows):
-        """function which updates the screen"""
+        """
+        function which updates the screen
+        :param tick: tick represented
+        :param shows: which characteristic is showed
+        :return:
+        """
         self.chunk_display(tick, shows)
         self.creatures_display(tick, shows)
         pyg.display.update()
 
     def chunk_display(self, tick, shows):
-        """function which rapresents the chunks"""
+        """
+        function which rapresents the chunks
+        :param tick: tick represented
+        :param shows: which characteristic is showed
+        :return:
+        """
         to_show = shows['ch']
         if to_show == "F":  # con il cibo in un certo momento
             for chunk in self.father.chunk_list:
@@ -79,9 +104,17 @@ class PygameCanvas(object):
             self.surface.blit(self.resized_backgrounds[to_show], (0, 0))
 
     def creatures_display(self, tick, shows):
-        """function which rapresents the creatures"""
-
+        """
+        function which rapresents the creature
+        :param tick: tick represented
+        :param shows: which characteristic is showed
+        :return:
+        """
         def tick_creature_list():
+            """
+            it creates a list with all the creature alive in a certain tick
+            :return: the list of all the creature alive in a certain tick
+            """
             L = []
             for i in self.father.creature_list:
                 if i.birthTick <= tick <= i.deathTick:

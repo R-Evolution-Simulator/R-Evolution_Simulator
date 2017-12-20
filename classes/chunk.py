@@ -4,12 +4,18 @@ from . import utility as utl
 
 
 class Chunk:
-    """class of chunk (unity of territory)"""
+    """
+    chunk class
+    """
     NOISE_ATTRS = var.CHUNK_ATTRS
     TO_RECORD = var.TO_RECORD['chunk']
 
     def __init__(self, world, coord):
-        '''constructor of Chunk'''
+        """
+        chunk initialiser
+        :param world: world object where the chunk is
+        :param coord: tuple with the coordinates of the chunk
+        """
         self.coord = coord
         # food
         self.world = world
@@ -21,7 +27,10 @@ class Chunk:
         self.chunk_creature_list = []
 
     def update(self):
-        '''chunk update method'''
+        """
+        it updates the parameters of the chunk
+        :return:
+        """
         self.food *= (1 + self.growth_rate)  # ad ogni ciclo l'erba cresce
         if self.food > self.foodmax:  # finche' non raggiunge il massimo
             self.food = self.foodmax
@@ -29,7 +38,10 @@ class Chunk:
         self.food_history.append((int(self.food),))
 
     def death(self):
-        """chunk destructor"""
+        """
+        it saves the data of the chunk before the death
+        :return:
+        """
         to_write = str()
         for i in self.TO_RECORD:
             to_write += utl.add_to_write(self.__dict__[i], var.ROUNDINGS['chunk'])
@@ -41,4 +53,8 @@ class Chunk:
             pass
 
     def __del__(self):
+        """
+        destructor
+        :return:
+        """
         pass

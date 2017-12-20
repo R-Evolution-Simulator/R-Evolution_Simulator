@@ -5,13 +5,22 @@ from . import utility as utl
 from . import var
 from . import genes as gns
 
-
 class Creature:
-    '''class of creatures'''
+    """class of creatures"""
     TO_RECORD = var.TO_RECORD['creature']
 
     def __init__(self, world, start_coord, parents_ID, energy, sex, genes, start_count=0):
-        '''creatures constructor'''
+        """
+        creates a new creature
+
+        :param world: world object where the creature lives
+        :param start_coord: initial coordinates where the creature is
+        :param parents_ID: number of the two creature parents' ID
+        :param energy: level of initial energy
+        :param sex: 0 or 1 indicates the sex of the creature
+        :param genes: dictionary with all the characteristics
+        :param start_count: age of the initial creatures (it is equal to 0 for creatures born after tick 1)
+        """
         self.world = world
         self.ID = self.world.get_ID()
         self.coord = start_coord  # creature's starting coord definition
@@ -38,7 +47,12 @@ class Creature:
         self.world.new_born.add(self)  # creature's adding to the list of creatures
 
     def death(self, cause="e"):
-        """creature's destructor"""
+        """
+        creatures' destructor
+
+        :param cause: way in which the creature die
+        :return
+        """
         self.death_tick = self.world.tick_count
         self.death_cause = cause
         if self.birth_tick <= 0:
@@ -67,7 +81,12 @@ class Creature:
                 raise AttributeError
 
     def update(self, tick):
-        """creature update/AI method"""
+        """
+        creature update/AI method
+
+        :param tick: the tick in which we are
+        :return
+        """
 
         # reproduction control
         if self.energy > 50 and self.reprod_countdown <= 0:
@@ -97,11 +116,19 @@ class Creature:
         self.death_control()
 
     def actual_chunk(self):
-        """returns Chunk object in which the creature is"""
+        """
+        evaluates the Chunk object in which the creature is
+
+        :return: the Chunk object in which the creature is
+        """
         return self.world.chunk_list[self.chunk_coord(0)][self.chunk_coord(1)]
 
     def death_control(self):
-        '''death control method'''
+        """
+        death control method: it controls if the creatures has to die for some
+        reasons. It controls the parameters of starvation, temperature and age
+        :return
+        """
         if self.energy < 10:  # starvation death
             self.world.tick_dead.add(self)
             self.death("s")
@@ -115,7 +142,10 @@ class Creature:
             self.death("a")
 
     def death_prob_temp(self):
-        '''temperature death probabilities calc'''
+        """
+        temperature death probabilities calculation
+        :return: the probablity to die for temperature reasons
+        """
         t = self.world.chunks_vars['temperature_max']
         temp_resist = self.genes['temp_resist'].get()
         if temp_resist == 'c':
@@ -133,7 +163,10 @@ class Creature:
                    self.world.creatures_vars['temp_death_prob_coeff']
 
     def dest_calc(self):
-        '''most convenient chunk calc'''
+        """
+        evaluates the most convenient chunk to go to
+        :return:
+        """
 
         x = self.chunk_coord(0)
         y = self.chunk_coord(1)
@@ -155,7 +188,10 @@ class Creature:
             self.dest_chunk[1] + 0.5) * self.world.chunk_dim]
 
     def step(self):
-        '''creature's new position calc'''
+        """
+        changes the coordinates of the creature
+        :return:
+        """
 
         self.actual_chunk().chunk_creature_list.remove(
             self)
@@ -169,26 +205,45 @@ class Creature:
             self)
 
     def eat(self):
-        '''energy and chunk's remaining food update'''
+        """
+        increases the energy of the creature by eating
+        consequently decreases the food in the chunk
+
+        :return:
+        """
         food_eaten = self.actual_chunk().food * self.genes['eat_coeff'].get()
         self.energy += food_eaten * self.world.creatures_vars['en_inc_coeff']
         self.actual_chunk().food -= food_eaten
         self.energy = min(self.energy, 100)
 
     def energy_consume(self, x, y):
-        '''energy consumption to reach a chunk'''
+        """
+        evaluates the quantity of the energy that would be used to reach
+        another chunk
+        :param x: first coordinate of the destination chunk to reach
+        :param y: second coordinate of the destination chunk to reach
+        :return: energy consumption value
+        """
 
         return (math.sqrt(
             (x * self.world.chunk_dim + 5 - self.coord[0]) ** 2 + (y * self.world.chunk_dim + 5 - self.coord[1]) ** 2) /
                 self.genes['speed'].get()) * self.world.creatures_vars['en_dec_coeff'] * self.energy
 
     def chunk_coord(self, i):
-        '''returns chunk cord of the creature chunk'''
-        return min(int(self.coord[i] / self.world.chunk_dim), self.world.dimension[i]) - 1
+       """
+       evaluates the chunk coordinates in which the creature is
+       :param i: indicates which coordinate is considered (0 for the x coordinate
+        1 for the y coordinate)
+       :return: the chunk coordinates
+       """
+       return min(int(self.coord[i] / self.world.chunk_dim), self.world.dimension[i]) - 1
 
     def dating_agency(self):
-        '''reproduction mate finder in the chunk. If there is someone "available", the creature reproduces itself'''
-
+        """
+        it searches a mate to reproduct with. If it finds the mate, it
+        activates the reproduction function
+        :return:
+        """
         for i in self.actual_chunk().chunk_creature_list:
 
             if i.reprod_ready and i.sex != self.sex:
@@ -197,7 +252,11 @@ class Creature:
                 i.reprod_ready = False
 
     def reproduction(self, other):
-        '''reproduction method'''
+        """
+        creates a new creature from the two parents
+        :param other: mate creature
+        :return:
+        """
         genes = dict()
         start_coord = [0, 0]
         sex = int(rnd() * 2)
@@ -209,6 +268,10 @@ class Creature:
         Creature(self.world, start_coord, (self.ID, other.ID), energy, sex, genes)
 
     def __del__(self):
+        """
+        creatures' destructor. It writes the creatures data on the file
+        :return:
+        """
         to_write = str()
         for i in self.TO_RECORD:
             to_write += utl.add_to_write(self.__dict__[i], var.ROUNDINGS['creature'])
