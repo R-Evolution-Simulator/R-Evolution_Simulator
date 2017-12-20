@@ -47,7 +47,7 @@ class World:
 
         print(f"        - creating creatures")
         for i in range(self.initial_creatures):
-            Creature(*self.creature_randomization())
+            Creature(*self._creature_randomization())
 
         self.creature_list = self.new_born
         self.alive_creatures = self.new_born
@@ -116,7 +116,7 @@ class World:
             self.files[i].close()
         print(f"{self.name}: simulation ended")
 
-    def creature_randomization(self):
+    def _creature_randomization(self):
         """
         Creates a tuple with random characteristics of a creatures
 
