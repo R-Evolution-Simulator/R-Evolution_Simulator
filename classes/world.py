@@ -14,6 +14,12 @@ class World:
     TO_RECORD = var.TO_RECORD['simulation']
 
     def __init__(self, name, sim_variables):
+        """
+        Creates new simulation
+        
+        :param name: name of the simulation
+        :param sim_variables: 
+        """
         print(f"{name}: simulation setup")
         self.name = name
         self.path = os.path.join(var.SIMULATIONS_PATH, name)
