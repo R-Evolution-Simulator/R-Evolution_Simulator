@@ -34,7 +34,7 @@ class Chunk:
         """
         Updates the parameters of the chunk
 
-        :return
+        :return:
         """
         self.food *= (1 + self.growth_rate)  # ad ogni ciclo l'erba cresce
         if self.food > self.foodmax:  # finche' non raggiunge il massimo
@@ -46,7 +46,7 @@ class Chunk:
         """
         Saves the data of the chunk before the death
 
-        :return
+        :return:
         """
         to_write = str()
         for i in self.TO_RECORD:
@@ -62,6 +62,6 @@ class Chunk:
         """
         Destructs the chunk object
 
-        :return
+        :return:
         """
         pass

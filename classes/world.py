@@ -21,7 +21,7 @@ class World:
         :type name: str
         :param sim_variables: paramaters of the simulation
         :type sim_variables: dict
-        :return
+        :return:
         """
         print(f"{name}: simulation setup")
         self.name = name
@@ -57,7 +57,7 @@ class World:
         """
         Calls update() one time per tick in lifetime
 
-        :return
+        :return:
         """
         print(f"{self.name}: simulation running...")
         for i in range(self.lifetime):
@@ -72,7 +72,7 @@ class World:
         """
         Returns the ID of a new creature
 
-        :return
+        :return:
         """
         self.ID_count += 1
         return self.ID_count
@@ -81,7 +81,7 @@ class World:
         """
         Creates new directory for simulation and asks to remove it if it already exists
 
-        :return
+        :return:
         """
         try:
             os.makedirs(self.path)
@@ -99,7 +99,7 @@ class World:
         """
         Kills all creatures and chunks at the end of the simulation
 
-        :return
+        :return:
         """
         for i in self.chunk_list:
             for j in i:
@@ -111,7 +111,7 @@ class World:
         """
         Deletes all creatures and chunks objects, saves simulation files and deletes the simulation object
 
-        :return
+        :return:
         """
 
         print(f"{self.name}: simulation ending...")
@@ -169,7 +169,7 @@ class World:
         """
         Updates all chunks and all creatures and adds newborn creatures and removes dead creatures from cratures list
 
-        :return
+        :return:
         """
         self.tick_count += 1
         self.tick_dead = set()
@@ -217,7 +217,7 @@ class World:
         """
         Analyses the different creatures genes and variables and prints it to the different files
 
-        :return
+        :return:
         """
         print(f"{self.name}: analysis setup")
 

@@ -11,10 +11,10 @@ class Creature:
 
     def __init__(self, world, start_coord, parents_ID, energy, sex, genes, start_count=0):
         """
-        creates a new creature
+        Creates a new creature
 
         :param world: world object where the creature lives
-        :type world: World object
+        :type world: World
         :param start_coord: initial coordinates where the creature is
         :type start_coord: tuple
         :param parents_ID: number of the two creature parents' ID
@@ -55,11 +55,12 @@ class Creature:
 
     def death(self, cause="e"):
         """
-        creatures' destructor
+        Destructs creature object
 
         :param cause: way in which the creature die
         :type cause: str
-        :return
+        
+        :return:
         """
         self.death_tick = self.world.tick_count
         self.death_cause = cause
@@ -90,13 +91,14 @@ class Creature:
 
     def update(self, tick):
         """
-        creature update/AI method
+        Updates the creature providing the given tick
 
         :param tick: the tick in which we are
         :type tick: int
-        :return
+        :return:
         """
-
+        # TODO: find if *tick* is useful
+        
         # reproduction control
         if self.energy > 50 and self.reprod_countdown <= 0:
             self.reprod_ready = True
@@ -126,7 +128,7 @@ class Creature:
 
     def _actual_chunk(self):
         """
-        evaluates the Chunk object in which the creature is
+        Gets the Chunk object in which the creature is
 
         :return: the Chunk object in which the creature is
         """
@@ -134,9 +136,10 @@ class Creature:
 
     def _death_control(self):
         """
-        death control method: it controls if the creatures has to die for some
-        reasons. It controls the parameters of starvation, temperature and age
-        :return
+        Controls if the creatures has to die for some reasons.
+        Controls the parameters of starvation, temperature and age
+        
+        :return:
         """
         if self.energy < 10:  # starvation death
             self.world.tick_dead.add(self)
@@ -152,7 +155,8 @@ class Creature:
 
     def _death_prob_temp(self):
         """
-        temperature death probabilities calculation
+        Temperature death probabilities calculation
+        
         :return: the probablity to die for temperature reasons
         """
         t = self.world.chunks_vars['temperature_max']
@@ -173,7 +177,8 @@ class Creature:
 
     def _dest_calc(self):
         """
-        evaluates the most convenient chunk to go to
+        Evaluates the most convenient chunk to go to
+        
         :return:
         """
 
@@ -198,7 +203,8 @@ class Creature:
 
     def _step(self):
         """
-        changes the coordinates of the creature
+        Changes the coordinates of the creature
+        
         :return:
         """
 
@@ -215,8 +221,7 @@ class Creature:
 
     def _eat(self):
         """
-        increases the energy of the creature by eating
-        consequently decreases the food in the chunk
+        Increases the energy of the creature by eating and consequently decreases the food in the chunk
 
         :return:
         """
@@ -227,8 +232,9 @@ class Creature:
 
     def _energy_consume(self, x, y):
         """
-        evaluates the quantity of the energy that would be used to reach
+        Evaluates the quantity of the energy that would be used to reach
         another chunk
+        
         :param x: first coordinate of the destination chunk to reach
         :type x: int
         :param y: second coordinate of the destination chunk to reach
@@ -241,18 +247,19 @@ class Creature:
                 self.genes['speed'].get()) * self.world.creatures_vars['en_dec_coeff'] * self.energy
 
     def _chunk_coord(self, i):
-       """
-       evaluates the chunk coordinates in which the creature is
-       :param i: indicates which coordinate is considered (0 for the x coordinate1 for the y coordinate)
-       :type i: int
-       :return: the chunk coordinates
-       """
-       return min(int(self.coord[i] / self.world.chunk_dim), self.world.dimension[i]) - 1
+        """
+        Evaluates the chunk coordinates where the creature is
+        
+        :param i: indicates which coordinate is considered (0 for the x coordinate1 for the y coordinate)
+        :type i: int
+        :return: the chunk coordinates
+        """
+        return min(int(self.coord[i] / self.world.chunk_dim), self.world.dimension[i]) - 1
 
     def _dating_agency(self):
         """
-        it searches a mate to reproduct with. If it finds the mate, it
-        activates the reproduction function
+        Searches a mate to reproduct with. Finds the mate and activates the reproduction function
+        
         :return:
         """
         for i in self._actual_chunk().chunk_creature_list:
@@ -264,7 +271,8 @@ class Creature:
 
     def _reproduction(self, other):
         """
-        creates a new creature from the two parents
+        Creates a new creature from the two parents
+        
         :param other: mate creature
         :type other: Creature object
         :return:
@@ -281,7 +289,8 @@ class Creature:
 
     def __del__(self):
         """
-        creatures' destructor. It writes the creatures data on the file
+        Writes the creatures data a file and destruct creature object
+        
         :return:
         """
         to_write = str()
