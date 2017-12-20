@@ -21,7 +21,7 @@ class World:
         :type name: str
         :param sim_variables: paramaters of the simulation
         :type sim_variables: dict
-        :return:
+        :return
         """
         print(f"{name}: simulation setup")
         self.name = name
@@ -38,7 +38,7 @@ class World:
         self.alive_creatures = set()
         self.tick_dead = set()
         self.new_born = set()
-        self.directory_setup()
+        self._directory_setup()
 
         print(f"        - creating chunks")
         for i in range(len(self.chunk_list)):  # quindi ogni 0 e' sostituito con un Chunk
@@ -53,11 +53,35 @@ class World:
         self.alive_creatures = self.new_born
         print(f"{self.name}: simulation setup done")
 
-    def directory_setup(self):
+    def run(self):
+        """
+        Calls update() one time per tick in lifetime
+
+        :return
+        """
+        print(f"{self.name}: simulation running...")
+        for i in range(self.lifetime):
+            if i % 100 == 0:
+                print(f"        - tick #{i}")
+            self._update()
+        print(f"{self.name}: run finished")
+        self._death()
+        self._analysis()
+
+    def get_ID(self):
+        """
+        Returns the ID of a new creature
+
+        :return
+        """
+        self.ID_count += 1
+        return self.ID_count
+
+    def _directory_setup(self):
         """
         Creates new directory for simulation and asks to remove it if it already exists
 
-        :return:
+        :return
         """
         try:
             os.makedirs(self.path)
@@ -71,11 +95,11 @@ class World:
         self.files['creatures_data'] = open(os.path.join(self.path, "creaturesData.csv"), 'w')
         self.files['chunk_data'] = open(os.path.join(self.path, "chunkData.csv"), 'w')
 
-    def death(self):
+    def _death(self):
         """
         Kills all creatures and chunks at the end of the simulation
 
-        :return:
+        :return
         """
         for i in self.chunk_list:
             for j in i:
@@ -86,7 +110,8 @@ class World:
     def __del__(self):
         """
         Deletes all creatures and chunks objects, saves simulation files and deletes the simulation object
-        :return:
+
+        :return
         """
 
         print(f"{self.name}: simulation ending...")
@@ -140,26 +165,11 @@ class World:
         # creazione della creatura con le caratteristiche calcolate
         return (self, coord, (0, 0), energy, sex, genes, int(rnd() * (self.creatures_vars['average_age'] / 2)))
 
-    def run(self):
-        """
-        Calls update() one time per tick in lifetime
-
-        :return:
-        """
-        print(f"{self.name}: simulation running...")
-        for i in range(self.lifetime):
-            if i % 100 == 0:
-                print(f"        - tick #{i}")
-            self._update()
-        print(f"{self.name}: run finished")
-        self.death()
-        self.analysis()
-
     def _update(self):
         """
         Updates all chunks and all creatures and adds newborn creatures and removes dead creatures from cratures list
 
-        :return:
+        :return
         """
         self.tick_count += 1
         self.tick_dead = set()
@@ -183,16 +193,15 @@ class World:
         self.alive_creatures = self.alive_creatures.union(self.new_born)
         self.alive_creatures.difference(self.tick_dead)
 
-    def get_ID(self):
+    def _tick_creature_list(self, tick, gene=None):
         """
-        Returns the ID of a new creature
+        Gets the genes of the creatures alive in a specific tick or, if gene is None, a list of the creatures
 
+        :param tick: the tick to search
+        :type tick: int
+        :param gene: the gene to return. if None, returns a list
         :return:
         """
-        self.ID_count += 1
-        return self.ID_count
-
-    def tick_creature_list(self, tick, gene=None):
         l = list()
         for i in self.creature_list:
             if i.birth_tick <= tick <= i.death_tick:
@@ -204,7 +213,12 @@ class World:
             return sorted(s)
         return l
 
-    def analysis(self):
+    def _analysis(self):
+        """
+        Analyses the different creatures genes and variables and prints it to the different files
+
+        :return
+        """
         print(f"{self.name}: analysis setup")
 
         # analisi caratteristiche
@@ -213,7 +227,7 @@ class World:
         for k in var.NUM_GENES_LIST:
             self.files[k] = open(os.path.join(self.path, f"{k}.csv"), 'w')
             for i in range(0, self.lifetime, var.TIME_INTERVAL):
-                l = self.tick_creature_list(i, k)
+                l = self._tick_creature_list(i, k)
                 to_write = str(i)
                 for j in range(0, var.PERCENTILE_PARTS + 1):
                     to_write += var.FILE_SEPARATOR + str(l[round((j / var.PERCENTILE_PARTS) * (len(l) - 1))])
@@ -262,7 +276,7 @@ class World:
                 files[j].append(open(os.path.join(self.path, f"{j}_{i}.csv"), 'w'))
                 strings[j].append(str())
         for i in range(0, self.lifetime, 100):
-            l = self.tick_creature_list(i)
+            l = self._tick_creature_list(i)
             data = dict()
             for w in var.CHUNK_ATTRS:
                 data[w] = dict()
