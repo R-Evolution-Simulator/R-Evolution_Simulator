@@ -25,7 +25,7 @@ class BaseGene(object):
         return self.phenotype
 
 
-class Allele(str):
+class Allele():
     def __init__(self, value, dominance):
         self.value = value
         self.dominance = dominance  # Allele dominance: 0 if recessive, 1 if dominant

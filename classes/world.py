@@ -16,9 +16,12 @@ class World:
     def __init__(self, name, sim_variables):
         """
         Creates new simulation
-        
+
         :param name: name of the simulation
-        :param sim_variables: dict 
+        :type name: str
+        :param sim_variables: paramaters of the simulation
+        :type sim_variables: dict
+        :return:
         """
         print(f"{name}: simulation setup")
         self.name = name
@@ -52,8 +55,9 @@ class World:
 
     def directory_setup(self):
         """
-        method which creates a new directory for the simulation
-        and deletes it if it already exists
+        Creates new directory for simulation and asks to remove it if it already exists
+
+        :return:
         """
         try:
             os.makedirs(self.path)
@@ -68,22 +72,28 @@ class World:
         self.files['chunk_data'] = open(os.path.join(self.path, "chunkData.csv"), 'w')
 
     def death(self):
+        """
+        Kills all creatures and chunks at the end of the simulation
+
+        :return:
+        """
         for i in self.chunk_list:
             for j in i:
                 j.death()
         for i in self.creature_list:
             i.death()
 
-
     def __del__(self):
-
-        # closing simulation and files
+        """
+        Deletes all creatures and chunks objects, saves simulation files and deletes the simulation object
+        :return:
+        """
 
         print(f"{self.name}: simulation ending...")
         print(f"        - deleting creatures")
         for i in self.creature_list:
             try:
-                del(i)
+                del (i)
             except AttributeError:
                 print("--error closing creature")
 
@@ -91,7 +101,7 @@ class World:
         for i in self.chunk_list:
             for j in i:
                 try:
-                    del(j)
+                    del (j)
                 except AttributeError:
                     print("error")
         to_write = str()
@@ -108,9 +118,10 @@ class World:
 
     def creature_randomization(self):
         """
-        function which returns a tuple with creature's characteristics
+        Creates a tuple with random characteristics of a creatures
+
+        :return: tuple
         """
-        # calcolo delle caratteristiche della nuova creatura (random)
         coord = [0, 0]
         for i in range(2):
             coord[i] = rnd() * self.dimension[i] * self.chunk_dim
@@ -131,20 +142,24 @@ class World:
 
     def run(self):
         """
-        method which execute the simulation
+        Calls update() one time per tick in lifetime
+
+        :return:
         """
         print(f"{self.name}: simulation running...")
         for i in range(self.lifetime):
             if i % 100 == 0:
                 print(f"        - tick #{i}")
-            self.update()
+            self._update()
         print(f"{self.name}: run finished")
         self.death()
         self.analysis()
 
-    def update(self):
+    def _update(self):
         """
-        method which update all the characteristics of creatures and chunks
+        Updates all chunks and all creatures and adds newborn creatures and removes dead creatures from cratures list
+
+        :return:
         """
         self.tick_count += 1
         self.tick_dead = set()
@@ -152,9 +167,7 @@ class World:
 
         for i in self.chunk_list:
             for j in i:
-                j.update()  # viene aggiornata ogni unita' di territorio
-
-        # update delle creature
+                j.update()
 
         j = 0
         for i in self.alive_creatures:
@@ -171,6 +184,11 @@ class World:
         self.alive_creatures.difference(self.tick_dead)
 
     def get_ID(self):
+        """
+        Returns the ID of a new creature
+
+        :return:
+        """
         self.ID_count += 1
         return self.ID_count
 
@@ -255,7 +273,8 @@ class World:
                     coord = (j.tick_history[i - birth][0], j.tick_history[i - birth][1])
                     chunk_coord = (int(coord[0] / self.chunk_dim), int(coord[1] / self.chunk_dim))
                     print(chunk_coord)
-                    val = min(self.chunk_list[chunk_coord[0]][chunk_coord[1]].__dict__[w], self.chunks_vars[w + '_max'] - 1)
+                    val = min(self.chunk_list[chunk_coord[0]][chunk_coord[1]].__dict__[w],
+                              self.chunks_vars[w + '_max'] - 1)
                     data[w]['raw'][utl.data_number(w, j)][
                         int((val * var.PARTS) // (self.chunks_vars[w + '_max']))] += 1
 
