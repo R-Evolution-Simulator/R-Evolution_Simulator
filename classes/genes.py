@@ -1,4 +1,5 @@
 from random import random as rnd, gauss
+from .alleles import *
 
 
 class BaseGene(object):
@@ -7,14 +8,14 @@ class BaseGene(object):
             self.genotype = gen
             self.phenotype = None
             if gen:
-                self.fenotype_calc()
+                self._phenotype_calc()
         else:
             self.phenotype = phen
 
-    def randomize(self, lims=None):  # placeholder
-        pass
+    def randomize(self):
+        self._phenotype_calc()
 
-    def _phenotype_calc(self):  # placeholder
+    def _phenotype_calc(self):
         pass
 
     def reproduce(self, other, sigma):
@@ -25,26 +26,18 @@ class BaseGene(object):
         return self.phenotype
 
 
-class Allele():
-    def __init__(self, value, dominance):
-        self.value = value
-        self.dominance = dominance  # Allele dominance: 0 if recessive, 1 if dominant
-
-    def __eq__(self, other):
-        if self.value == other.value:
-            return True
-        return False
-
-
 class MendelGene(BaseGene):
     ALLELES = []
 
     def randomize(self, lims=None):
         genotype = list()
         for i in range(2):
-            genotype.append(self.ALLELES[int(rnd() * len(self.ALLELES))])
+            genotype.append(Allele(*self.ALLELES[int(rnd() * len(self.ALLELES))]))
         self.genotype = genotype
-        self._phenotype_calc()
+        super(MendelGene, self).randomize()
+
+    def _phenotype_calc(self):
+        self.phenotype = self.genotype
 
     def reproduce(self, other, sigma):
         return type(self)(gen=[self.genotype[int(rnd() * 2)], other.genotype[int(rnd() * 2)]])
@@ -53,27 +46,25 @@ class MendelGene(BaseGene):
 class NumberGene(BaseGene):
     def randomize(self, lims):
         self.genotype = rnd() * (lims[1] - lims[0])
+        super(NumberGene, self).randomize()
 
     def _phenotype_calc(self):
         self.phenotype = self.genotype
 
     def reproduce(self, other, sigma):
-        return type(self)(gen=((self.genotype + other.genotype)*(1/2 + gauss(0, sigma))))
+        return type(self)(gen=((self.genotype + other.genotype) * (1 / 2 + gauss(0, sigma))))
 
 
 class TempResist(MendelGene):
-    ALLELES = [Allele('N', 1), Allele('c', 0), Allele('l', 0)]
+    ALLELES = [('N', DOMINANT), ('c', RECESSIVE), ('l', RECESSIVE)]
 
     def _phenotype_calc(self):
-        if self.genotype[0] == self.ALLELES[0] or self.genotype[1] == self.ALLELES[0]:
+        if self.genotype[0].is_dominant() or self.genotype[1].is_dominant():
             phen = 'N'
         elif not self.genotype[0] == self.genotype[1]:
             phen = 'n'
         else:
-            if self.genotype[0] == self.ALLELES[1]:
-                phen = 'c'
-            else:
-                phen = 'l'
+            phen = self.genotype[0].value()
         self.phenotype = phen
 
 

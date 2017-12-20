@@ -161,6 +161,7 @@ class World:
                 new_gene.randomize(lims[i])
             except KeyError:
                 new_gene.randomize()
+            genes[i] = new_gene
 
         # creazione della creatura con le caratteristiche calcolate
         return (self, coord, (0, 0), energy, sex, genes, int(rnd() * (self.creatures_vars['average_age'] / 2)))
