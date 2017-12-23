@@ -42,9 +42,9 @@ class Chunk:
 
         self.food_history.append((int(self.food),))
 
-    def death(self):
+    def end(self):
         """
-        Saves the data of the chunk before the death
+        Saves the data of the chunk at the end of the simulation
 
         :return:
         """
@@ -57,11 +57,3 @@ class Chunk:
             self.world.files['chunk_data'].write(to_write[:-1] + '\n')
         except ValueError:
             pass
-
-    def __del__(self):
-        """
-        Destructs the chunk object
-
-        :return:
-        """
-        pass

@@ -5,6 +5,9 @@ from . import utility as utl
 from . import var
 from . import genes as gns
 
+
+# TODO: find why creatures don't die
+
 class Creature:
     """class of creatures"""
     TO_RECORD = var.TO_RECORD['creature']
@@ -55,15 +58,17 @@ class Creature:
 
     def death(self, cause="e"):
         """
-        Destructs creature object
+        Kills the creature
 
         :param cause: way in which the creature die
         :type cause: str
         
         :return:
         """
+        print(cause)
         self.death_tick = self.world.tick_count
         self.death_cause = cause
+        self.world.tick_dead.add(self)
         if self.birth_tick <= 0:
             if len(self.tick_history) == self.world.tick_count:
                 pass
@@ -287,10 +292,10 @@ class Creature:
             genes[i] = self.genes[i].reproduce(other.genes[i], self.world.creatures_vars['mutation_coeff'])
         Creature(self.world, start_coord, (self.ID, other.ID), energy, sex, genes)
 
-    def __del__(self):
+    def end(self):
         """
-        Writes the creatures data a file and destruct creature object
-        
+        Saves the data of the creature at the end of the simulation
+
         :return:
         """
         to_write = str()
@@ -301,4 +306,4 @@ class Creature:
         try:
             self.world.files['creatures_data'].write(to_write[:-1] + '\n')
         except ValueError:
-            pass
+            print('dio')

@@ -3,6 +3,8 @@ from .alleles import *
 
 
 class BaseGene(object):
+    REC_TYPE = None
+
     def __init__(self, gen=None, phen=None):
         if not phen:
             self.genotype = gen
@@ -24,6 +26,9 @@ class BaseGene(object):
     def get(self):
         return self.phenotype
 
+    def __str__(self):
+        return str(self.phenotype)
+
 
 class MendelGene(BaseGene):
     ALLELES = []
@@ -43,6 +48,8 @@ class MendelGene(BaseGene):
 
 
 class NumberGene(BaseGene):
+    REC_TYPE = 'num'
+
     def randomize(self, lims):
         self.genotype = rnd() * (lims[1] - lims[0])
         super(NumberGene, self).randomize()
@@ -55,6 +62,7 @@ class NumberGene(BaseGene):
 
 
 class TempResist(MendelGene):
+    REC_TYPE = 'spr'
     ALLELES = [('N', DOMINANT), ('c', RECESSIVE), ('l', RECESSIVE)]
 
     def _phenotype_calc(self):

@@ -60,13 +60,17 @@ class World:
         :return:
         """
         print(f"{self.name}: simulation running...")
-        for i in range(self.lifetime):
+        for i in range(self.max_lifetime):
             if i % 100 == 0:
                 print(f"        - tick #{i}")
             self._update()
+            if len(self.alive_creatures) == 0:
+                break
+        self.lifetime = self.tick_count
         print(f"{self.name}: run finished")
-        self._death()
+        self._end()
         self._analysis()
+        self._finalize()
 
     def get_ID(self):
         """
@@ -86,16 +90,13 @@ class World:
         try:
             os.makedirs(self.path)
         except FileExistsError:
-            if "y" == input(f"Simulation \"{self.name}\" already exists. Overwrite it? y/n"):
-                shutil.rmtree(self.path)
-                os.makedirs(self.path)
-            else:
-                exit()
+            shutil.rmtree(self.path)
+            os.makedirs(self.path)
         self.files['simulation_data'] = open(os.path.join(self.path, "simulationData.csv"), 'w')
         self.files['creatures_data'] = open(os.path.join(self.path, "creaturesData.csv"), 'w')
         self.files['chunk_data'] = open(os.path.join(self.path, "chunkData.csv"), 'w')
 
-    def _death(self):
+    def _end(self):
         """
         Kills all creatures and chunks at the end of the simulation
 
@@ -103,11 +104,16 @@ class World:
         """
         for i in self.chunk_list:
             for j in i:
-                j.death()
-        for i in self.creature_list:
+                j.end()
+        p = 0
+        for i in self.alive_creatures:
+            p += 1
+            print(p)
             i.death()
+        for i in self.creature_list:
+            i.end()
 
-    def __del__(self):
+    def _finalize(self):
         """
         Deletes all creatures and chunks objects, saves simulation files and deletes the simulation object
 
@@ -118,7 +124,7 @@ class World:
         print(f"        - deleting creatures")
         for i in self.creature_list:
             try:
-                del (i)
+                del i
             except AttributeError:
                 print("--error closing creature")
 
@@ -126,7 +132,7 @@ class World:
         for i in self.chunk_list:
             for j in i:
                 try:
-                    del (j)
+                    del j
                 except AttributeError:
                     print("error")
         to_write = str()
@@ -138,6 +144,7 @@ class World:
             pass
         print(f"        - closing files")
         for i in self.files:
+            print(i)
             self.files[i].close()
         print(f"{self.name}: simulation ended")
 
@@ -180,38 +187,25 @@ class World:
             for j in i:
                 j.update()
 
-        j = 0
         for i in self.alive_creatures:
-            j += 1
             i.update(self.tick_count)  # viene aggiornata ogni creatura
-        if not j == len(self.alive_creatures):
-            print('-----    ERROR')
-        '''
-        for i in self.new_born:
-            i.update()
-        '''
+
         self.creature_list = self.creature_list.union(self.new_born)
         self.alive_creatures = self.alive_creatures.union(self.new_born)
-        self.alive_creatures.difference(self.tick_dead)
+        self.alive_creatures = self.alive_creatures.difference(self.tick_dead)
 
-    def _tick_creature_list(self, tick, gene=None):
+    def _tick_creature_list(self, tick):
         """
-        Gets the genes of the creatures alive in a specific tick or, if gene is None, a list of the creatures
+        Gets the list of the creatures alive in a certain tick
 
         :param tick: the tick to search
         :type tick: int
-        :param gene: the gene to return. if None, returns a list
         :return:
         """
         l = list()
         for i in self.creature_list:
             if i.birth_tick <= tick <= i.death_tick:
                 l.append(i)
-        if gene:
-            s = list()
-            for i in l:
-                s.append(i.genes[gene])
-            return sorted(s)
         return l
 
     def _analysis(self):
@@ -220,63 +214,61 @@ class World:
 
         :return:
         """
-        # TODO: Revise analysis and find why it doesn't work (maybe rewrite it from beginning)
-        '''
-        SCHEMINO:
-        
-        - Analisi dei geni:
-            - Numerici: Per ogni tick calcola i percentili e la media
-            - Mendeliani
-        - Analisi della popolazione
-        - Analisi spreading
-        '''
         print(f"{self.name}: analysis setup")
 
-        # analisi caratteristiche
-        print(f"{self.name}: genes analysis")
-
-        for k in var.NUM_GENES_LIST:
-            self.files[k] = open(os.path.join(self.path, f"{k}.csv"), 'w')
-            for i in range(0, self.lifetime, var.TIME_INTERVAL):
-                l = self._tick_creature_list(i, k)
-                to_write = str(i)
-                for j in range(0, var.PERCENTILE_PARTS + 1):
-                    to_write += var.FILE_SEPARATOR + str(l[round((j / var.PERCENTILE_PARTS) * (len(l) - 1))])
-                to_write += var.FILE_SEPARATOR + str(sum(l) / float(len(l))) + '\n'
-                self.files[k].write(to_write)
-
-        self.files['population'] = open(os.path.join(self.path, f"population.csv"), 'w')
-        for i in range(0, self.lifetime, var.TIME_INTERVAL):
-            deaths = [0, 0, 0]
-            born = 0
-            for j in self.creature_list:
-                if j.birth_tick >= i and j.birth_tick < i + var.TIME_INTERVAL:
-                    born += 1
-                if j.death_tick >= i and j.death_tick < i + var.TIME_INTERVAL:
-                    if j.death_cause == "s":
-                        deaths[0] += 1
-                    elif j.death_cause == "t":
-                        deaths[1] += 1
-                    elif j.death_cause == "a":
-                        deaths[2] += 1
-            self.files['population'].write(str(i) + var.FILE_SEPARATOR + str(born) + var.FILE_SEPARATOR + str(
-                deaths[0]) + var.FILE_SEPARATOR + str(deaths[1]) + var.FILE_SEPARATOR + str(deaths[2]) + '\n')
-
         chunk_attrs_spread = dict()
-        for k in var.CHUNK_ATTRS:
-            self.files[k] = open(os.path.join(self.path, f"{k}.csv"), 'w')
+        for attr in var.CHUNK_ATTRS:
+            self.files[attr] = open(os.path.join(self.path, f"{attr}.csv"), 'w')
             parts = [0 for x in range(var.PARTS)]
-            for i in self.chunk_list:
-                for j in i:
-                    val = min(j.__dict__[k], self.chunks_vars[k + '_max'] - 1)
-                parts[int((val * var.PARTS) / (self.chunks_vars[k + '_max']))] += 1
+            for chunk_row in self.chunk_list:
+                for chunk in chunk_row:
+                    val = min(chunk.__dict__[attr], self.chunks_vars[attr + '_max'] - 1)
+                    parts[int((val * var.PARTS) / (self.chunks_vars[attr + '_max']))] += 1
             string = str()
             for i in range(0, 8):
                 string += str(parts[i]) + var.FILE_SEPARATOR
-            chunk_attrs_spread[k] = parts
-            self.files[k].write(string[:-1] + '\n')
+            chunk_attrs_spread[attr] = parts
+            self.files[attr].write(string[:-1] + '\n')
 
-            # analisi disposizione
+        for gene in var.CREATURES_GENES:
+            rec_type = var.CREATURES_GENES[gene].REC_TYPE
+            if rec_type == 'num':
+                self.files[gene] = open(os.path.join(self.path, f"{gene}_num.csv"), 'w')
+                for tick in range(0, self.lifetime, var.TIME_INTERVAL):
+                    alive = self._tick_creature_list(tick)
+                    values = list()
+                    for creature in alive:
+                        values.append(creature.genes[gene].phenotype)
+                    values.sort()
+                    to_write = str(tick)
+                    for part in range(0, var.PERCENTILE_PARTS + 1):
+                        to_write += var.FILE_SEPARATOR + str(
+                            values[round((part / var.PERCENTILE_PARTS) * (len(values) - 1))])
+                    to_write += var.FILE_SEPARATOR + str(sum(values) / float(len(values)))
+                    self.files[gene].write(to_write + '\n')
+            elif rec_type == 'spr':
+                alive = self._tick_creature_list(tick)
+                for creature in alive:
+                    values.append(creature.genes[gene])
+
+        self.files['population'] = open(os.path.join(self.path, f"population.csv"), 'w')
+        for tick in range(0, self.lifetime, var.TIME_INTERVAL):
+            deaths = [0, 0, 0]
+            born = 0
+            for creature in self.creature_list:
+                if tick <= creature.birth_tick < tick + var.TIME_INTERVAL:
+                    born += 1
+                if tick <= creature.death_tick < tick + var.TIME_INTERVAL:
+                    if creature.death_cause == 's':
+                        deaths[0] += 1
+                    elif creature.death_cause == 't':
+                        deaths[1] += 1
+                    elif creature.death_cause == 'a':
+                        deaths[2] += 1
+            self.files['population'].write(str(tick) + var.FILE_SEPARATOR + str(born) + var.FILE_SEPARATOR + str(
+                deaths[0]) + var.FILE_SEPARATOR + str(deaths[1]) + var.FILE_SEPARATOR + str(deaths[2]) + '\n')
+
+        # TODO: Find bug in this last section below
         print(f"{self.name}: spreading and deaths analysis")
         files = dict()
         strings = dict()
@@ -291,8 +283,8 @@ class World:
             data = dict()
             for w in var.CHUNK_ATTRS:
                 data[w] = dict()
-                for k in ['raw', 'correct']:
-                    data[w][k] = [[0 for x in range(var.PARTS)] for y in range(var.CHUNK_ATTRS_PARTS[w])]
+                for attr in ['raw', 'correct']:
+                    data[w][attr] = [[0 for x in range(var.PARTS)] for y in range(var.CHUNK_ATTRS_PARTS[w])]
                 for j in l:
                     birth = max(j.birth_tick, 0)
                     coord = (j.tick_history[i - birth][0], j.tick_history[i - birth][1])
@@ -304,7 +296,7 @@ class World:
                         int((val * var.PARTS) // (self.chunks_vars[w + '_max']))] += 1
 
                 x = 0
-                for k in range(var.CHUNK_ATTRS_PARTS[w]):
+                for attr in range(var.CHUNK_ATTRS_PARTS[w]):
                     strings[w][x] = str(i)
                     for j in range(var.PARTS):
                         if chunk_attrs_spread[w][j] == 0:
@@ -313,7 +305,7 @@ class World:
                             data[w]['correct'][x][j] = data[w]['raw'][x][j] / chunk_attrs_spread[w][j] * var.ADJ_COEFF
                         strings[w][x] += var.FILE_SEPARATOR + str(data[w]['raw'][x][j]) + var.FILE_SEPARATOR + str(
                             data[w]['correct'][x][j])
-                    files[w][k] = open(os.path.join(self.path, f"{j}_{i}.csv"), 'w')
-                    files[w][k].write(strings[w][x])
-                    self.files[w + '_' + str(k)] = files[w][k]
+                    files[w][attr] = open(os.path.join(self.path, f"{j}_{i}.csv"), 'w')
+                    files[w][attr].write(strings[w][x])
+                    self.files[w + '_' + str(attr)] = files[w][attr]
                     x += 1

@@ -8,7 +8,7 @@ SIMULATIONS_PATH = os.path.join(os.getcwd(), "simulations")
 
 DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                          'chunk_dim': 10,
-                         'lifetime': 10000,
+                         'max_lifetime': 10000,
                          'initial_creatures': 750,
                          'chunks_vars': {'growth_coeff': 0.0005,
                                          'foodmax_max': 100,
