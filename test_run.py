@@ -1,5 +1,5 @@
-from classes.world import World
-from classes import var
+from modules.world import World
+from modules import var
 
 name = "test"
 lol = var.DFEAULT_SIM_VARIABLES

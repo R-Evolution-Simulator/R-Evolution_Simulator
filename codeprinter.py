@@ -8,7 +8,7 @@ name = ["world", "creature", "chunk", "analysis", "graphics"]
 
 lines = {}
 for a in name:
-    f = open(f"classes/{a}.py")
+    f = open(f"modules/{a}.py")
     lines[a] = f.readlines()
 while True:
     for a in name:

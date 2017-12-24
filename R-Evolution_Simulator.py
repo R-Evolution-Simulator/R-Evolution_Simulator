@@ -1,4 +1,4 @@
-from classes.main import Main
+from modules.main import Main
 
 a = Main()
 a.run()
