@@ -59,7 +59,7 @@ class Chunk:
         """
         to_write = str()
         for i in self.TO_RECORD:
-            to_write += utl.add_to_write(self.__dict__[i], var.ROUNDINGS['chunk'])
+            to_write += utl.add_to_write(self.__dict__[i], self.world.analysis['rounding'])
         for i in self.food_history:
             to_write += utl.history_to_write(i)
         try:

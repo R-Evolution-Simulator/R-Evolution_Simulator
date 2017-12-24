@@ -137,7 +137,7 @@ class World:
                     print("error")
         to_write = str()
         for i in self.TO_RECORD:
-            to_write += utl.add_to_write(self.__dict__[i], var.ROUNDINGS['simulation'])
+            to_write += utl.add_to_write(self.__dict__[i], self.analysis['rounding'])
         try:
             self.files['simulation_data'].write(to_write[:-1])
         except ValueError:
@@ -186,17 +186,17 @@ class World:
         self.new_born = set()
 
         for i in self.alive_creatures:
-            i.update(self.tick_count)  # viene aggiornata ogni creatura
+            i.update()
 
         for i in self.chunk_list:
             for j in i:
-                j.update(self.tick_count % var.TIME_INTERVAL == 0)
+                j.update(self.tick_count % self.analysis['time_interval'] == 0)
 
         self.creature_list = self.creature_list.union(self.new_born)
         self.alive_creatures = self.alive_creatures.union(self.new_born)
         self.alive_creatures = self.alive_creatures.difference(self.tick_dead)
 
-    def _tick_creature_set(self, tick):
+    def _tick_creature_get(self, tick):
         """
         Gets the list of the creatures alive in a certain tick
 
@@ -220,8 +220,8 @@ class World:
 
         self._analysis_chunk_attrs()
 
-        for tick in range(0, self.lifetime, var.TIME_INTERVAL):
-            alive = self._tick_creature_set(tick)
+        for tick in range(0, self.lifetime, self.analysis['time_interval']):
+            alive = self._tick_creature_get(tick)
 
             for gene in var.CREATURES_GENES:
                 rec_type = var.CREATURES_GENES[gene].REC_TYPE
@@ -255,7 +255,7 @@ class World:
         else:
             out = str()
         for i in to_write:
-            out += str(i) + var.FILE_SEPARATOR
+            out += str(round(i, self.analysis['rounding'])) + var.FILE_SEPARATOR
         file.write(out[:-1] + '\n')
         file.close()
 
@@ -271,7 +271,7 @@ class World:
             for chunk_row in self.chunk_list:
                 for chunk in chunk_row:
                     values.append(chunk.__dict__[attr])
-            parts = numpy.histogram(values, var.PARTS, (0, self.chunks_vars[attr + '_max']))[0]
+            parts = numpy.histogram(values, self.analysis['parts'], (0, self.chunks_vars[attr + '_max']))[0]
             self.chunk_attrs_freq[attr] = parts
             self._analysis_file_write(f"{attr}.csv", parts)
 
@@ -291,8 +291,8 @@ class World:
         for creature in alive:
             values.append(creature.genes[gene].phenotype)
         parts = list()
-        for part in range(0, var.PERCENTILE_PARTS + 1):
-            parts.append(scipy.percentile(values, part * 100 / var.PERCENTILE_PARTS))
+        for part in range(0, self.analysis['percentile_parts'] + 1):
+            parts.append(scipy.percentile(values, part * 100 / self.analysis['percentile_parts']))
         parts.append(scipy.average(values))
         self._analysis_file_write(f"{gene}.csv", parts, tick)
 
@@ -306,15 +306,15 @@ class World:
         :type tick: int
         :return:
         """
-        index = tick // var.TIME_INTERVAL
+        index = tick // self.analysis['time_interval']
         gene_class = var.CREATURES_GENES[gene]
         attr = gene_class.REC_CHUNK_ATTR
         attr_max = self.chunks_vars[attr + '_max']
         classes = gene_class.REC_CLASSES
-        values = [[0 for i in range(var.PARTS)] for j in classes]
+        values = [[0 for i in range(self.analysis['parts'])] for j in classes]
         for chunk_row in self.chunk_list:
             for chunk in chunk_row:
-                chunk_index = int(chunk.__dict__[attr] * var.PARTS / attr_max)
+                chunk_index = int(chunk.__dict__[attr] * self.analysis['parts'] / attr_max)
                 for creature in chunk.ticks_record[index]:
                     i = 0
                     for phens in classes:
@@ -325,13 +325,13 @@ class World:
                     try:
                         values[phen_index][chunk_index] += 1
                     except IndexError:
-                        if chunk_index == var.PARTS:
+                        if chunk_index == self.analysis['parts']:
                             values[phen_index][chunk_index - 1] += 1
                         else:
                             raise
-        correct = [[0 for i in range(var.PARTS)] for j in classes]
+        correct = [[0 for i in range(self.analysis['parts'])] for j in classes]
         for phen in range(len(classes)):
-            for part in range(var.PARTS):
+            for part in range(self.analysis['parts']):
                 if not self.chunk_attrs_freq[attr][part] == 0:
                     correct[phen][part] = values[phen][part] / self.chunk_attrs_freq[attr][part]
                 else:
@@ -349,8 +349,8 @@ class World:
         deaths = {'s': 0, 't': 0, 'a': 0, 'e': 0}
         born = 0
         for creature in self.creature_list:
-            if tick <= creature.birth_tick < tick + var.TIME_INTERVAL:
+            if tick <= creature.birth_tick < tick + self.analysis['time_interval']:
                 born += 1
-            if tick <= creature.death_tick < tick + var.TIME_INTERVAL:
+            if tick <= creature.death_tick < tick + self.analysis['time_interval']:
                 deaths[creature.death_cause] += 1
         self._analysis_file_write("population.csv", [born, deaths['s'], deaths['t'], deaths['a']], tick)

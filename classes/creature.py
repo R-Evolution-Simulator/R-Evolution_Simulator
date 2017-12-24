@@ -6,8 +6,6 @@ from . import var
 from . import genes as gns
 
 
-# TODO: find why creatures don't die
-
 class Creature:
     """class of creatures"""
     TO_RECORD = var.TO_RECORD['creature']
@@ -45,6 +43,8 @@ class Creature:
         self.age = 0  # age set to 0
         self.dest_chunk = [self._chunk_coord(0), self._chunk_coord(1)]
         self.sex = sex
+        self.death_tick = None
+        self.death_cause = None
 
         # creature's genes definition
         self.genes = genes
@@ -66,40 +66,13 @@ class Creature:
         self.death_tick = self.world.tick_count
         self.death_cause = cause
         self.world.tick_dead.add(self)
-        if self.birth_tick <= 0:
-            if len(self.tick_history) == self.world.tick_count:
-                pass
-                # print("Creature died: EVERYTHING OK (1)")
-            else:
-                '''print("Creature died: NOT OK!")
-                print(f"     - actual age: {self.age}")
-                print(f"     - actual age 2: {self.death_tick-max(self.birth_tick,0)}")
-                print(f"     - tick_history lenght: {len(self.tick_history)}")
-                print(f"     - birth tick: {self.birth_tick}")
-                print(f"     - death tick: {self.death_tick}")'''
-                raise AttributeError
-        else:
-            if len(self.tick_history) == self.death_tick - self.birth_tick:
-                pass
-                # print("Creature died: EVERYTHING OK (2)")
-            else:
-                '''  print("Creature died: NOT OK!")
-                print(f"     - actual age: {self.age}")
-                print(f"     - actual age 2: {self.death_tick-max(self.birth_tick,0)}")
-                print(f"     - tick_history lenght: {len(self.tick_history)}")
-                print(f"     - birth tick: {self.birth_tick}")
-                print(f"     - death tick: {self.death_tick}")'''
-                raise AttributeError
 
-    def update(self, tick):
+    def update(self):
         """
         Updates the creature providing the given tick
 
-        :param tick: the tick in which we are
-        :type tick: int
         :return:
         """
-        # TODO: find if *tick* is useful
         
         # reproduction control
         if self.energy > 50 and self.reprod_countdown <= 0:
@@ -297,7 +270,7 @@ class Creature:
         """
         to_write = str()
         for i in self.TO_RECORD:
-            to_write += utl.add_to_write(self.__dict__[i], var.ROUNDINGS['creature'])
+            to_write += utl.add_to_write(self.__dict__[i], self.world.analysis['rounding'])
         for i in self.tick_history:
             to_write += utl.history_to_write(i)
         try:

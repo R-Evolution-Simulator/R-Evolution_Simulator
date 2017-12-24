@@ -35,18 +35,3 @@ def history_to_write(history):
         to_write += str(i) + var.HISTORY_SEPARATORS[0]
     to_write = to_write[:-1] + var.HISTORY_SEPARATORS[1]
     return to_write
-
-
-def data_number(w, j):
-    if w == 'temperature':
-        x = j.genes['temp_resist']
-        if x == "N" or x == "n":
-            return 0
-
-        elif x == "l":
-            return 1
-
-        elif x == "c":
-            return 2
-    else:
-        return 0

@@ -27,9 +27,13 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                                                           },
                                             'mutation_coeff': 0.05,
                                             },
+                         'analysis': {'time_interval': 100,
+                                      'percentile_parts': 4,
+                                      'parts': 8,
+                                      'rounding': 4}
                          }
 
-CHUNK_ATTRS = ['temperature', 'foodmax']
+CHUNK_ATTRS = ('temperature', 'foodmax')
 
 CREATURES_GENES = {'agility': gns.Agility, 'bigness': gns.Bigness, 'fertility': gns.Fertility,
                    'num_control': gns.NumControl, 'temp_resist': gns.TempResist, 'mndl_control': gns.MendelControl}
@@ -42,23 +46,9 @@ HISTORY_SEPARATORS = (',', '/')
 
 TO_RECORD = {
     'simulation': ['name', 'dimension', 'lifetime', 'initial_creatures', 'chunk_dim', 'tick_count', 'chunks_vars',
-                   'creatures_vars', 'ID_count'],
+                   'creatures_vars', 'analysis', 'ID_count'],
     'creature': ['ID', 'birth_tick', 'parents_ID', 'sex', 'genes', 'death_tick', 'death_cause'],
     'chunk': ['coord', 'foodmax', 'growth_rate', 'temperature']}
-
-ROUNDINGS = {'simulation': None, 'creature': 4, 'chunk': 4}
-
-# analysis
-
-TIME_INTERVAL = 100
-
-PERCENTILE_PARTS = 4
-
-PARTS = 8
-
-CHUNK_ATTRS_PARTS = {'temperature': 3, 'foodmax': 1}
-
-ADJ_COEFF = 100
 
 # graphics
 
