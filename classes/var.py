@@ -26,14 +26,13 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                                                           'num_control': (0, 100)
                                                           },
                                             'mutation_coeff': 0.05,
-                                            'eat_coeff_max': 0.003,
                                             },
                          }
 
 CHUNK_ATTRS = ['temperature', 'foodmax']
 
 CREATURES_GENES = {'agility': gns.Agility, 'bigness': gns.Bigness, 'fertility': gns.Fertility,
-                   'num_control': gns.NumControl, 'temp_resist': gns.TempResist}
+                   'num_control': gns.NumControl, 'temp_resist': gns.TempResist, 'mndl_control': gns.MendelControl}
 
 # files
 

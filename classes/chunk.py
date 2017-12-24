@@ -28,9 +28,11 @@ class Chunk:
         self.growth_rate = self.foodmax * self.world.chunks_vars[
             'growth_coeff']  # la crescita e' direttamente proporzionale all'erba massima
         self.food_history = list()
-        self.chunk_creature_list = []
+        self.chunk_creature_list = list()
+        self.ticks_record = list()
+        self._tick_record()
 
-    def update(self):
+    def update(self, tick_to_record):
         """
         Updates the parameters of the chunk
 
@@ -41,6 +43,13 @@ class Chunk:
             self.food = self.foodmax
 
         self.food_history.append((int(self.food),))
+
+        if tick_to_record:
+            self._tick_record()
+
+    def _tick_record(self):
+        self.ticks_record.append(self.chunk_creature_list)
+
 
     def end(self):
         """

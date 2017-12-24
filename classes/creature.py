@@ -49,8 +49,6 @@ class Creature:
         # creature's genes definition
         self.genes = genes
         self.reprod_countdown = self.genes['fertility'].get()
-        self.genes['speed'] = gns.Speed(self.genes['agility'], self.genes['bigness'])
-        self.genes['eat_coeff'] = gns.EatCoeff(self.genes['bigness'], self.world.creatures_vars['eat_coeff_max'])
 
         # phenotypical characteristics valuation
 
@@ -65,7 +63,6 @@ class Creature:
         
         :return:
         """
-        print(cause)
         self.death_tick = self.world.tick_count
         self.death_cause = cause
         self.world.tick_dead.add(self)

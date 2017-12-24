@@ -5,14 +5,11 @@ from .alleles import *
 class BaseGene(object):
     REC_TYPE = None
 
-    def __init__(self, gen=None, phen=None):
-        if not phen:
-            self.genotype = gen
-            self.phenotype = None
-            if gen:
-                self._phenotype_calc()
-        else:
-            self.phenotype = phen
+    def __init__(self, gen=None):
+        self.genotype = gen
+        self.phenotype = None
+        if gen:
+            self._phenotype_calc()
 
     def randomize(self):
         self._phenotype_calc()
@@ -58,12 +55,29 @@ class NumberGene(BaseGene):
         self.phenotype = self.genotype
 
     def reproduce(self, other, sigma):
-        return type(self)(gen=((self.genotype + other.genotype) * (1 / 2 + gauss(0, sigma))))
+        return type(self)(gen=((self.phenotype + other.phenotype) * (1 / 2 + gauss(0, sigma))))
+
+
+class SecondaryGene(BaseGene):
+    """
+    Genes which have other genes as genotype
+    """
+
+    def _phenotype_calc(self):
+        pass
+
+    def reproduce(self, other, sigma):
+        new_gen = dict()
+        for i in self.genotype:
+            new_gen[i] = self.genotype[i].reproduce(other.genotype[i], sigma)
+        return type(self)(gen=new_gen)
 
 
 class TempResist(MendelGene):
     REC_TYPE = 'spr'
-    ALLELES = [('N', DOMINANT), ('c', RECESSIVE), ('l', RECESSIVE)]
+    REC_CLASSES = (('N', 'n'), ('c',), ('l',))
+    REC_CHUNK_ATTR = 'temperature'
+    ALLELES = (('N', DOMINANT), ('c', RECESSIVE), ('l', RECESSIVE))
 
     def _phenotype_calc(self):
         if self.genotype[0].is_dominant() or self.genotype[1].is_dominant():
@@ -73,6 +87,13 @@ class TempResist(MendelGene):
         else:
             phen = self.genotype[0].value
         self.phenotype = phen
+
+
+class MendelControl(MendelGene):
+    REC_TYPE = 'spr'
+    REC_CLASSES = (('',),)
+    REC_CHUNK_ATTR = 'foodmax'
+    ALLELES = (('', DOMINANT),)
 
 
 class Agility(NumberGene):
@@ -91,11 +112,11 @@ class NumControl(NumberGene):
     pass
 
 
-class Speed(NumberGene):
-    def __init__(self, agility, bigness):
-        super(Speed, self).__init__(gen=((agility.get() / bigness.get()) * 2))
+class Speed(SecondaryGene, NumberGene):
+    def _phenotype_calc(self):
+        self.phenotype = self.genotype['agility'].get() / self.genotype['bigness'].get() * 2
 
 
-class EatCoeff(NumberGene):
-    def __init__(self, bigness, max):
-        super(EatCoeff, self).__init__(gen=(bigness.get() * max))
+class EatCoeff(SecondaryGene, NumberGene):
+    def _phenotype_calc(self):
+        self.phenotype = self.genotype['bigness'].get() * 0.003

@@ -1,12 +1,15 @@
 import os
 import shutil
 from random import random as rnd
+import scipy
+import numpy
 
 from .noise.simplexnoise.noise import SimplexNoise
 from .chunk import Chunk
 from .creature import Creature
 from . import var
 from . import utility as utl
+from . import genes as gns
 
 
 class World:
@@ -33,7 +36,7 @@ class World:
         self.ID_count = 0
         self.files = dict()
         self.chunk_list = [[None for x in range(self.dimension[1])] for y in
-                           range(self.dimension[0])]  # viene riempita una matrice di 0
+                           range(self.dimension[0])]
         self.creature_list = set()
         self.alive_creatures = set()
         self.tick_dead = set()
@@ -105,10 +108,7 @@ class World:
         for i in self.chunk_list:
             for j in i:
                 j.end()
-        p = 0
         for i in self.alive_creatures:
-            p += 1
-            print(p)
             i.death()
         for i in self.creature_list:
             i.end()
@@ -169,6 +169,8 @@ class World:
             except KeyError:
                 new_gene.randomize()
             genes[i] = new_gene
+        genes['speed'] = gns.Speed({'agility': genes['agility'], 'bigness': genes['bigness']})
+        genes['eat_coeff'] = gns.EatCoeff({'bigness': genes['bigness']})
 
         # creazione della creatura con le caratteristiche calcolate
         return (self, coord, (0, 0), energy, sex, genes, int(rnd() * (self.creatures_vars['average_age'] / 2)))
@@ -183,18 +185,18 @@ class World:
         self.tick_dead = set()
         self.new_born = set()
 
-        for i in self.chunk_list:
-            for j in i:
-                j.update()
-
         for i in self.alive_creatures:
             i.update(self.tick_count)  # viene aggiornata ogni creatura
+
+        for i in self.chunk_list:
+            for j in i:
+                j.update(self.tick_count % var.TIME_INTERVAL == 0)
 
         self.creature_list = self.creature_list.union(self.new_born)
         self.alive_creatures = self.alive_creatures.union(self.new_born)
         self.alive_creatures = self.alive_creatures.difference(self.tick_dead)
 
-    def _tick_creature_list(self, tick):
+    def _tick_creature_set(self, tick):
         """
         Gets the list of the creatures alive in a certain tick
 
@@ -202,10 +204,10 @@ class World:
         :type tick: int
         :return:
         """
-        l = list()
+        l = set()
         for i in self.creature_list:
             if i.birth_tick <= tick <= i.death_tick:
-                l.append(i)
+                l.add(i)
         return l
 
     def _analysis(self):
@@ -216,96 +218,139 @@ class World:
         """
         print(f"{self.name}: analysis setup")
 
-        chunk_attrs_spread = dict()
+        self._analysis_chunk_attrs()
+
+        for tick in range(0, self.lifetime, var.TIME_INTERVAL):
+            alive = self._tick_creature_set(tick)
+
+            for gene in var.CREATURES_GENES:
+                rec_type = var.CREATURES_GENES[gene].REC_TYPE
+                if rec_type == 'num':
+                    self._analysis_num_gene(gene, alive, tick)
+
+                elif rec_type == 'spr':
+                    self._analysis_spr_gene(gene, tick)
+
+            self._analysis_demographic_change(tick)
+
+    def _analysis_file_write(self, file_name, to_write, tick=None):
+        """
+        Writes to file_name the tick if present and then the items in to_write
+
+        :param file_name: the name of the file to write to
+        :type file_name: str
+        :param to_write: the list of items to write to the file
+        :type to_write: list
+        :param tick: the tick to write
+        :type tick: int
+        :return:
+        """
+        try:
+            file = open(os.path.join(self.path, file_name), 'r+')
+            file.seek(0, 2)
+        except FileNotFoundError:
+            file = open(os.path.join(self.path, file_name), 'w')
+        if tick is not None:
+            out = str(tick) + var.FILE_SEPARATOR
+        else:
+            out = str()
+        for i in to_write:
+            out += str(i) + var.FILE_SEPARATOR
+        file.write(out[:-1] + '\n')
+        file.close()
+
+    def _analysis_chunk_attrs(self):
+        """
+        Prints to the file the number of chunks per attribute class
+
+        :return:
+        """
+        self.chunk_attrs_freq = dict()
         for attr in var.CHUNK_ATTRS:
-            self.files[attr] = open(os.path.join(self.path, f"{attr}.csv"), 'w')
-            parts = [0 for x in range(var.PARTS)]
+            values = list()
             for chunk_row in self.chunk_list:
                 for chunk in chunk_row:
-                    val = min(chunk.__dict__[attr], self.chunks_vars[attr + '_max'] - 1)
-                    parts[int((val * var.PARTS) / (self.chunks_vars[attr + '_max']))] += 1
-            string = str()
-            for i in range(0, 8):
-                string += str(parts[i]) + var.FILE_SEPARATOR
-            chunk_attrs_spread[attr] = parts
-            self.files[attr].write(string[:-1] + '\n')
+                    values.append(chunk.__dict__[attr])
+            parts = numpy.histogram(values, var.PARTS, (0, self.chunks_vars[attr + '_max']))[0]
+            self.chunk_attrs_freq[attr] = parts
+            self._analysis_file_write(f"{attr}.csv", parts)
 
-        for gene in var.CREATURES_GENES:
-            rec_type = var.CREATURES_GENES[gene].REC_TYPE
-            if rec_type == 'num':
-                self.files[gene] = open(os.path.join(self.path, f"{gene}_num.csv"), 'w')
-                for tick in range(0, self.lifetime, var.TIME_INTERVAL):
-                    alive = self._tick_creature_list(tick)
-                    values = list()
-                    for creature in alive:
-                        values.append(creature.genes[gene].phenotype)
-                    values.sort()
-                    to_write = str(tick)
-                    for part in range(0, var.PERCENTILE_PARTS + 1):
-                        to_write += var.FILE_SEPARATOR + str(
-                            values[round((part / var.PERCENTILE_PARTS) * (len(values) - 1))])
-                    to_write += var.FILE_SEPARATOR + str(sum(values) / float(len(values)))
-                    self.files[gene].write(to_write + '\n')
-            elif rec_type == 'spr':
-                alive = self._tick_creature_list(tick)
-                for creature in alive:
-                    values.append(creature.genes[gene])
+    def _analysis_num_gene(self, gene, alive, tick):
+        """
+        Prints to the file the different percentile values and the average
 
-        self.files['population'] = open(os.path.join(self.path, f"population.csv"), 'w')
-        for tick in range(0, self.lifetime, var.TIME_INTERVAL):
-            deaths = [0, 0, 0]
-            born = 0
-            for creature in self.creature_list:
-                if tick <= creature.birth_tick < tick + var.TIME_INTERVAL:
-                    born += 1
-                if tick <= creature.death_tick < tick + var.TIME_INTERVAL:
-                    if creature.death_cause == 's':
-                        deaths[0] += 1
-                    elif creature.death_cause == 't':
-                        deaths[1] += 1
-                    elif creature.death_cause == 'a':
-                        deaths[2] += 1
-            self.files['population'].write(str(tick) + var.FILE_SEPARATOR + str(born) + var.FILE_SEPARATOR + str(
-                deaths[0]) + var.FILE_SEPARATOR + str(deaths[1]) + var.FILE_SEPARATOR + str(deaths[2]) + '\n')
+        :param gene: the gene to analyse
+        :type gene: str
+        :param alive: the list of alive creatures in tick
+        :type alive: set
+        :param tick: the tick considered
+        :type tick: int
+        :return:
+        """
+        values = list()
+        for creature in alive:
+            values.append(creature.genes[gene].phenotype)
+        parts = list()
+        for part in range(0, var.PERCENTILE_PARTS + 1):
+            parts.append(scipy.percentile(values, part * 100 / var.PERCENTILE_PARTS))
+        parts.append(scipy.average(values))
+        self._analysis_file_write(f"{gene}.csv", parts, tick)
 
-        # TODO: Find bug in this last section below
-        print(f"{self.name}: spreading and deaths analysis")
-        files = dict()
-        strings = dict()
-        for j in var.CHUNK_ATTRS_PARTS:
-            files[j] = list()
-            strings[j] = list()
-            for i in range(var.CHUNK_ATTRS_PARTS[j]):
-                files[j].append(open(os.path.join(self.path, f"{j}_{i}.csv"), 'w'))
-                strings[j].append(str())
-        for i in range(0, self.lifetime, 100):
-            l = self._tick_creature_list(i)
-            data = dict()
-            for w in var.CHUNK_ATTRS:
-                data[w] = dict()
-                for attr in ['raw', 'correct']:
-                    data[w][attr] = [[0 for x in range(var.PARTS)] for y in range(var.CHUNK_ATTRS_PARTS[w])]
-                for j in l:
-                    birth = max(j.birth_tick, 0)
-                    coord = (j.tick_history[i - birth][0], j.tick_history[i - birth][1])
-                    chunk_coord = (int(coord[0] / self.chunk_dim), int(coord[1] / self.chunk_dim))
-                    print(chunk_coord)
-                    val = min(self.chunk_list[chunk_coord[0]][chunk_coord[1]].__dict__[w],
-                              self.chunks_vars[w + '_max'] - 1)
-                    data[w]['raw'][utl.data_number(w, j)][
-                        int((val * var.PARTS) // (self.chunks_vars[w + '_max']))] += 1
+    def _analysis_spr_gene(self, gene, tick):
+        """
+        Prints to the file the different spreading of creatures by their gene's phenotype
 
-                x = 0
-                for attr in range(var.CHUNK_ATTRS_PARTS[w]):
-                    strings[w][x] = str(i)
-                    for j in range(var.PARTS):
-                        if chunk_attrs_spread[w][j] == 0:
-                            data[w]['correct'][x][j] = 0
+        :param gene: the gene to consider
+        :type gene: str
+        :param tick: the tick considered
+        :type tick: int
+        :return:
+        """
+        index = tick // var.TIME_INTERVAL
+        gene_class = var.CREATURES_GENES[gene]
+        attr = gene_class.REC_CHUNK_ATTR
+        attr_max = self.chunks_vars[attr + '_max']
+        classes = gene_class.REC_CLASSES
+        values = [[0 for i in range(var.PARTS)] for j in classes]
+        for chunk_row in self.chunk_list:
+            for chunk in chunk_row:
+                chunk_index = int(chunk.__dict__[attr] * var.PARTS / attr_max)
+                for creature in chunk.ticks_record[index]:
+                    i = 0
+                    for phens in classes:
+                        if creature.genes[gene].phenotype in phens:
+                            phen_index = i
+                            break
+                        i += 1
+                    try:
+                        values[phen_index][chunk_index] += 1
+                    except IndexError:
+                        if chunk_index == var.PARTS:
+                            values[phen_index][chunk_index - 1] += 1
                         else:
-                            data[w]['correct'][x][j] = data[w]['raw'][x][j] / chunk_attrs_spread[w][j] * var.ADJ_COEFF
-                        strings[w][x] += var.FILE_SEPARATOR + str(data[w]['raw'][x][j]) + var.FILE_SEPARATOR + str(
-                            data[w]['correct'][x][j])
-                    files[w][attr] = open(os.path.join(self.path, f"{j}_{i}.csv"), 'w')
-                    files[w][attr].write(strings[w][x])
-                    self.files[w + '_' + str(attr)] = files[w][attr]
-                    x += 1
+                            raise
+        correct = [[0 for i in range(var.PARTS)] for j in classes]
+        for phen in range(len(classes)):
+            for part in range(var.PARTS):
+                if not self.chunk_attrs_freq[attr][part] == 0:
+                    correct[phen][part] = values[phen][part] / self.chunk_attrs_freq[attr][part]
+                else:
+                    correct[phen][part] = 0
+            self._analysis_file_write(f"{gene}_{classes[phen][0]}.csv", values[phen] + correct[phen], tick)
+
+    def _analysis_demographic_change(self, tick):
+        """
+        Prints to the file the number of births and deaths divided by cause
+
+        :param tick: the tick considered
+        :type tick: int
+        :return:
+        """
+        deaths = {'s': 0, 't': 0, 'a': 0, 'e': 0}
+        born = 0
+        for creature in self.creature_list:
+            if tick <= creature.birth_tick < tick + var.TIME_INTERVAL:
+                born += 1
+            if tick <= creature.death_tick < tick + var.TIME_INTERVAL:
+                deaths[creature.death_cause] += 1
+        self._analysis_file_write("population.csv", [born, deaths['s'], deaths['t'], deaths['a']], tick)
