@@ -119,4 +119,4 @@ class Speed(SecondaryGene, NumberGene):
 
 class EatCoeff(SecondaryGene, NumberGene):
     def _phenotype_calc(self):
-        self.phenotype = self.genotype['bigness'].get() * 0.003
+        self.phenotype = self.genotype['bigness'].get() * 0.03

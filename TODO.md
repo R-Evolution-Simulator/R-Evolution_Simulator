@@ -3,6 +3,7 @@
 - Riduzione spazio dati
 - Loading Bar per il caricamento del replay
 - GUI crazione simulazione
+- Rimuovere eat_coeff come gene ?
 - To Correct:
     - Riproduzione per media dei caratteri genetici:
         - Grafo Bipartito (?)

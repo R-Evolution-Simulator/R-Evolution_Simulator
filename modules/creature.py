@@ -69,7 +69,7 @@ class Creature:
 
     def update(self):
         """
-        Updates the creature providing the given tick
+        Updates the creature status
 
         :return:
         """
