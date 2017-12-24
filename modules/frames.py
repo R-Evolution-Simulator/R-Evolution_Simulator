@@ -240,8 +240,8 @@ class CreatureSet(BaseLabelFrame):
 
 
 class DiagramSet(BaseFrame):
-    CHOICES = ['agility', 'bigness', 'eatCoeff', 'fertility', 'numControlGene', 'speed', 'population', 'foodmax',
-               'temperature_c', 'temperature_l', 'temperature_N']
+    CHOICES = ['agility', 'bigness', 'eat_coeff', 'fertility', 'num_control', 'speed', 'population', 'foodmax',
+               'temp_resist_c', 'temp_resist_l', 'temp_resist_N']
 
     def __init__(self, father, windows):
         self.father = father

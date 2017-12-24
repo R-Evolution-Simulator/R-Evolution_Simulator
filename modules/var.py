@@ -16,7 +16,7 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                                          },
                          'creatures_vars': {'view_ray': 3,
                                             'en_dec_coeff': 0.02,
-                                            'en_inc_coeff': 1.5,
+                                            'en_inc_coeff': 2.5,
                                             'average_age': 2000,
                                             'dev_age_prob': 750,
                                             'temp_death_prob_coeff': 100,
