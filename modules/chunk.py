@@ -50,18 +50,14 @@ class Chunk:
     def _tick_record(self):
         self.ticks_record.append(self.chunk_creature_list)
 
-    def end(self):
+    def end(self, file):
         """
         Saves the data of the chunk at the end of the simulation
 
+        :param file: the file to write to
         :return:
         """
         to_write = str()
         for i in self.TO_RECORD:
             to_write += utl.add_to_write(self.__dict__[i], self.world.analysis['rounding'])
-        for i in self.food_history:
-            to_write += utl.history_to_write(i)
-        try:
-            self.world.files['chunk_data'].write(to_write[:-1] + '\n')
-        except ValueError:
-            pass
+        file.write(to_write[:-1] + '\n')

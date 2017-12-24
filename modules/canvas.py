@@ -43,7 +43,7 @@ class PygameCanvas(object):
                                  chunk.coord[1] * self.father.chunk_dim / 10,
                                  (chunk.coord[0] + 1) * self.father.chunk_dim / 10,
                                  (chunk.coord[1] + 1) * self.father.chunk_dim / 10),
-                                fill=(0, int(chunk.foodMax * 255 / 100), 0))
+                                fill=(0, int(chunk.foodmax * 255 / 100), 0))
             if chunk.temperature > 0:
                 draw_temp.rectangle((chunk.coord[0] * self.father.chunk_dim / 10,
                                      chunk.coord[1] * self.father.chunk_dim / 10,
@@ -118,7 +118,7 @@ class PygameCanvas(object):
             """
             L = []
             for i in self.father.creature_list:
-                if i.birthTick <= tick <= i.deathTick:
+                if i.birth_tick <= tick <= i.death_tick:
                     L.append(i)
             return L
 

@@ -34,7 +34,6 @@ class World:
         self.noises = {'foodmax': SimplexNoise(num_octaves=6, persistence=0.1, dimensions=2, noise_scale=700),
                        'temperature': SimplexNoise(num_octaves=6, persistence=0.1, dimensions=2, noise_scale=700)}
         self.ID_count = 0
-        self.files = dict()
         self.chunk_list = [[None for x in range(self.dimension[1])] for y in
                            range(self.dimension[0])]
         self.creature_list = set()
@@ -95,9 +94,6 @@ class World:
         except FileExistsError:
             shutil.rmtree(self.path)
             os.makedirs(self.path)
-        self.files['simulation_data'] = open(os.path.join(self.path, "simulationData.csv"), 'w')
-        self.files['creatures_data'] = open(os.path.join(self.path, "creaturesData.csv"), 'w')
-        self.files['chunk_data'] = open(os.path.join(self.path, "chunkData.csv"), 'w')
 
     def _end(self):
         """
@@ -105,13 +101,15 @@ class World:
 
         :return:
         """
-        for i in self.chunk_list:
-            for j in i:
-                j.end()
+        with open(os.path.join(self.path, "chunkData.csv"), 'w') as file:
+            for i in self.chunk_list:
+                for j in i:
+                    j.end(file)
         for i in self.alive_creatures:
             i.death()
-        for i in self.creature_list:
-            i.end()
+        with open(os.path.join(self.path, "creaturesData.csv"), 'w') as file:
+            for i in self.creature_list:
+                i.end(file)
 
     def _finalize(self):
         """
@@ -138,14 +136,11 @@ class World:
         to_write = str()
         for i in self.TO_RECORD:
             to_write += utl.add_to_write(self.__dict__[i], self.analysis['rounding'])
-        try:
-            self.files['simulation_data'].write(to_write[:-1])
-        except ValueError:
-            pass
-        print(f"        - closing files")
-        for i in self.files:
-            print(i)
-            self.files[i].close()
+        with open(os.path.join(self.path, "simulationData.csv"), 'w') as file:
+            try:
+                file.write(to_write[:-1])
+            except ValueError:
+                pass
         print(f"{self.name}: simulation ended")
 
     def _creature_randomization(self):
@@ -251,11 +246,11 @@ class World:
         except FileNotFoundError:
             file = open(os.path.join(self.path, file_name), 'w')
         if tick is not None:
-            out = str(tick) + var.FILE_SEPARATOR
+            out = str(tick) + var.FILE_SEPARATORS[0]
         else:
             out = str()
         for i in to_write:
-            out += str(round(i, self.analysis['rounding'])) + var.FILE_SEPARATOR
+            out += str(round(i, self.analysis['rounding'])) + var.FILE_SEPARATORS[0]
         file.write(out[:-1] + '\n')
         file.close()
 

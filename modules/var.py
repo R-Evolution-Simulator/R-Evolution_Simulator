@@ -40,15 +40,44 @@ CREATURES_GENES = {'agility': gns.Agility, 'bigness': gns.Bigness, 'fertility': 
 
 # files
 
-FILE_SEPARATOR = ';'
-
-HISTORY_SEPARATORS = (',', '/')
+FILE_SEPARATORS = (';', '/', ',', '|', '§')
 
 TO_RECORD = {
-    'simulation': ['name', 'dimension', 'lifetime', 'initial_creatures', 'chunk_dim', 'tick_count', 'chunks_vars',
-                   'creatures_vars', 'analysis', 'ID_count'],
-    'creature': ['ID', 'birth_tick', 'parents_ID', 'sex', 'genes', 'death_tick', 'death_cause'],
-    'chunk': ['coord', 'foodmax', 'growth_rate', 'temperature']}
+    'simulation': {'name': None, 'dimension': {'width': None, 'height': None}, 'lifetime': None,
+                   'initial_creatures': None, 'chunk_dim': None, 'tick_count': None,
+                   'chunks_vars': {'growth_coeff': None,
+                                   'foodmax_max': None,
+                                   'temperature_max': None,
+                                   },
+                   'creatures_vars': {'view_ray': None,
+                                      'en_dec_coeff': None,
+                                      'en_inc_coeff': None,
+                                      'average_age': None,
+                                      'dev_age_prob': None,
+                                      'temp_death_prob_coeff': None,
+                                      'genes_lim': {'agility': None,
+                                                    'bigness': None,
+                                                    'fertility': None,
+                                                    'num_control': None
+                                                    },
+                                      'mutation_coeff': None,
+                                      },
+                   'analysis': {'time_interval': None,
+                                'percentile_parts': None,
+                                'parts': None,
+                                'rounding': None},
+                   'ID_count': None},
+    'creature': {'ID': None, 'birth_tick': None, 'parents_ID': None, 'sex': None,
+                 'genes': {'agility': None,
+                           'bigness': None,
+                           'fertility': None,
+                           'num_control': None,
+                           'temp_resist': None,
+                           'mndl_control': None,
+                           'speed': None,
+                           'eat_coeff': None},
+                 'death_tick': None, 'death_cause': None, 'tick_history': 1},
+    'chunk': {'coord': None, 'foodmax': None, 'growth_rate': None, 'temperature': None, 'food_history': 1}}
 
 # graphics
 
@@ -57,6 +86,11 @@ DEFAULT_CREATURES_COLORS = {'N': pyg.Color(255, 255, 255, 255),
                             'TR': {'c': pyg.Color(255, 0, 0, 255), 'l': pyg.Color(0, 0, 255, 255),
                                    'N': pyg.Color(128, 128, 128, 255), 'n': pyg.Color(255, 255, 255, 255)}}
 
-DEFAULT_CREATURES_DIMS = {'N': 7, 'A': 5, 'B': 7, 'EC': 42, 'NCG': 9, 'S': 5}
+DEFAULT_CREATURES_DIMS = {'N': 7,
+                          'A': (1 / 5, 'agility'),
+                          'B': (1 / 7, 'bigness'),
+                          'EC': (42, 'eat_coeff'),
+                          'NCG': (1 / 9, 'num_control'),
+                          'S': (5, 'speed')}
 
 DEFAULT_CREATURES_BORDER = {'color': pyg.Color(0, 0, 0, 255), 'width': 1}

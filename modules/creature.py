@@ -262,18 +262,14 @@ class Creature:
             genes[i] = self.genes[i].reproduce(other.genes[i], self.world.creatures_vars['mutation_coeff'])
         Creature(self.world, start_coord, (self.ID, other.ID), energy, sex, genes)
 
-    def end(self):
+    def end(self, file):
         """
         Saves the data of the creature at the end of the simulation
 
+        :param file: the file to write to
         :return:
         """
         to_write = str()
         for i in self.TO_RECORD:
             to_write += utl.add_to_write(self.__dict__[i], self.world.analysis['rounding'])
-        for i in self.tick_history:
-            to_write += utl.history_to_write(i)
-        try:
-            self.world.files['creatures_data'].write(to_write[:-1] + '\n')
-        except ValueError:
-            print('dio')
+        file.write(to_write[:-1] + '\n')

@@ -73,7 +73,7 @@ class BaseDiagramCanvasFrame(BaseFrame):
         self.data_calc()
         self.set_subplot()
         self.set_titles()
-        self.stat_axes_set(father.father.max_tick)
+        self.stat_axes_set(father.father.lifetime)
 
     def stat_axes_set(self, max_tick):
         for subplot in self.subplots:
@@ -185,7 +185,7 @@ class PlayControl(BaseFrame):
     def __init__(self, father):
         self.WIDGETS = {'play': (tk.Button, {'text': "Play", 'command': father.start_play}, {'side': tk.TOP}),
                         'fps': (tk.Label, {'text': "fps: 00.0"}, {'side': tk.TOP}),
-                        'tick_entry': (tk.Spinbox, {'from_': 1, 'to': father.max_tick, 'width': 15}, {'side': tk.TOP}),
+                        'tick_entry': (tk.Spinbox, {'from_': 1, 'to': father.lifetime, 'width': 15}, {'side': tk.TOP}),
                         'tick_button': (tk.Button, {'text': "Set tick", 'command': father.set_tick}, {'side': tk.TOP}),
                         'tick_label': (tk.Label, {'text': "Tick: 1"}, {'side': tk.TOP}),
                         'speed_slider': (
@@ -277,7 +277,7 @@ class DiagramCommandBar(BaseFrame):
     def __init__(self, father, windows):
         self.WIDGETS = {'follow_play': (
         tk.Checkbutton, {'text': "Follow play", 'command': windows[0].change_follow_play}, {'side': tk.LEFT}),
-                        'tick_difference': (tk.Spinbox, {'from_': self.TICK_DIFFERENCE_FROM, 'to': windows[1].max_tick,
+            'tick_difference': (tk.Spinbox, {'from_': self.TICK_DIFFERENCE_FROM, 'to': windows[1].lifetime,
                                                          'increment': self.TICK_DIFFERENCE_INCREMENT,
                                                          'command': windows[0].tick_difference_set}, {'side': tk.LEFT}),
                         'show_tick': (tk.Checkbutton, {'text': "Show tick", 'command': windows[0].change_show_tick},
