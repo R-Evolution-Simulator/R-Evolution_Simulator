@@ -55,7 +55,12 @@ class NumberGene(BaseGene):
         self.phenotype = self.genotype
 
     def reproduce(self, other, sigma):
-        return type(self)(gen=((self.phenotype + other.phenotype) * (1 / 2 + gauss(0, sigma))))
+        random = int(rnd() * 2)
+        if random:
+            chosen = self
+        else:
+            chosen = other
+        return type(self)(gen=(chosen.phenotype * (1 + gauss(0, sigma))))
 
 
 class SecondaryGene(BaseGene):
