@@ -137,7 +137,7 @@ class MainMenuWindow(BaseTkWindow):
 
     def destroy(self):
         super(MainMenuWindow, self).destroy()
-        raise FinishError
+        exit(0)
 
     def new_sim_window(self):
         """
@@ -316,12 +316,7 @@ class SimReplayControlWindow(BaseTkWindow):
         :return:
         """
         subject = self.diagram_choice.get()
-        if subject in ['agility', 'bigness', 'fertility', 'num_control', 'speed']:
-            self.new_window_dependent(SimDiagramWindow, subject, frm.GeneDiagram)
-        elif subject in ['foodmax', 'temp_resist_c', 'temp_resist_l', 'temp_resist_N']:
-            self.new_window_dependent(SimDiagramWindow, subject, frm.SpreadDiagram)
-        elif subject == 'population':
-            self.new_window_dependent(SimDiagramWindow, subject, frm.PopulationDiagram)
+        self.new_window_dependent(SimDiagramWindow, subject)
 
     def _resize(self, increase):
         """
@@ -425,21 +420,29 @@ class SimDiagramWindow(BaseTkWindow):
     Simulation diagrams window class
     """
     TICK_DIFFERENCE = 100
-    START_FOLLOW_PLAY = False
-    START_SHOW_TICK = False
+    START_VARIABLES = {
+        'follow_play': False,
+        'show_tick': False,
+    }
 
-    def __init__(self, father, subject, frame):
-        self.TITLE = subject
+    def __init__(self, father, subject):
+        self.subject = subject
+        self.TITLE = self.subject
         self.FRAMES_TEMPLATE = {
-            'diagram_canvas': (
-            frame, {'directory': father.directories['analysis'], 'subject': subject}, {'row': 0, 'column': 0}),
+            'diagram_canvas': (self._get_frame_class(), {'directory': father.directories['analysis'], 'subject': subject}, {'row': 0, 'column': 0}),
             'command_bar': (frm.DiagramCommandBar, {'windows': (self, father)}, {'row': 1, 'column': 0}), }
         super(SimDiagramWindow, self).__init__(father)
         self.frames_load()
-        self.subject = subject
+        self.__dict__.update(self.START_VARIABLES)
         self.tick_difference = self.TICK_DIFFERENCE
-        self.follow_play = self.START_FOLLOW_PLAY
-        self.show_tick = self.START_SHOW_TICK
+
+    def _get_frame_class(self):
+        if self.subject in ['agility', 'bigness', 'fertility', 'num_control', 'speed']:
+            return frm.GeneDiagram
+        elif self.subject in ['foodmax', 'temp_resist_c', 'temp_resist_l', 'temp_resist_N']:
+            return frm.SpreadDiagram
+        elif self.subject == 'population':
+            return frm.PopulationDiagram
 
     def tick_difference_set(self):
         try:
