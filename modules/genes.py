@@ -96,9 +96,9 @@ class TempResist(MendelGene):
 
 class MendelControl(MendelGene):
     REC_TYPE = 'spr'
-    REC_CLASSES = (('',),)
-    REC_CHUNK_ATTR = 'foodmax'
-    ALLELES = (('', DOMINANT),)
+    REC_CLASSES = (('A',), ('a',))
+    REC_CHUNK_ATTR = 'temperature'
+    ALLELES = (('A', DOMINANT), ('a', RECESSIVE))
 
 
 class Agility(NumberGene):

@@ -219,11 +219,15 @@ class World:
 
         self._analysis_chunk_attrs()
 
+        genes = dict()
+        genes.update(var.CREATURES_GENES)
+        genes.update(var.CREATURES_SECONDARY_GENES)
+
         for tick in range(0, self.lifetime, self.analysis['tick_interval']):
             alive = self._tick_creature_get(tick)
 
-            for gene in var.CREATURES_GENES:
-                rec_type = var.CREATURES_GENES[gene].REC_TYPE
+            for gene in genes:
+                rec_type = genes[gene].REC_TYPE
                 if rec_type == 'num':
                     self._analysis_num_gene(gene, alive, tick)
 
@@ -231,6 +235,7 @@ class World:
                     self._analysis_spr_gene(gene, tick)
 
             self._analysis_demographic_change(tick)
+            self._analysis_demographic_spreading(tick)
 
     def _analysis_file_write(self, file_name, to_write, tick=None):
         """
@@ -353,3 +358,26 @@ class World:
             if tick <= creature.death_tick < tick + self.analysis['tick_interval']:
                 deaths[creature.death_cause] += 1
         self._analysis_file_write("population.csv", [born, deaths['s'], deaths['t'], deaths['a']], tick)
+
+    def _analysis_demographic_spreading(self, tick):
+        index = tick // self.analysis['tick_interval']
+        attr = 'foodmax'
+        attr_max = self.chunks_vars['foodmax_max']
+        values = [0 for i in range(self.analysis['parts'])]
+        for chunk_row in self.chunk_list:
+            for chunk in chunk_row:
+                chunk_index = int(chunk.__dict__[attr] * self.analysis['parts'] / attr_max)
+                try:
+                    values[chunk_index] += len(chunk.ticks_record[index])
+                except IndexError:
+                    if chunk_index == self.analysis['parts']:
+                        values[chunk_index - 1] += len(chunk.ticks_record[index])
+                    else:
+                        raise
+        correct = [0 for i in range(self.analysis['parts'])]
+        for part in range(self.analysis['parts']):
+            if not self.chunk_attrs_freq[attr][part] == 0:
+                correct[part] = values[part] / self.chunk_attrs_freq[attr][part]
+            else:
+                correct[part] = 0
+        self._analysis_file_write("demographic_spreading.csv", values + correct, tick)

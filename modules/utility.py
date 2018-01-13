@@ -30,7 +30,12 @@ def add_to_write(object, rounding, level=0):
             try:
                 return str(round(object, rounding)) + var.FILE_SEPARATORS[level]
             except TypeError:
-                pass
+                try:
+                    return str(round(object.get(), rounding)) + var.FILE_SEPARATORS[level]
+                except AttributeError:
+                    pass
+                except TypeError:
+                    pass
         return str(object) + var.FILE_SEPARATORS[level]
 
 

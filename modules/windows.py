@@ -436,8 +436,8 @@ class SimDiagramWindow(BaseTkWindow):
         self.subject = subject
         self.TITLE = self.subject
         self.FRAMES_TEMPLATE = {
-            'diagram_canvas': (self._get_frame_class(), {'directory': father.directories['analysis'], 'subject': subject}, {'row': 0, 'column': 0}),
-            'command_bar': (frm.DiagramCommandBar, {'windows': (self, father)}, {'row': 1, 'column': 0}), }
+            'diagram_canvas': (self._get_frame_class(), {'directory': father.directories['analysis'], 'subject': subject, 'params': father.analysis}, {'row': 0, 'column': 0}),
+            'command_bar': (frm.DiagramCommandBar, {'windows': (self, father), 'tick_interval': father.analysis['tick_interval']}, {'row': 1, 'column': 0}), }
         super(SimDiagramWindow, self).__init__(father)
         self.__dict__.update(self.START_VARIABLES)
         self.graph_width = father.analysis['tick_interval']
@@ -451,7 +451,7 @@ class SimDiagramWindow(BaseTkWindow):
         """
         if self.subject in ['agility', 'bigness', 'fertility', 'num_control', 'speed']:
             return frm.GeneDiagram
-        elif self.subject in ['foodmax', 'temp_resist_c', 'temp_resist_l', 'temp_resist_N']:
+        elif self.subject in ['demographic_spreading', 'mndl_control_A', 'mndl_control_a', 'temp_resist_c', 'temp_resist_l', 'temp_resist_N']:
             return frm.SpreadDiagram
         elif self.subject == 'population':
             return frm.PopulationDiagram

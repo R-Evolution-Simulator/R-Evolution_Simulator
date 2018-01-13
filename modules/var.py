@@ -38,6 +38,7 @@ CHUNK_ATTRS = ('temperature', 'foodmax')
 
 CREATURES_GENES = {'agility': gns.Agility, 'bigness': gns.Bigness, 'fertility': gns.Fertility,
                    'num_control': gns.NumControl, 'temp_resist': gns.TempResist, 'mndl_control': gns.MendelControl}
+CREATURES_SECONDARY_GENES = {'speed': gns.Speed}
 
 # files
 
