@@ -198,7 +198,7 @@ class Creature:
 
         :return:
         """
-        food_eaten = self._actual_chunk().food * min(self.genes['bigness'].get() * self.world.creatures_vars['eat_coeff'],0.9)
+        food_eaten = self._actual_chunk().food * self.genes['bigness'].get() * self.world.creatures_vars['eat_coeff']
         self.energy += food_eaten * self.world.creatures_vars['en_inc_coeff']
         self._actual_chunk().food -= food_eaten
         if self._actual_chunk().food <= 0:
