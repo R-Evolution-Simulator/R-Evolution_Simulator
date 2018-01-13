@@ -197,7 +197,6 @@ class SimReplayControlWindow(BaseTkWindow):
     """
     Simulation replay control window class
     """
-    FILES_TO_LOAD = ['simulationData', 'chunkData', 'creaturesData']
     START_VARIABLES = {
         'tick': 1.0,
         'zoom': 10,
@@ -205,7 +204,7 @@ class SimReplayControlWindow(BaseTkWindow):
         'max_speed': 100,
         'graph_tick': 100,
     }
-    SHOWS = ['ch', 'cc', 'cd']
+    SHOWS_KEYS = ['ch', 'cc', 'cd']
 
     def __init__(self, father, sim_name):
         """
@@ -228,12 +227,12 @@ class SimReplayControlWindow(BaseTkWindow):
         self.sim_height = self.dimension['height'] * self.chunk_dim
         self.shows = dict()
         self.last_frame_time = time()
-        for i in self.SHOWS:
+        for i in self.SHOWS_KEYS:
             self.shows[i] = tk.StringVar(master=self)
         self.diagram_choice = tk.StringVar(master=self)
         self.frames_load()
         self.canvas = PygameCanvas(self)
-        self.resize(0)
+        self._resize(0)
 
     def _files_load(self):
         """
@@ -269,6 +268,11 @@ class SimReplayControlWindow(BaseTkWindow):
             self.creature_list.add(CreaturesD(line))
 
     def update(self):
+        """
+        Updates all dependent windows and the the window itself
+
+        :return:
+        """
         if self.is_playing:
             self.tick += self.time_diff * self.speed
             if int(self.tick) >= self.lifetime:
@@ -282,19 +286,27 @@ class SimReplayControlWindow(BaseTkWindow):
         self.time_diff = time() - self.last_frame_time
         self.last_frame_time = time()
         try:
-            self.set_fps(round(1.0 / self.time_diff, 1))
+            self._upd_fps(round(1.0 / self.time_diff, 1))
         except ZeroDivisionError:
             pass
-        self.update_tick(int(self.tick))
+        self._upd_tick(int(self.tick))
         super(SimReplayControlWindow, self).update()
 
-    def resize(self, coeff):
-        """method which set to selected zoom"""
-        self.zoom = max(1, self.zoom + coeff)
-        self.canvas.resize()
+    def destroy(self):
+        """
+        Destroys the canvas, all dependent windows and then the window itself
 
-    def graphics_window_create(self):
-        """function which creates a graphic window"""
+        :return:
+        """
+        self.canvas.destroy()
+        super(SimReplayControlWindow, self).destroy()
+
+    def diagram_window_create(self):
+        """
+        Gets the choice for the new diagram to open and creates a new diagram window
+
+        :return:
+        """
         subject = self.diagram_choice.get()
         if subject in ['agility', 'bigness', 'fertility', 'num_control', 'speed']:
             self.new_window_dependent(SimDiagramWindow, subject, frm.GeneDiagram)
@@ -303,59 +315,101 @@ class SimReplayControlWindow(BaseTkWindow):
         elif subject == 'population':
             self.new_window_dependent(SimDiagramWindow, subject, frm.PopulationDiagram)
 
-    def speed_change(self, speed_cursor):
+    def _resize(self, increase):
         """
-        method which allow to change the speed of the simulation reproduction
+        Increases/Reduces the canvas' zoom by a coeff
+
+        :param increase: the increase of the zoom
+        :type increase: int
+        :return:
         """
-        self.speed = int(self.max_speed ** (float(speed_cursor) / 100))
-        self.get_widget('play_control', 'speed_label').config(text=f"T/s: {self.speed:02d}")
-
-    def set_tick(self, tick):
-        self.tick = tick
-
-    def dec_zoom(self):
-        """method which decrease the zoom"""
-        self.resize(-1)
-        self.set_zoom()
-
-    def inc_zoom(self):
-        """method which increase the zoom"""
-        self.resize(1)
-        self.set_zoom()
-
-    def set_zoom(self):
-        """method which set to selected zoom"""
-        self.get_widget('play_control', 'zoom').configure(text=f"zoom: {self.zoom}0%")
+        self.zoom = max(1, self.zoom + increase)
+        self.canvas.resize()
 
     def start_play(self):
-        """method which starts or stops the reproduction of the simulation"""
+        """
+        Toggles the replay status and label between Play and Pause
+
+        :return:
+        """
         self.is_playing = not (self.is_playing)
         if self.is_playing:
             self.get_widget('play_control', 'play').config(text="Pause")
         else:
             self.get_widget('play_control', 'play').config(text="Play")
 
-    def set_fps(self, fps):
-        """
-        method which reproduces the simulation, updating the screen
-        """
-        self.get_widget('play_control', 'fps').config(text=f"fps: {fps:04.1f}")
-
     def set_tick(self):
         """
-        function which imposts a particular tick
+        Sets if possible the tick to the specific tick inside tick_entry widget
+
+        :return:
         """
         try:
             self.tick = int(self.get_widget('play_control', 'tick_entry').get())
         except ValueError:
             pass
 
-    def update_tick(self, tick):
-        self.get_widget('play_control', 'tick_label').config(text=f"Tick: {tick:04d}")
+    def set_speed(self, speed_cursor):
+        """
+        Changes the speed of the simulation reproduction and updates the speed label
 
-    def destroy(self):
-        self.canvas.destroy()
-        super(SimReplayControlWindow, self).destroy()
+        :param speed_cursor: The new speed
+        :return:
+        """
+        self.speed = int(self.max_speed ** (float(speed_cursor) / 100))
+        self._upd_speed()
+
+    def dec_zoom(self):
+        """
+        Decreases the zoom by one
+
+        :return:
+        """
+        self._resize(-1)
+        self._upd_zoom()
+
+    def inc_zoom(self):
+        """
+        Increases the zoom by one
+
+        :return:
+        """
+        self._resize(1)
+        self._upd_zoom()
+
+    def _upd_speed(self):
+        """
+        Updates the speed label
+
+        :return:
+        """
+        self.get_widget('play_control', 'speed_label').config(text=f"T/s: {self.speed:02d}")
+
+    def _upd_zoom(self):
+        """
+        Updates the zoom label
+
+        :return:
+        """
+        self.get_widget('play_control', 'zoom').configure(text=f"zoom: {self.zoom}0%")
+
+    def _upd_fps(self, fps):
+        """
+        Updates the fps label
+
+        :param fps: The fps to update the label to
+        :type fps: float
+        :return:
+        """
+        self.get_widget('play_control', 'fps').config(text=f"fps: {fps:04.1f}")
+
+    def _upd_tick(self, tick):
+        """
+        Updates the tick label
+
+        :return:
+        """
+        self.get_widget('play_control', 'tick_label').config(text=f"Tick: {tick:04d}")
 
 
 class SimDiagramWindow(BaseTkWindow):
@@ -404,6 +458,12 @@ class SimDiagramWindow(BaseTkWindow):
         self.get_frame('diagram_canvas').tick_line_set(self.father.tick)
 
     def update(self):
+        """
+        Updates all dependent windows and the the window itself
+
+        :return:
+        """
+
         self.tick_line_set()
         if self.follow_play:
             self.dyn_axes_set()

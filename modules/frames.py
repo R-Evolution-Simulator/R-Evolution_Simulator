@@ -189,8 +189,8 @@ class PlayControl(BaseFrame):
                         'tick_button': (tk.Button, {'text': "Set tick", 'command': father.set_tick}, {'side': tk.TOP}),
                         'tick_label': (tk.Label, {'text': "Tick: 1"}, {'side': tk.TOP}),
                         'speed_slider': (
-                        tk.Scale, {'orient': tk.HORIZONTAL, 'showvalue': False, 'command': father.speed_change},
-                        {'side': tk.TOP}),
+                            tk.Scale, {'orient': tk.HORIZONTAL, 'showvalue': False, 'command': father.set_speed},
+                            {'side': tk.TOP}),
                         'speed_label': (tk.Label, {'text': f"Tick/s: {father.speed}"}, {'side': tk.TOP}),
                         'inc_zoom': (tk.Button, {'text': "+ 10%", 'command': father.inc_zoom}, {'side': tk.TOP}),
                         'zoom': (tk.Label, {'text': f"zoom: {father.zoom}0%"}, {'side': tk.TOP}),
@@ -245,7 +245,7 @@ class DiagramSet(BaseFrame):
     def __init__(self, father, windows):
         self.father = father
         self.WIDGETS = {
-            'new': (tk.Button, {'text': "New Diagram", 'command': windows[0].graphics_window_create}, {'anchor': tk.W})}
+            'new': (tk.Button, {'text': "New Diagram", 'command': windows[0].diagram_window_create}, {'anchor': tk.W})}
         self.diagram_choice = windows[0].diagram_choice
         self.diagram_choice.set('agility')
         super(DiagramSet, self).__init__(father)
