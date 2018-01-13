@@ -28,7 +28,7 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                                                           },
                                             'mutation_coeff': 0.05,
                                             },
-                         'analysis': {'time_interval': 100,
+                         'analysis': {'tick_interval': 100,
                                       'percentile_parts': 4,
                                       'parts': 8,
                                       'rounding': 4}
@@ -66,7 +66,7 @@ TO_RECORD = {
                                                     },
                                       'mutation_coeff': None,
                                       },
-                   'analysis': {'time_interval': None,
+                   'analysis': {'tick_interval': None,
                                 'percentile_parts': None,
                                 'parts': None,
                                 'rounding': None},

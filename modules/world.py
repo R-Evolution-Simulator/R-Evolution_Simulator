@@ -189,7 +189,7 @@ class World:
 
         for i in self.chunk_list:
             for j in i:
-                j.update(self.tick_count % self.analysis['time_interval'] == 0)
+                j.update(self.tick_count % self.analysis['tick_interval'] == 0)
 
         self.creature_list = self.creature_list.union(self.new_born)
         self.alive_creatures = self.alive_creatures.union(self.new_born)
@@ -219,7 +219,7 @@ class World:
 
         self._analysis_chunk_attrs()
 
-        for tick in range(0, self.lifetime, self.analysis['time_interval']):
+        for tick in range(0, self.lifetime, self.analysis['tick_interval']):
             alive = self._tick_creature_get(tick)
 
             for gene in var.CREATURES_GENES:
@@ -305,7 +305,7 @@ class World:
         :type tick: int
         :return:
         """
-        index = tick // self.analysis['time_interval']
+        index = tick // self.analysis['tick_interval']
         gene_class = var.CREATURES_GENES[gene]
         attr = gene_class.REC_CHUNK_ATTR
         attr_max = self.chunks_vars[attr + '_max']
@@ -348,8 +348,8 @@ class World:
         deaths = {'s': 0, 't': 0, 'a': 0, 'e': 0}
         born = 0
         for creature in self.creature_list:
-            if tick <= creature.birth_tick < tick + self.analysis['time_interval']:
+            if tick <= creature.birth_tick < tick + self.analysis['tick_interval']:
                 born += 1
-            if tick <= creature.death_tick < tick + self.analysis['time_interval']:
+            if tick <= creature.death_tick < tick + self.analysis['tick_interval']:
                 deaths[creature.death_cause] += 1
         self._analysis_file_write("population.csv", [born, deaths['s'], deaths['t'], deaths['a']], tick)

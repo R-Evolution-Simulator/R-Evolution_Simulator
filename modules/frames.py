@@ -275,10 +275,10 @@ class DiagramCommandBar(BaseFrame):
 
     def __init__(self, father, windows):
         self.WIDGETS = {'follow_play': (
-        tk.Checkbutton, {'text': "Follow play", 'command': windows[0].change_follow_play}, {'side': tk.LEFT}),
-            'tick_difference': (tk.Spinbox, {'from_': self.TICK_DIFFERENCE_FROM, 'to': windows[1].lifetime,
+            tk.Checkbutton, {'text': "Follow play", 'command': windows[0].toggle_follow_play}, {'side': tk.LEFT}),
+            'graph_width': (tk.Spinbox, {'from_': self.TICK_DIFFERENCE_FROM, 'to': windows[1].lifetime,
                                                          'increment': self.TICK_DIFFERENCE_INCREMENT,
-                                                         'command': windows[0].tick_difference_set}, {'side': tk.LEFT}),
+                                         'command': windows[0].graph_width_set}, {'side': tk.LEFT}),
                         'show_tick': (tk.Checkbutton, {'text': "Show tick", 'command': windows[0].change_show_tick},
                                       {'side': tk.LEFT}),
                         }
