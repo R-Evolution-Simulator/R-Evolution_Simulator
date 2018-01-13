@@ -9,6 +9,10 @@ import os
 from math import ceil
 
 
+class FinishError(BaseException):
+    pass
+
+
 class BaseTkWindow(tk.Tk):
     """
     Template for windows classes
@@ -130,6 +134,10 @@ class MainMenuWindow(BaseTkWindow):
         self.frames_load()
         self.windows = list()
         self.canvas = None
+
+    def destroy(self):
+        super(MainMenuWindow, self).destroy()
+        raise FinishError
 
     def new_sim_window(self):
         """
@@ -414,7 +422,7 @@ class SimReplayControlWindow(BaseTkWindow):
 
 class SimDiagramWindow(BaseTkWindow):
     """
-    Simulation graphics window class
+    Simulation diagrams window class
     """
     TICK_DIFFERENCE = 100
     START_FOLLOW_PLAY = False

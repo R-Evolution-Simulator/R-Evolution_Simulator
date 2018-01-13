@@ -39,7 +39,7 @@ class CreaturesD:
                 self.dims[i] = self.genes[self.DIMS[i][1]] * self.DIMS[i][0]
 
     def draw(self, surface, tick, color, dim, zoom):
-        birth = max(self.birth_tick, 1)
+        birth = max(self.birth_tick + 1, 1)
         coord = (
             int((self.tick_history[tick - birth][0]) * zoom / 10), int(self.tick_history[tick - birth][1] * zoom / 10))
         if dim == 'E':

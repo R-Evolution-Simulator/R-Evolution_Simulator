@@ -11,5 +11,5 @@ class Main(object):
         try:
             while True:
                 self.windows[0].update()
-        except IndexError:
-            pass
+        except wndw.FinishError:
+            exit(0)
