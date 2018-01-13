@@ -63,8 +63,8 @@ class World:
         """
         print(f"{self.name}: simulation running...")
         for i in range(self.max_lifetime):
-            if i % 100 == 0:
-                print(f"        - tick #{i}")
+            if i % 10 == 0:
+                print(f"        - tick #{i} --- {len(self.alive_creatures)} alive")
             self._update()
             if len(self.alive_creatures) == 0:
                 break
@@ -165,7 +165,6 @@ class World:
                 new_gene.randomize()
             genes[i] = new_gene
         genes['speed'] = gns.Speed({'agility': genes['agility'], 'bigness': genes['bigness']})
-        genes['eat_coeff'] = gns.EatCoeff({'bigness': genes['bigness']})
 
         # creazione della creatura con le caratteristiche calcolate
         return (self, coord, (0, 0), energy, sex, genes, int(rnd() * (self.creatures_vars['average_age'] / 2)))

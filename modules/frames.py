@@ -224,7 +224,6 @@ class CreatureDimSet(BaseSelectFrame):
                'E': [tk.Radiobutton, {'text': "Energy"}, {}],
                'A': [tk.Radiobutton, {'text': "Agility"}, {}],
                'B': [tk.Radiobutton, {'text': "Bigness"}, {}],
-               'EC': [tk.Radiobutton, {'text': "Eat Coeff"}, {}],
                'S': [tk.Radiobutton, {'text': "Speed"}, {}],
                'NCG': [tk.Radiobutton, {'text': "Num Control Gene"}, {}], }
 
@@ -240,7 +239,7 @@ class CreatureSet(BaseLabelFrame):
 
 
 class DiagramSet(BaseFrame):
-    CHOICES = ['agility', 'bigness', 'eat_coeff', 'fertility', 'num_control', 'speed', 'population', 'foodmax',
+    CHOICES = ['agility', 'bigness', 'fertility', 'num_control', 'speed', 'population', 'foodmax',
                'temp_resist_c', 'temp_resist_l', 'temp_resist_N']
 
     def __init__(self, father, windows):

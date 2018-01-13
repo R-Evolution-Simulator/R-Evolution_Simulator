@@ -16,7 +16,8 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                                          },
                          'creatures_vars': {'view_ray': 3,
                                             'en_dec_coeff': 0.02,
-                                            'en_inc_coeff': 2.5,
+                                            'eat_coeff': 0.01,
+                                            'en_inc_coeff': 1.5,
                                             'average_age': 2000,
                                             'dev_age_prob': 750,
                                             'temp_death_prob_coeff': 100,
@@ -51,6 +52,7 @@ TO_RECORD = {
                                    },
                    'creatures_vars': {'view_ray': None,
                                       'en_dec_coeff': None,
+                                      'eat_coeff': None,
                                       'en_inc_coeff': None,
                                       'average_age': None,
                                       'dev_age_prob': None,
@@ -74,8 +76,8 @@ TO_RECORD = {
                            'num_control': None,
                            'temp_resist': None,
                            'mndl_control': None,
-                           'speed': None,
-                           'eat_coeff': None},
+                           'speed': None
+                           },
                  'death_tick': None, 'death_cause': None, 'tick_history': 1},
     'chunk': {'coord': None, 'foodmax': None, 'growth_rate': None, 'temperature': None, 'food_history': 1}}
 
@@ -89,7 +91,6 @@ DEFAULT_CREATURES_COLORS = {'N': pyg.Color(255, 255, 255, 255),
 DEFAULT_CREATURES_DIMS = {'N': 7,
                           'A': (1 / 5, 'agility'),
                           'B': (1 / 7, 'bigness'),
-                          'EC': (42, 'eat_coeff'),
                           'NCG': (1 / 9, 'num_control'),
                           'S': (5, 'speed')}
 

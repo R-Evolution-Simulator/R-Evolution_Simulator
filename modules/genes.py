@@ -48,7 +48,7 @@ class NumberGene(BaseGene):
     REC_TYPE = 'num'
 
     def randomize(self, lims):
-        self.genotype = rnd() * (lims[1] - lims[0])
+        self.genotype = lims[0] + rnd() * (lims[1] - lims[0])
         super(NumberGene, self).randomize()
 
     def _phenotype_calc(self):
@@ -121,7 +121,3 @@ class Speed(SecondaryGene, NumberGene):
     def _phenotype_calc(self):
         self.phenotype = self.genotype['agility'].get() / self.genotype['bigness'].get() * 2
 
-
-class EatCoeff(SecondaryGene, NumberGene):
-    def _phenotype_calc(self):
-        self.phenotype = self.genotype['bigness'].get() * 0.03

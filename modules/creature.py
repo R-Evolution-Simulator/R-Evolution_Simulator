@@ -166,11 +166,10 @@ class Creature:
             for j in range(max(y - self.world.creatures_vars['view_ray'], 0),
                            min(y + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[1])):
 
-                if self.world.chunk_list[i][j].food * self.genes['eat_coeff'].get() * self.world.creatures_vars[
-                    'en_inc_coeff'] - self._energy_consume(i, j) > maxEn:
-                    maxEn = self.world.chunk_list[i][j].food * self.genes['eat_coeff'].get() * \
-                            self.world.creatures_vars[
-                                'en_inc_coeff'] - self._energy_consume(i, j)
+                if self.world.chunk_list[i][j].food * self.genes['bigness'].get() * self.world.creatures_vars[
+                    'eat_coeff'] * self.world.creatures_vars['en_inc_coeff'] - self._energy_consume(i, j) > maxEn:
+                    maxEn = self.world.chunk_list[i][j].food * self.genes['bigness'].get() * self.world.creatures_vars[
+                        'eat_coeff'] * self.world.creatures_vars['en_inc_coeff'] - self._energy_consume(i, j)
                     self.dest_chunk = [i, j]
 
         self.dest_coord = [(self.dest_chunk[0] + 0.5) * self.world.chunk_dim, (
@@ -200,9 +199,11 @@ class Creature:
 
         :return:
         """
-        food_eaten = self._actual_chunk().food * self.genes['eat_coeff'].get()
+        food_eaten = self._actual_chunk().food * self.genes['bigness'].get() * self.world.creatures_vars['eat_coeff']
         self.energy += food_eaten * self.world.creatures_vars['en_inc_coeff']
         self._actual_chunk().food -= food_eaten
+        if self._actual_chunk().food < 0:
+            raise Exception
         self.energy = min(self.energy, 100)
 
     def _energy_consume(self, x, y):

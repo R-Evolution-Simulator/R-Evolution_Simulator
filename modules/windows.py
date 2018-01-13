@@ -277,7 +277,7 @@ class SimReplayControlWindow(BaseTkWindow):
     def graphics_window_create(self):
         """function which creates a graphic window"""
         subject = self.diagram_choice.get()
-        if subject in ['agility', 'bigness', 'eat_coeff', 'fertility', 'num_control', 'speed']:
+        if subject in ['agility', 'bigness', 'fertility', 'num_control', 'speed']:
             self.new_window_creation(SimGraphicsWindow, subject, frm.GeneDiagram)
         elif subject in ['foodmax', 'temp_resist_c', 'temp_resist_l', 'temp_resist_N']:
             self.new_window_creation(SimGraphicsWindow, subject, frm.SpreadDiagram)
