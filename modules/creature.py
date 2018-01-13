@@ -190,8 +190,7 @@ class Creature:
         self.coord[1] += (self.dest_coord[1] - self.coord[1]) / math.sqrt(
             (self.dest_coord[0] - self.coord[0]) ** 2 + (self.dest_coord[1] - self.coord[1]) ** 2) * speed
 
-        self._actual_chunk().chunk_creature_list.append(
-            self)
+        self._actual_chunk().chunk_creature_list.append(self)
 
     def _eat(self):
         """
