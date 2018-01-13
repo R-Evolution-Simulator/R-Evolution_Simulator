@@ -199,10 +199,10 @@ class Creature:
 
         :return:
         """
-        food_eaten = self._actual_chunk().food * self.genes['bigness'].get() * self.world.creatures_vars['eat_coeff']
+        food_eaten = self._actual_chunk().food * min(self.genes['bigness'].get() * self.world.creatures_vars['eat_coeff'],0.9)
         self.energy += food_eaten * self.world.creatures_vars['en_inc_coeff']
         self._actual_chunk().food -= food_eaten
-        if self._actual_chunk().food < 0:
+        if self._actual_chunk().food <= 0:
             raise Exception
         self.energy = min(self.energy, 100)
 
@@ -230,7 +230,7 @@ class Creature:
         :type i: int
         :return: the chunk coordinates
         """
-        return min(int(self.coord[i] / self.world.chunk_dim), self.world.dimension[i]) - 1
+        return min(int(self.coord[i] / self.world.chunk_dim), self.world.dimension[i]-1)
 
     def _dating_agency(self):
         """
