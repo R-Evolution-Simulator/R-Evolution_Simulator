@@ -54,14 +54,14 @@ class BaseSelectFrame(BaseLabelFrame):
 
 
 class BaseDiagramCanvasFrame(BaseFrame):
-    def __init__(self, father, sim_name, subject, subplots=1):
+    def __init__(self, father, directory, subject, subplots=1):
         """funzione per la rappresentazione del canvas dove porre il grafico"""
         self.figure = Figure()
         # ricordati SHOW E DRAW di self.canvas
         self.WIDGETS = {
             'canvas': (FigureCanvasTkAgg, {'figure': self.figure, 'master': self}, {'fill': tk.BOTH, 'expand': True})}
         self.father = father
-        self.sim_name = sim_name
+        self.directory = directory
         self.subject = subject
         self.widgets = dict()
         self.subplots = []
@@ -81,7 +81,7 @@ class BaseDiagramCanvasFrame(BaseFrame):
 
     def data_init(self):
         """funzione per la lettura dei file con i dati"""
-        file = open(os.path.join(var.SIMULATIONS_PATH, self.sim_name, f"{self.subject}.csv"))
+        file = open(os.path.join(self.directory, f"{self.subject}.csv"))
         self.data = [[] for i in range(len(file.readline().split(';')))]
         file.seek(0)
         for line in file:
@@ -311,8 +311,8 @@ class PopulationDiagram(BaseDiagramCanvasFrame):
     LABELS = [["Births", "Deaths"], ["Starvation", "Temperature", "Old Age"]]
     SUBPLOTS = 2
 
-    def __init__(self, father, sim_name, subject):
-        super(PopulationDiagram, self).__init__(father, sim_name, subject, self.SUBPLOTS)
+    def __init__(self, father, directory, subject):
+        super(PopulationDiagram, self).__init__(father, directory, subject, self.SUBPLOTS)
 
     def data_calc(self):
         self.data.append(list())
@@ -344,8 +344,8 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
     LABELS = ["-100 <> -75", "-75 <> -50", "-50 <> -25", "-25 <> 0", "0 <> 25", "25 <> 50", "50 <> 75", "75 <> 100"]
     SUBPLOTS = 2
 
-    def __init__(self, father, sim_name, subject):
-        super(SpreadDiagram, self).__init__(father, sim_name, subject, self.SUBPLOTS)
+    def __init__(self, father, directory, subject):
+        super(SpreadDiagram, self).__init__(father, directory, subject, self.SUBPLOTS)
 
     def data_calc(self):
         for i in range(8):

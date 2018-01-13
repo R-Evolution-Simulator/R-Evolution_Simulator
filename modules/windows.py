@@ -431,7 +431,8 @@ class SimDiagramWindow(BaseTkWindow):
     def __init__(self, father, subject, frame):
         self.TITLE = subject
         self.FRAMES_TEMPLATE = {
-            'diagram_canvas': (frame, {'sim_name': father.sim_name, 'subject': subject}, {'row': 0, 'column': 0}),
+            'diagram_canvas': (
+            frame, {'directory': father.directories['analysis'], 'subject': subject}, {'row': 0, 'column': 0}),
             'command_bar': (frm.DiagramCommandBar, {'windows': (self, father)}, {'row': 1, 'column': 0}), }
         super(SimDiagramWindow, self).__init__(father)
         self.frames_load()
