@@ -10,7 +10,7 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                          'chunk_dim': 10,
                          'max_lifetime': 10000,
                          'initial_creatures': 750,
-                         'chunks_vars': {'growth_coeff': 0.0004,
+                         'chunks_vars': {'growth_coeff': 0.0002,
                                          'foodmax_max': 100,
                                          'temperature_max': 100,
                                          },
