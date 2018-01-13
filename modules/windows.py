@@ -13,8 +13,8 @@ class BaseTkWindow(tk.Tk):
     """
     Template for windows classes
     """
-    FRAMES = None
-    TITLE = None
+    FRAMES_TEMPLATE = None  # dict composed by (<Frame class>, <Frame args>, <Frame grid position>)
+    TITLE = None  # str title of the Window
 
     def __init__(self, father):
         """
@@ -51,7 +51,7 @@ class BaseTkWindow(tk.Tk):
         :type widget: str
         :return:
         """
-        return self.frames[frame].get_widget(widget)
+        return self.get_frame(frame).get_widget(widget)
 
     def get_frame(self, frame):
         """
@@ -65,27 +65,40 @@ class BaseTkWindow(tk.Tk):
 
     def frames_load(self):
         """
-        Initializes the frames inside the window
+        Initializes the frames inside the window and adds them to self.frames dict
 
         :return:
         """
-        for i in self.FRAMES:
-            new = self.FRAMES[i][0](self, **self.FRAMES[i][1])
-            new.grid(**self.FRAMES[i][2])
+        for i in self.FRAMES_TEMPLATE:
+            new = self.FRAMES_TEMPLATE[i][0](self, **self.FRAMES_TEMPLATE[i][1])
+            new.grid(**self.FRAMES_TEMPLATE[i][2])
             self.frames[i] = new
 
-    def new_window_creation(self, wind_class, *args, **kwargs):
+    def new_window_dependent(self, wind_class, *args, **kwargs):
         """
         Creates a new dependent window and adds it to windows list
 
         :param wind_class: the class of the window to create
         :type wind_class: type
-        :param args: args to pass to window __init__
-        :param kwargs: kwargs to pass to window __init__
+        :param args: args to pass to new window __init__
+        :param kwargs: kwargs to pass to new window __init__
         :return:
         """
         new = wind_class(self, *args, **kwargs)
         self.windows.append(new)
+
+    def new_window_substitute(self, wind_class, *args, **kwargs):
+        """
+        Creates a new window dependent from the father window and destroys iteslf
+
+        :param wind_class: the class of the window to create
+        :type wind_class: type
+        :param args: args to pass to new window __init__
+        :param kwargs: kwargs to pass to new window __init__
+        :return:
+        """
+        self.destroy()
+        self.father.new_window_dependent(wind_class, *args, **kwargs)
 
     def update(self):
         """
@@ -106,13 +119,13 @@ class MainMenuWindow(BaseTkWindow):
 
     def __init__(self, father):
         """
-        Creates a new window
+        Creates a new main menu window
 
         :param father: the father of the window
         :type father: BaseTkWindow
         """
-        self.FRAMES = {'logo': (frm.Logo, {}, {'row': 0, 'column': 0}),
-                       'options': (frm.MainMenuOptions, {'windows': (self,)}, {'row': 1, 'column': 0})}
+        self.FRAMES_TEMPLATE = {'logo': (frm.Logo, {}, {'row': 0, 'column': 0}),
+                                'options': (frm.MainMenuOptions, {'windows': (self,)}, {'row': 1, 'column': 0})}
         super(MainMenuWindow, self).__init__(father)
         self.frames_load()
         self.windows = list()
@@ -124,7 +137,7 @@ class MainMenuWindow(BaseTkWindow):
 
         :return:
         """
-        self.new_window_creation(NewSimWindow)
+        self.new_window_dependent(NewSimWindow)
 
     def load_sim_window(self):
         """
@@ -132,7 +145,7 @@ class MainMenuWindow(BaseTkWindow):
 
         :return:
         """
-        self.new_window_creation(LoadSimWindow)
+        self.new_window_dependent(LoadSimWindow)
 
 
 class NewSimWindow(BaseTkWindow):
@@ -148,7 +161,7 @@ class NewSimWindow(BaseTkWindow):
         :param father: the father of the window
         :type father: BaseTkWindow
         """
-        self.FRAMES = {'new': (frm.NewSim, {}, {'row': 0, 'column': 0})}
+        self.FRAMES_TEMPLATE = {'new': (frm.NewSim, {}, {'row': 0, 'column': 0})}
         super(NewSimWindow, self).__init__(father)
         self.frames_load()
 
@@ -166,7 +179,7 @@ class LoadSimWindow(BaseTkWindow):
         :param father: the father of the window
         :type father: BaseTkWindow
         """
-        self.FRAMES = {'load': (frm.LoadSim, {'windows': (self,)}, {'row': 0, 'column': 0})}
+        self.FRAMES_TEMPLATE = {'load': (frm.LoadSim, {'windows': (self,)}, {'row': 0, 'column': 0})}
         super(LoadSimWindow, self).__init__(father)
         self.frames_load()
 
@@ -177,8 +190,7 @@ class LoadSimWindow(BaseTkWindow):
         :return:
         """
         sim_name = self.get_widget('load', 'entry').get()
-        self.destroy()
-        self.father.new_window_creation(SimReplayControlWindow, sim_name)
+        self.new_window_substitute(SimReplayControlWindow, sim_name)
 
 
 class SimReplayControlWindow(BaseTkWindow):
@@ -186,12 +198,14 @@ class SimReplayControlWindow(BaseTkWindow):
     Simulation replay control window class
     """
     FILES_TO_LOAD = ['simulationData', 'chunkData', 'creaturesData']
-    START_GRAPH_TICK = 100
-    START_TICK = 1.0
-    START_ZOOM = 10
-    START_SPEED = 1
+    START_VARIABLES = {
+        'tick': 1.0,
+        'zoom': 10,
+        'speed': 1,
+        'max_speed': 100,
+        'graph_tick': 100,
+    }
     SHOWS = ['ch', 'cc', 'cd']
-    MAX_SPEED = 100
 
     def __init__(self, father, sim_name):
         """
@@ -202,16 +216,12 @@ class SimReplayControlWindow(BaseTkWindow):
         :param sim_name: the name of the simulation to load
         :type sim_name: str
         """
-        self.FRAMES = {'play_control': (frm.PlayControl, {}, {'row': 0, 'column': 0}),
-                       'map_set': (frm.SetSuperFrame, {'windows': (self,)}, {'row': 1, 'column': 0}), }
+        self.FRAMES_TEMPLATE = {'play_control': (frm.PlayControl, {}, {'row': 0, 'column': 0}),
+                                'map_set': (frm.SetSuperFrame, {'windows': (self,)}, {'row': 1, 'column': 0}), }
         self.TITLE = sim_name
         super(SimReplayControlWindow, self).__init__(father)
         self.sim_name = sim_name
-        self.tick = self.START_TICK
-        self.zoom = self.START_ZOOM
-        self.speed = self.START_SPEED
-        self.max_speed = self.MAX_SPEED
-        self.graph_tick = self.START_GRAPH_TICK
+        self.__dict__.update(self.START_VARIABLES)
         self.is_playing = False
         self._files_load()
         self.sim_width = self.dimension['width'] * self.chunk_dim
@@ -231,22 +241,31 @@ class SimReplayControlWindow(BaseTkWindow):
 
         :return:
         """
-        self.files = dict()
+        self.directories = dict()
+        path = os.path.join(var.SIMULATIONS_PATH, self.sim_name)
+        for i in var.DIRECTORIES:
+            self.directories[i] = os.path.join(path, i)
+
         try:
-            for i in self.FILES_TO_LOAD:
-                self.files[i] = open(os.path.join(var.SIMULATIONS_PATH, self.sim_name, f"{i}.csv"))
+            simulation_params = open(os.path.join(path, f"params.csv"))
         except FileNotFoundError:
             self.destroy()
-        sim_data = self.files['simulationData'].readline()
+        sim_data = simulation_params.readline()
         restored = utl.get_from_string(sim_data, 0, var.TO_RECORD['simulation'])
         self.__dict__.update(restored)
 
+        files = dict()
+        for i in ['chunks', 'creatures']:
+            try:
+                files[i] = open(os.path.join(self.directories['data'], f"{i}.csv"))
+            except FileNotFoundError:
+                self.destroy()
         self.chunk_list = []
-        for line in self.files['chunkData']:
+        for line in files['chunks']:
             self.chunk_list.append(ChunkD(line))
 
         self.creature_list = set()
-        for line in self.files['creaturesData']:
+        for line in files['creatures']:
             self.creature_list.add(CreaturesD(line))
 
     def update(self):
@@ -278,11 +297,11 @@ class SimReplayControlWindow(BaseTkWindow):
         """function which creates a graphic window"""
         subject = self.diagram_choice.get()
         if subject in ['agility', 'bigness', 'fertility', 'num_control', 'speed']:
-            self.new_window_creation(SimGraphicsWindow, subject, frm.GeneDiagram)
+            self.new_window_dependent(SimDiagramWindow, subject, frm.GeneDiagram)
         elif subject in ['foodmax', 'temp_resist_c', 'temp_resist_l', 'temp_resist_N']:
-            self.new_window_creation(SimGraphicsWindow, subject, frm.SpreadDiagram)
+            self.new_window_dependent(SimDiagramWindow, subject, frm.SpreadDiagram)
         elif subject == 'population':
-            self.new_window_creation(SimGraphicsWindow, subject, frm.PopulationDiagram)
+            self.new_window_dependent(SimDiagramWindow, subject, frm.PopulationDiagram)
 
     def speed_change(self, speed_cursor):
         """
@@ -339,7 +358,7 @@ class SimReplayControlWindow(BaseTkWindow):
         super(SimReplayControlWindow, self).destroy()
 
 
-class SimGraphicsWindow(BaseTkWindow):
+class SimDiagramWindow(BaseTkWindow):
     """
     Simulation graphics window class
     """
@@ -349,10 +368,10 @@ class SimGraphicsWindow(BaseTkWindow):
 
     def __init__(self, father, subject, frame):
         self.TITLE = subject
-        self.FRAMES = {
+        self.FRAMES_TEMPLATE = {
             'diagram_canvas': (frame, {'sim_name': father.sim_name, 'subject': subject}, {'row': 0, 'column': 0}),
             'command_bar': (frm.DiagramCommandBar, {'windows': (self, father)}, {'row': 1, 'column': 0}), }
-        super(SimGraphicsWindow, self).__init__(father)
+        super(SimDiagramWindow, self).__init__(father)
         self.frames_load()
         self.subject = subject
         self.tick_difference = self.TICK_DIFFERENCE
@@ -391,4 +410,4 @@ class SimGraphicsWindow(BaseTkWindow):
         else:
             self.stat_axes_set()
         self.get_widget('diagram_canvas', 'canvas').draw()
-        super(SimGraphicsWindow, self).update()
+        super(SimDiagramWindow, self).update()

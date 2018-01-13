@@ -41,6 +41,8 @@ CREATURES_GENES = {'agility': gns.Agility, 'bigness': gns.Bigness, 'fertility': 
 
 # files
 
+DIRECTORIES = ['data', 'images', 'analysis']
+
 FILE_SEPARATORS = (';', '/', ',', '|', '§')
 
 TO_RECORD = {

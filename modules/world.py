@@ -29,6 +29,7 @@ class World:
         print(f"{name}: simulation setup")
         self.name = name
         self.path = os.path.join(var.SIMULATIONS_PATH, name)
+        self.directories = dict()
         self.__dict__.update(sim_variables)
         self.tick_count = 0
         self.noises = {'foodmax': SimplexNoise(num_octaves=6, persistence=0.1, dimensions=2, noise_scale=700),
@@ -94,6 +95,10 @@ class World:
         except FileExistsError:
             shutil.rmtree(self.path)
             os.makedirs(self.path)
+        for i in var.DIRECTORIES:
+            new_directory = os.path.join(self.path, i)
+            os.makedirs(new_directory)
+            self.directories[i] = new_directory
 
     def _end(self):
         """
@@ -101,13 +106,13 @@ class World:
 
         :return:
         """
-        with open(os.path.join(self.path, "chunkData.csv"), 'w') as file:
+        with open(os.path.join(self.directories['data'], "chunks.csv"), 'w') as file:
             for i in self.chunk_list:
                 for j in i:
                     j.end(file)
         for i in self.alive_creatures:
             i.death()
-        with open(os.path.join(self.path, "creaturesData.csv"), 'w') as file:
+        with open(os.path.join(self.directories['data'], "creatures.csv"), 'w') as file:
             for i in self.creature_list:
                 i.end(file)
 
@@ -136,7 +141,7 @@ class World:
         to_write = str()
         for i in self.TO_RECORD:
             to_write += utl.add_to_write(self.__dict__[i], self.analysis['rounding'])
-        with open(os.path.join(self.path, "simulationData.csv"), 'w') as file:
+        with open(os.path.join(self.path, "params.csv"), 'w') as file:
             try:
                 file.write(to_write[:-1])
             except ValueError:
@@ -240,10 +245,10 @@ class World:
         :return:
         """
         try:
-            file = open(os.path.join(self.path, file_name), 'r+')
+            file = open(os.path.join(self.directories['analysis'], file_name), 'r+')
             file.seek(0, 2)
         except FileNotFoundError:
-            file = open(os.path.join(self.path, file_name), 'w')
+            file = open(os.path.join(self.directories['analysis'], file_name), 'w')
         if tick is not None:
             out = str(tick) + var.FILE_SEPARATORS[0]
         else:
