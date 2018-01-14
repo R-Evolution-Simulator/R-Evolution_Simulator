@@ -136,6 +136,11 @@ class MainMenuWindow(BaseTkWindow):
         self.canvas = None
 
     def destroy(self):
+        """
+        it destroys the object and exit the program
+
+        :return:
+        """
         super(MainMenuWindow, self).destroy()
         exit(0)
 
