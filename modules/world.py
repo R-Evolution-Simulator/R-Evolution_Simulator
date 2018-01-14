@@ -64,8 +64,6 @@ class World:
         """
         print(f"{self.name}: simulation running...")
         for i in range(self.max_lifetime):
-            if i % 100 == 0:
-                print(f"        - tick #{i} --- {len(self.alive_creatures)} alive")
             self._update()
             if len(self.alive_creatures) == 0:
                 break
@@ -191,6 +189,9 @@ class World:
         for i in self.chunk_list:
             for j in i:
                 j.update(tick_to_record)
+
+        if tick_to_record:
+            print(f"        - tick #{self.tick_count} --- {len(self.alive_creatures)} alive")
 
         self.creature_list = self.creature_list.union(self.new_born)
         self.alive_creatures = self.alive_creatures.union(self.new_born)
