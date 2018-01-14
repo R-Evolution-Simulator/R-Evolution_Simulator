@@ -23,11 +23,11 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                                             'temp_death_prob_coeff': 100,
                                             'genes_lim': {'agility': (10, 60),
                                                           'bigness': (20, 80),
-                                                          'fertility': (200, 400),
+                                                          'fertility': (150, 250),
                                                           'num_control': (0, 100)
                                                           },
                                             'mutation_coeff': 0.05,
-                                            'initial_fert_countdown':50,
+                                            'initial_fert_countdown':0,
                                             'reprod_energy_dec_coeff':0.8
                                             },
                          'analysis': {'tick_interval': 100,
