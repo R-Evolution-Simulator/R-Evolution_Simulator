@@ -36,7 +36,7 @@ class Creature:
         self.tick_history = list()
         self.birth_tick = self.world.tick_count - start_count  # creature's creation tick definition (startCount is used only during diversification at start)
         self.energy = energy  # creature's starting energy definition
-        self._actual_chunk().chunk_creature_list.append(self)  # creature's adding to the list of creatures in its chunk
+        self._actual_chunk().chunk_creature_set.add(self)  # creature's adding to the list of creatures in its chunk
         self.reprod_ready = False  # reproduction capacity set to false
         self.death_date = int(random.gauss(self.world.creatures_vars['average_age'], self.world.creatures_vars[
             'dev_age_prob']))  # crearture's age of death definition
@@ -177,12 +177,12 @@ class Creature:
 
     def _step(self):
         """
-        Changes the coordinates of the creature
+        Makes the creature move towards dest_coord and adds it to the chunk set
         
         :return:
         """
 
-        self._actual_chunk().chunk_creature_list.remove(
+        self._actual_chunk().chunk_creature_set.remove(
             self)
         speed = self.genes['speed'].get()
         self.coord[0] += (self.dest_coord[0] - self.coord[0]) / math.sqrt((self.dest_coord[0] - self.coord[0]) ** 2 + (
@@ -190,7 +190,7 @@ class Creature:
         self.coord[1] += (self.dest_coord[1] - self.coord[1]) / math.sqrt(
             (self.dest_coord[0] - self.coord[0]) ** 2 + (self.dest_coord[1] - self.coord[1]) ** 2) * speed
 
-        self._actual_chunk().chunk_creature_list.append(self)
+        self._actual_chunk().chunk_creature_set.add(self)
 
     def _eat(self):
         """
@@ -235,7 +235,7 @@ class Creature:
         
         :return:
         """
-        for i in self._actual_chunk().chunk_creature_list:
+        for i in self._actual_chunk().chunk_creature_set:
 
             if i.reprod_ready and i.sex != self.sex:
                 self._reproduction(i)
