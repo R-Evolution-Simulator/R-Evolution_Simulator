@@ -64,7 +64,7 @@ class World:
         """
         print(f"{self.name}: simulation running...")
         for i in range(self.max_lifetime):
-            if i % 10 == 0:
+            if i % 100 == 0:
                 print(f"        - tick #{i} --- {len(self.alive_creatures)} alive")
             self._update()
             if len(self.alive_creatures) == 0:

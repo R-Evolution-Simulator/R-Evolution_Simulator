@@ -48,7 +48,7 @@ class Creature:
 
         # creature's genes definition
         self.genes = genes
-        self.reprod_countdown = self.genes['fertility'].get()
+        self.reprod_countdown = self.genes['fertility'].get() + self.world.creatures_vars['initial_fert_countdown']
 
         # phenotypical characteristics valuation
 

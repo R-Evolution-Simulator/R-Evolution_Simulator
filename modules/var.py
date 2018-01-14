@@ -15,7 +15,7 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                                          'temperature_max': 100,
                                          },
                          'creatures_vars': {'view_ray': 3,
-                                            'en_dec_coeff': 0.025,
+                                            'en_dec_coeff': 0.02,
                                             'eat_coeff': 0.005,
                                             'en_inc_coeff': 1.5,
                                             'average_age': 2000,
@@ -23,10 +23,11 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                                             'temp_death_prob_coeff': 100,
                                             'genes_lim': {'agility': (10, 60),
                                                           'bigness': (20, 80),
-                                                          'fertility': (50, 250),
+                                                          'fertility': (200, 400),
                                                           'num_control': (0, 100)
                                                           },
                                             'mutation_coeff': 0.05,
+                                            'initial_fert_countdown':50
                                             },
                          'analysis': {'time_interval': 100,
                                       'percentile_parts': 4,
