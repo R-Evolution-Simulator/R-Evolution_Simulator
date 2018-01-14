@@ -27,7 +27,8 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                                                           'num_control': (0, 100)
                                                           },
                                             'mutation_coeff': 0.05,
-                                            'initial_fert_countdown':50
+                                            'initial_fert_countdown':50,
+                                            'reprod_energy_dec_coeff':0.8
                                             },
                          'analysis': {'tick_interval': 100,
                                       'percentile_parts': 4,

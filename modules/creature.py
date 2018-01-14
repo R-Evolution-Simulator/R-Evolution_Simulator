@@ -36,7 +36,6 @@ class Creature:
         self.tick_history = list()
         self.birth_tick = self.world.tick_count - start_count  # creature's creation tick definition (startCount is used only during diversification at start)
         self.energy = energy  # creature's starting energy definition
-        self._actual_chunk().chunk_creature_set.add(self)  # creature's adding to the list of creatures in its chunk
         self.reprod_ready = False  # reproduction capacity set to false
         self.death_date = int(random.gauss(self.world.creatures_vars['average_age'], self.world.creatures_vars[
             'dev_age_prob']))  # crearture's age of death definition
@@ -74,9 +73,11 @@ class Creature:
 
         :return:
         """
+        if self.age== 0:
+            self._actual_chunk().chunk_creature_set.add(self) # creature's adding to the list of creatures in its chunk
 
         # reproduction control
-        if self.energy > 50 and self.reprod_countdown <= 0:
+        if self.energy > 70 and self.reprod_countdown <= 0:
             self.reprod_ready = True
             self._dating_agency()
 
@@ -259,6 +260,8 @@ class Creature:
         for i in self.genes:
             genes[i] = self.genes[i].reproduce(other.genes[i], self.world.creatures_vars['mutation_coeff'])
         Creature(self.world, start_coord, (self.ID, other.ID), energy, sex, genes)
+        self.energy *= self.world.creatures_vars['reprod_energy_dec_coeff']
+        other.energy *= self.world.creatures_vars['reprod_energy_dec_coeff']
 
     def end(self, file):
         """
