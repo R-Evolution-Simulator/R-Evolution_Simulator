@@ -189,7 +189,7 @@ class World:
 
         for i in self.chunk_list:
             for j in i:
-                j.update(self.tick_count % self.analysis['time_interval'] == 0)
+                j.update(self.tick_count % self.analysis['tick_interval'] == 0)
 
         self.creature_list = self.creature_list.union(self.new_born)
         self.alive_creatures = self.alive_creatures.union(self.new_born)
@@ -219,11 +219,15 @@ class World:
 
         self._analysis_chunk_attrs()
 
-        for tick in range(0, self.lifetime, self.analysis['time_interval']):
+        genes = dict()
+        genes.update(var.CREATURES_GENES)
+        genes.update(var.CREATURES_SECONDARY_GENES)
+
+        for tick in range(0, self.lifetime, self.analysis['tick_interval']):
             alive = self._tick_creature_get(tick)
 
-            for gene in var.CREATURES_GENES:
-                rec_type = var.CREATURES_GENES[gene].REC_TYPE
+            for gene in genes:
+                rec_type = genes[gene].REC_TYPE
                 if rec_type == 'num':
                     self._analysis_num_gene(gene, alive, tick)
 
@@ -231,6 +235,7 @@ class World:
                     self._analysis_spr_gene(gene, tick)
 
             self._analysis_demographic_change(tick)
+            self._analysis_demographic_spreading(tick)
 
     def _analysis_file_write(self, file_name, to_write, tick=None):
         """
@@ -305,7 +310,7 @@ class World:
         :type tick: int
         :return:
         """
-        index = tick // self.analysis['time_interval']
+        index = tick // self.analysis['tick_interval']
         gene_class = var.CREATURES_GENES[gene]
         attr = gene_class.REC_CHUNK_ATTR
         attr_max = self.chunks_vars[attr + '_max']
@@ -348,8 +353,31 @@ class World:
         deaths = {'s': 0, 't': 0, 'a': 0, 'e': 0}
         born = 0
         for creature in self.creature_list:
-            if tick <= creature.birth_tick < tick + self.analysis['time_interval']:
+            if tick <= creature.birth_tick < tick + self.analysis['tick_interval']:
                 born += 1
-            if tick <= creature.death_tick < tick + self.analysis['time_interval']:
+            if tick <= creature.death_tick < tick + self.analysis['tick_interval']:
                 deaths[creature.death_cause] += 1
         self._analysis_file_write("population.csv", [born, deaths['s'], deaths['t'], deaths['a']], tick)
+
+    def _analysis_demographic_spreading(self, tick):
+        index = tick // self.analysis['tick_interval']
+        attr = 'foodmax'
+        attr_max = self.chunks_vars['foodmax_max']
+        values = [0 for i in range(self.analysis['parts'])]
+        for chunk_row in self.chunk_list:
+            for chunk in chunk_row:
+                chunk_index = int(chunk.__dict__[attr] * self.analysis['parts'] / attr_max)
+                try:
+                    values[chunk_index] += len(chunk.ticks_record[index])
+                except IndexError:
+                    if chunk_index == self.analysis['parts']:
+                        values[chunk_index - 1] += len(chunk.ticks_record[index])
+                    else:
+                        raise
+        correct = [0 for i in range(self.analysis['parts'])]
+        for part in range(self.analysis['parts']):
+            if not self.chunk_attrs_freq[attr][part] == 0:
+                correct[part] = values[part] / self.chunk_attrs_freq[attr][part]
+            else:
+                correct[part] = 0
+        self._analysis_file_write("demographic_spreading.csv", values + correct, tick)

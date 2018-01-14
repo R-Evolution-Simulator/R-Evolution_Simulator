@@ -419,38 +419,60 @@ class SimDiagramWindow(BaseTkWindow):
     """
     Simulation diagrams window class
     """
-    TICK_DIFFERENCE = 100
     START_VARIABLES = {
         'follow_play': False,
         'show_tick': False,
     }
 
     def __init__(self, father, subject):
+        """
+        Creates a new simulation diagram window
+
+        :param father: the father of the window
+        :type father: BaseTkWindow
+        :param subject: the subject of the new diagram
+        :type subject: str
+        """
         self.subject = subject
         self.TITLE = self.subject
         self.FRAMES_TEMPLATE = {
-            'diagram_canvas': (self._get_frame_class(), {'directory': father.directories['analysis'], 'subject': subject}, {'row': 0, 'column': 0}),
-            'command_bar': (frm.DiagramCommandBar, {'windows': (self, father)}, {'row': 1, 'column': 0}), }
+            'diagram_canvas': (self._get_frame_class(), {'directory': father.directories['analysis'], 'subject': subject, 'params': father.analysis}, {'row': 0, 'column': 0}),
+            'command_bar': (frm.DiagramCommandBar, {'windows': (self, father), 'tick_interval': father.analysis['tick_interval']}, {'row': 1, 'column': 0}), }
         super(SimDiagramWindow, self).__init__(father)
-        self.frames_load()
         self.__dict__.update(self.START_VARIABLES)
-        self.tick_difference = self.TICK_DIFFERENCE
+        self.graph_width = father.analysis['tick_interval']
+        self.frames_load()
 
     def _get_frame_class(self):
+        """
+        Return the frame class for the given diagram subject
+
+        :return:
+        """
         if self.subject in ['agility', 'bigness', 'fertility', 'num_control', 'speed']:
             return frm.GeneDiagram
-        elif self.subject in ['foodmax', 'temp_resist_c', 'temp_resist_l', 'temp_resist_N']:
+        elif self.subject in ['demographic_spreading', 'mndl_control_A', 'mndl_control_a', 'temp_resist_c', 'temp_resist_l', 'temp_resist_N']:
             return frm.SpreadDiagram
         elif self.subject == 'population':
             return frm.PopulationDiagram
 
-    def tick_difference_set(self):
+    def graph_width_set(self):
+        """
+        Sets the graph_width to the value given in the spinbox
+
+        :return:
+        """
         try:
-            self.tick_difference = int(self.get_widget('command_bar', 'tick_difference').get())
+            self.graph_width = int(self.get_widget('command_bar', 'graph_width').get())
         except ValueError:
             pass
 
-    def change_follow_play(self):
+    def toggle_follow_play(self):
+        """
+        Toggles the follow_play status
+
+        :return:
+        """
         self.follow_play = not self.follow_play
 
     def dyn_axes_set(self):

@@ -29,7 +29,7 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                                             'mutation_coeff': 0.05,
                                             'initial_fert_countdown':50
                                             },
-                         'analysis': {'time_interval': 100,
+                         'analysis': {'tick_interval': 100,
                                       'percentile_parts': 4,
                                       'parts': 8,
                                       'rounding': 4}
@@ -39,6 +39,7 @@ CHUNK_ATTRS = ('temperature', 'foodmax')
 
 CREATURES_GENES = {'agility': gns.Agility, 'bigness': gns.Bigness, 'fertility': gns.Fertility,
                    'num_control': gns.NumControl, 'temp_resist': gns.TempResist, 'mndl_control': gns.MendelControl}
+CREATURES_SECONDARY_GENES = {'speed': gns.Speed}
 
 # files
 
@@ -67,7 +68,7 @@ TO_RECORD = {
                                                     },
                                       'mutation_coeff': None,
                                       },
-                   'analysis': {'time_interval': None,
+                   'analysis': {'tick_interval': None,
                                 'percentile_parts': None,
                                 'parts': None,
                                 'rounding': None},

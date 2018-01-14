@@ -1,5 +1,6 @@
 import tkinter as tk
 from . import var
+from . import utility as utl
 import os
 import matplotlib as mpl
 from matplotlib.figure import Figure
@@ -53,74 +54,6 @@ class BaseSelectFrame(BaseLabelFrame):
         super(BaseSelectFrame, self).__init__(father)
 
 
-class BaseDiagramCanvasFrame(BaseFrame):
-    def __init__(self, father, directory, subject, subplots=1):
-        """funzione per la rappresentazione del canvas dove porre il grafico"""
-        self.figure = Figure()
-        # ricordati SHOW E DRAW di self.canvas
-        self.WIDGETS = {
-            'canvas': (FigureCanvasTkAgg, {'figure': self.figure, 'master': self}, {'fill': tk.BOTH, 'expand': True})}
-        self.father = father
-        self.directory = directory
-        self.subject = subject
-        self.widgets = dict()
-        self.subplots = []
-        self.tick_lines = []
-        self.data = None
-        self.subplot_creation(subplots)
-        super(BaseDiagramCanvasFrame, self).__init__(father)
-        self.data_init()
-        self.data_calc()
-        self.set_subplot()
-        self.set_titles()
-        self.stat_axes_set(father.father.lifetime)
-
-    def stat_axes_set(self, max_tick):
-        for subplot in self.subplots:
-            subplot.set_xlim([0, max_tick])
-
-    def data_init(self):
-        """funzione per la lettura dei file con i dati"""
-        file = open(os.path.join(self.directory, f"{self.subject}.csv"))
-        self.data = [[] for i in range(len(file.readline().split(';')))]
-        file.seek(0)
-        for line in file:
-            line_list = line.split(';')
-            line_list[-1] = line_list[-1][:-1]
-            for i in range(len(self.data)):
-                self.data[i].append(float(line_list[i]))
-
-    def _widgets_load(self, wid_list):
-        for i in wid_list:
-            new = wid_list[i][0](**wid_list[i][1])
-            new.show()
-            wid = new.get_tk_widget()
-            wid.pack(**wid_list[i][2])
-            self.widgets[i] = new
-
-    def subplot_creation(self, subplots):
-        """funzione per la creazione delle coordinate delle linee"""
-        for i in range(subplots):
-            self.subplots.append(self.figure.add_subplot(subplots, 1, i + 1))
-
-    def dyn_axes_set(self, tick):
-        for subplot in self.subplots:
-            subplot.set_xlim([tick - self.father.tick_difference, tick])
-
-    def add_show_tick(self, tick):
-        for subplot in self.subplots:
-            self.tick_lines.append(subplot.axvline(x=tick))
-
-    def remove_show_tick(self):
-        for line in self.tick_lines:
-            line.remove()
-        self.tick_lines = []
-
-    def tick_line_set(self, tick):
-        for line in self.tick_lines:
-            line.set_xdata(tick)
-
-
 class Logo(BaseFrame):
     START_LOGO = "data/logo.gif"
 
@@ -142,7 +75,7 @@ class LoadSim(BaseFrame):
     def __init__(self, father, windows):
         self.WIDGETS = {'entry': (tk.Entry, {}, {}),
                         'button': (
-                        tk.Button, {'text': "Load", 'command': windows[0].simulation_file_load}, {'side': tk.RIGHT}),
+                            tk.Button, {'text': "Load", 'command': windows[0].simulation_file_load}, {'side': tk.RIGHT}),
                         'label': (tk.Label, {'text': "Insert simulation name"}, {'side': tk.LEFT})}
         super(LoadSim, self).__init__(father)
 
@@ -172,7 +105,7 @@ class NewSim(GridFrame, BaseFrame):
                 new_variable.set(str(object[i]))
                 variable.append(new_variable)
                 self.WIDGETS[f'{name}_{i}'] = (
-                tk.Entry, {'textvariable': new_variable}, {'row': self.row, 'column': column + i + 1})
+                    tk.Entry, {'textvariable': new_variable}, {'row': self.row, 'column': column + i + 1})
             self.row += 1
         else:
             variable = dict()
@@ -239,8 +172,8 @@ class CreatureSet(BaseLabelFrame):
 
 
 class DiagramSet(BaseFrame):
-    CHOICES = ['agility', 'bigness', 'fertility', 'num_control', 'speed', 'population', 'foodmax',
-               'temp_resist_c', 'temp_resist_l', 'temp_resist_N']
+    CHOICES = ['agility', 'bigness', 'fertility', 'num_control', 'speed', 'mndl_control_a', 'mndl_control_A',
+               'temp_resist_c', 'temp_resist_l', 'temp_resist_N', 'population', 'demographic_spreading']
 
     def __init__(self, father, windows):
         self.father = father
@@ -270,19 +203,114 @@ class SetSuperFrame(BaseFrame):
 
 
 class DiagramCommandBar(BaseFrame):
-    TICK_DIFFERENCE_FROM = 100
-    TICK_DIFFERENCE_INCREMENT = 100
-
-    def __init__(self, father, windows):
+    def __init__(self, father, windows, tick_interval):
         self.WIDGETS = {'follow_play': (
-        tk.Checkbutton, {'text': "Follow play", 'command': windows[0].change_follow_play}, {'side': tk.LEFT}),
-            'tick_difference': (tk.Spinbox, {'from_': self.TICK_DIFFERENCE_FROM, 'to': windows[1].lifetime,
-                                                         'increment': self.TICK_DIFFERENCE_INCREMENT,
-                                                         'command': windows[0].tick_difference_set}, {'side': tk.LEFT}),
-                        'show_tick': (tk.Checkbutton, {'text': "Show tick", 'command': windows[0].change_show_tick},
-                                      {'side': tk.LEFT}),
-                        }
+            tk.Checkbutton, {'text': "Follow play", 'command': windows[0].toggle_follow_play}, {'side': tk.LEFT}),
+            'graph_width': (tk.Spinbox, {'from_': tick_interval, 'to': windows[1].lifetime,
+                                         'increment': tick_interval,
+                                         'command': windows[0].graph_width_set}, {'side': tk.LEFT}),
+            'show_tick': (tk.Checkbutton, {'text': "Show tick", 'command': windows[0].change_show_tick},
+                          {'side': tk.LEFT}),
+        }
         super(DiagramCommandBar, self).__init__(father)
+
+
+class BaseDiagramCanvasFrame(BaseFrame):
+    SUBPLOTS = 1
+
+    def __init__(self, father, directory, subject, params):
+        """
+        Frame for Matplotlib diagrams
+
+        :param father: the father window
+        :param directory: the directory of the file
+        :param subject: the subject of the diagram
+        :param params: the analysis parameters of the simulation
+        """
+        self.figure = Figure()
+        self.WIDGETS = {
+            'canvas': (FigureCanvasTkAgg, {'figure': self.figure, 'master': self}, {'fill': tk.BOTH, 'expand': True})}
+        self.father = father
+        self.directory = directory
+        self.subject = subject
+        self.params = params
+        self.widgets = dict()
+        self.subplots = []
+        self.tick_lines = []
+        self.data = None
+        for i in range(self.SUBPLOTS):
+            self.subplots.append(self.figure.add_subplot(self.SUBPLOTS, 1, i + 1))
+        super(BaseDiagramCanvasFrame, self).__init__(father)
+        self._data_init()
+        self._data_calc()
+        self._set_subplots()
+        self._set_titles()
+        self.stat_axes_set(father.father.lifetime)
+
+    def _data_init(self):
+        """
+        Loads data form the analysis file
+
+        :return:
+        """
+        raw_data = list()
+        file = open(os.path.join(self.directory, f"{self.subject}.csv"))
+        for line in file:
+            raw_data.append(utl.get_from_string(line, 0, None))
+        self.data = [[raw_data[j][i] for j in range(len(raw_data))] for i in range(len(raw_data[0]))]
+
+    def _data_calc(self):
+        """
+        Data elaboration
+
+        :return:
+        """
+        pass
+
+    def _set_subplots(self):
+        """
+        Sets up subplots
+
+        :return:
+        """
+        pass
+
+    def _set_titles(self):
+        """
+        Sets up titles
+
+        :return:
+        """
+        pass
+
+    def _widgets_load(self, wid_list):
+        for i in wid_list:
+            new = wid_list[i][0](**wid_list[i][1])
+            new.show()
+            wid = new.get_tk_widget()
+            wid.pack(**wid_list[i][2])
+            self.widgets[i] = new
+
+    def stat_axes_set(self, max_tick):
+        for subplot in self.subplots:
+            subplot.set_xlim([0, max_tick])
+
+    def dyn_axes_set(self, tick):
+        for subplot in self.subplots:
+            subplot.set_xlim([tick - self.father.tick_difference, tick])
+
+    def add_show_tick(self, tick):
+        for subplot in self.subplots:
+            self.tick_lines.append(subplot.axvline(x=tick))
+
+    def remove_show_tick(self):
+        for line in self.tick_lines:
+            line.remove()
+        self.tick_lines = []
+
+    def tick_line_set(self, tick):
+        for line in self.tick_lines:
+            line.set_xdata(tick)
 
 
 class GeneDiagram(BaseDiagramCanvasFrame):
@@ -290,14 +318,11 @@ class GeneDiagram(BaseDiagramCanvasFrame):
     TEXTS = [["", "Tick", ""]]
     LABELS = ["Minimum", "25% percentile", "Median", "75% percentile", "Maximum", "Average"]
 
-    def data_calc(self):
-        pass
-
-    def set_subplot(self):
+    def _set_subplots(self):
         for i in range(len(self.data) - 1):
             self.subplots[0].plot(self.data[0], self.data[i + 1], color=self.COLOURS[i], label=self.LABELS[i])
 
-    def set_titles(self):
+    def _set_titles(self):
         self.subplots[0].set_title(self.subject)
         self.subplots[0].set_xlabel(self.TEXTS[0][1])
         self.subplots[0].set_ylabel(self.subject)
@@ -311,21 +336,18 @@ class PopulationDiagram(BaseDiagramCanvasFrame):
     LABELS = [["Births", "Deaths"], ["Starvation", "Temperature", "Old Age"]]
     SUBPLOTS = 2
 
-    def __init__(self, father, directory, subject):
-        super(PopulationDiagram, self).__init__(father, directory, subject, self.SUBPLOTS)
-
-    def data_calc(self):
+    def _data_calc(self):
         self.data.append(list())
         for i in range(len(self.data[0])):
             self.data[5].append(self.data[2][i] + self.data[3][i] + self.data[4][i])
 
-    def set_subplot(self):
+    def _set_subplots(self):
         self.subplots[0].plot(self.data[0], self.data[1], color=self.COLOURS[0][0], label=self.LABELS[0][0])
         self.subplots[0].plot(self.data[0], self.data[5], color=self.COLOURS[0][1], label=self.LABELS[0][1])
         for i in range(3):
             self.subplots[1].plot(self.data[0], self.data[i + 2], color=self.COLOURS[1][i], label=self.LABELS[1][i])
 
-    def set_titles(self):
+    def _set_titles(self):
         for i in range(2):
             self.subplots[i].set_title(self.TEXTS[i][0])
             self.subplots[i].set_xlabel(self.TEXTS[i][1])
@@ -344,33 +366,31 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
     LABELS = ["-100 <> -75", "-75 <> -50", "-50 <> -25", "-25 <> 0", "0 <> 25", "25 <> 50", "50 <> 75", "75 <> 100"]
     SUBPLOTS = 2
 
-    def __init__(self, father, directory, subject):
-        super(SpreadDiagram, self).__init__(father, directory, subject, self.SUBPLOTS)
-
-    def data_calc(self):
-        for i in range(8):
+    def _data_calc(self):
+        parts = self.params['parts']
+        for i in range(parts):
             self.data.append([])
         for i in range(len(self.data[0])):
-            for j in range(4, 17, 2):
-                self.data[j][i] += self.data[j - 2][i]
-            for j in range(2, 17, 2):
-                self.data[int(j / 2) + 16].append(self.data[j][i] / self.data[16][i] * 100)
+            for j in range(parts, 2 * parts):
+                self.data[j + 1][i] += self.data[j][i]
+            for j in range(parts, 2 * parts):
+                self.data[j + parts + 1][i] = (self.data[j + 1][i] / self.data[2 * parts][i] * 100)
+            print(self.data)
 
-    def set_subplot(self):
-        if self.subject == "foodmax":
+    def _set_subplots(self):
+        if self.subject == "demographic_spreading":
             color = 1
         else:
             color = 0
-        self.subplots[0].fill_between(self.data[0], self.data[2], color=self.COLOURS[color][0], label=self.LABELS[0])
-        for i in range(1, 8):
-            self.subplots[0].fill_between(self.data[0], self.data[(i + 1) * 2], self.data[i * 2],
-                                          color=self.COLOURS[color][i], label=self.LABELS[i])
-        self.subplots[1].fill_between(self.data[0], self.data[17], color=self.COLOURS[color][0], label=self.LABELS[0])
-        for i in range(17, 24):
-            self.subplots[1].fill_between(self.data[0], self.data[i + 1], self.data[i],
-                                          color=self.COLOURS[color][i - 16], label=self.LABELS[i - 16])
+        parts = self.params['parts']
 
-    def set_titles(self):
+        for k in range(2):
+            self.subplots[k].fill_between(self.data[0], self.data[(k + 1) * parts + 1], color=self.COLOURS[color][0], label=self.LABELS[0])
+            for i in range(1, parts):
+                self.subplots[k].fill_between(self.data[0], self.data[(k + 1) * parts + 1 + i], self.data[(k + 1) * parts + i],
+                                              color=self.COLOURS[color][i], label=self.LABELS[i])
+
+    def _set_titles(self):
         for i in range(2):
             self.subplots[i].set_title(f"{self.TEXTS[i][0]}{self.subject}")
             self.subplots[i].set_xlabel(self.TEXTS[i][1])
