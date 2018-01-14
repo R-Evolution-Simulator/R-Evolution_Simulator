@@ -52,8 +52,6 @@ class Chunk:
 
     def _tick_record(self):
         self.ticks_record.append(self.chunk_creature_set)
-        if len(self.chunk_creature_set) != 0:
-            print(self.coord)
 
     def end(self, file):
         """

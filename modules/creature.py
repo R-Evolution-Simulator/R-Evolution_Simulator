@@ -251,10 +251,8 @@ class Creature:
         :return:
         """
         genes = dict()
-        start_coord = [0, 0]
+        start_coord = [((self.coord[i] + other.coord[i]) / 2) for i in range(2)]
         sex = int(rnd() * 2)
-        for i in range(2):
-            start_coord[i] = (self.coord[i] + other.coord[i]) / 2
         energy = (self.energy + other.energy) / 2
         for i in self.genes:
             genes[i] = self.genes[i].reproduce(other.genes[i], self.world.creatures_vars['mutation_coeff'])
