@@ -33,7 +33,6 @@ class Chunk:
         self.food_history = list()
         self.chunk_creature_set = set()
         self.ticks_record = list()
-        self._tick_record()
 
     def update(self, tick_to_record):
         """
@@ -48,10 +47,10 @@ class Chunk:
         self.food_history.append((int(self.food),))
 
         if tick_to_record:
-            self._tick_record()
+            self.tick_record()
 
-    def _tick_record(self):
-        self.ticks_record.append(self.chunk_creature_set)
+    def tick_record(self):
+        self.ticks_record.append(self.chunk_creature_set.copy())
 
     def end(self, file):
         """

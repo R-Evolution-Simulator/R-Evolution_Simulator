@@ -3,6 +3,7 @@ from . import var
 from . import utility as utl
 import os
 import matplotlib as mpl
+import matplotlib.colors as clrs
 from matplotlib.figure import Figure
 
 mpl.use("Tkagg")
@@ -314,13 +315,32 @@ class BaseDiagramCanvasFrame(BaseFrame):
 
 
 class GeneDiagram(BaseDiagramCanvasFrame):
-    COLOURS = ['dimgray', 'lightgrey', 'darkgray', 'lightgrey', 'dimgray', 'red']
+    COLOURS = ['dimgray', 'red', 'darkgray', 'lightgrey']
     TEXTS = [["", "Tick", ""]]
-    LABELS = ["Minimum", "25% percentile", "Median", "75% percentile", "Maximum", "Average"]
+    LABELS = ["Average", "{percent}th percentile"]
 
     def _set_subplots(self):
-        for i in range(len(self.data) - 1):
-            self.subplots[0].plot(self.data[0], self.data[i + 1], color=self.COLOURS[i], label=self.LABELS[i])
+        parts = self.params['percentile_parts']
+        for part in range(parts + 2):
+            self.subplots[0].plot(self.data[0], self.data[part + 1], color=self._get_colour(part), label=self._get_label(part))
+
+    def _get_colour(self, part):
+        parts = self.params['percentile_parts']
+        if part == 0 or part == parts:
+            return self.COLOURS[0]
+        elif part == parts + 1:
+            return self.COLOURS[1]
+        elif part == parts / 2:
+            return self.COLOURS[2]
+        else:
+            return self.COLOURS[3]
+
+    def _get_label(self, part):
+        parts = self.params['percentile_parts']
+        if part == parts + 1:
+            return self.LABELS[0]
+        else:
+            return self.LABELS[1].format(percent=(part / parts) * 100)
 
     def _set_titles(self):
         self.subplots[0].set_title(self.subject)
@@ -357,38 +377,62 @@ class PopulationDiagram(BaseDiagramCanvasFrame):
 
 
 class SpreadDiagram(BaseDiagramCanvasFrame):
-    COLOURS = [
-        ['royalblue', 'dodgerblue', 'skyblue', 'paleturquoise', 'lemonchiffon', 'khaki', 'darkorange', 'orangered'],
-        ['saddlebrown', 'chocolate', 'darkgoldenrod', 'goldenrod', 'olive', 'darkolivegreen', 'forestgreen',
-         'darkgreen']]
     TEXTS = [["Spreading of ", "Tick", "Number of Creatures in 100 chunks"],
              ["Percentual spreading of ", "Tick", "Percentage of Creatures"]]
-    LABELS = ["-100 <> -75", "-75 <> -50", "-50 <> -25", "-25 <> 0", "0 <> 25", "25 <> 50", "50 <> 75", "75 <> 100"]
     SUBPLOTS = 2
+
+    def _data_init(self):
+        """
+        Loads data form the analysis file
+
+        :return:
+        """
+        raw_data = list()
+        file = open(os.path.join(self.directory, f"{self.subject}.csv"))
+        for line in file:
+            raw_data.append(utl.get_from_string(line, 0, None))
+        self.chunk_attribute = raw_data[0][:-1]
+        raw_data = raw_data[1:]
+        self.data = [[raw_data[j][i] for j in range(len(raw_data))] for i in range(len(raw_data[0]))]
 
     def _data_calc(self):
         parts = self.params['parts']
         for i in range(parts):
             self.data.append([])
         for i in range(len(self.data[0])):
-            for j in range(parts, 2 * parts):
+            for j in range(parts + 1, 2 * parts):
                 self.data[j + 1][i] += self.data[j][i]
-            for j in range(parts, 2 * parts):
-                self.data[j + parts + 1][i] = (self.data[j + 1][i] / self.data[2 * parts][i] * 100)
-            print(self.data)
+            for j in range(parts + 1, 2 * parts + 1):
+                self.data[j + parts].append(self.data[j][i] / self.data[2 * parts][i] * 100)
 
     def _set_subplots(self):
-        if self.subject == "demographic_spreading":
-            color = 1
-        else:
-            color = 0
         parts = self.params['parts']
+        for subplot in range(2):
+            self.subplots[subplot].fill_between(self.data[0], self.data[(subplot + 1) * parts + 1], color=self._get_colour(0), label=self._get_label(0))
+            for part in range(1, parts):
+                self.subplots[subplot].fill_between(self.data[0], self.data[(subplot + 1) * parts + 1 + part], self.data[(subplot + 1) * parts + part],
+                                                    color=self._get_colour(part), label=self._get_label(part))
 
-        for k in range(2):
-            self.subplots[k].fill_between(self.data[0], self.data[(k + 1) * parts + 1], color=self.COLOURS[color][0], label=self.LABELS[0])
-            for i in range(1, parts):
-                self.subplots[k].fill_between(self.data[0], self.data[(k + 1) * parts + 1 + i], self.data[(k + 1) * parts + i],
-                                              color=self.COLOURS[color][i], label=self.LABELS[i])
+    def _get_colour(self, part):
+        parts = self.params['parts']
+        if self.chunk_attribute == 'temperature':
+            half = (parts - 1) / 2
+            if part > half:
+                return 1, ((parts - 1) - part) / half, ((parts - 1) - part) / half
+            else:
+                return part / half, part / half, 1
+        elif self.chunk_attribute == 'foodmax':
+            return 0, part / (parts - 1), 0
+
+    def _get_label(self, part):
+        parts = self.params['parts']
+        max = self.father.father.chunks_vars[f'{self.chunk_attribute}_max']
+        section = max / parts
+        if self.chunk_attribute == 'temperature':
+            section *= 2
+            return f"{(section*part)-max} <> {(section*(part+1))-max}"
+        elif self.chunk_attribute == 'foodmax':
+            return f"{(section*part)} <> {(section*(part+1))}"
 
     def _set_titles(self):
         for i in range(2):

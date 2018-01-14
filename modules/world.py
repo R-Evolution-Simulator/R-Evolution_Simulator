@@ -52,6 +52,10 @@ class World:
         for i in range(self.initial_creatures):
             Creature(*self._creature_randomization())
 
+        for i in self.chunk_list:
+            for j in i:
+                j.tick_record()
+
         self.creature_list = self.new_born
         self.alive_creatures = self.new_born
         print(f"{self.name}: simulation setup done")
@@ -239,7 +243,7 @@ class World:
             self._analysis_demographic_change(tick)
             self._analysis_demographic_spreading(tick)
 
-    def _analysis_file_write(self, file_name, to_write, tick=None):
+    def _analysis_file_write(self, file_name, to_write, tick=None, attr=None):
         """
         Writes to file_name the tick if present and then the items in to_write
 
@@ -256,6 +260,8 @@ class World:
             file.seek(0, 2)
         except FileNotFoundError:
             file = open(os.path.join(self.directories['analysis'], file_name), 'w')
+            if attr is not None:
+                file.write(attr + '\n')
         if tick is not None:
             out = str(tick) + var.FILE_SEPARATORS[0]
         else:
@@ -342,7 +348,7 @@ class World:
                     correct[phen][part] = values[phen][part] / self.chunk_attrs_freq[attr][part]
                 else:
                     correct[phen][part] = 0
-            self._analysis_file_write(f"{gene}_{classes[phen][0]}.csv", values[phen] + correct[phen], tick)
+            self._analysis_file_write(f"{gene}_{classes[phen][0]}.csv", values[phen] + correct[phen], tick, attr)
 
     def _analysis_demographic_change(self, tick):
         """
@@ -382,4 +388,4 @@ class World:
                 correct[part] = values[part] / self.chunk_attrs_freq[attr][part]
             else:
                 correct[part] = 0
-        self._analysis_file_write("demographic_spreading.csv", values + correct, tick)
+        self._analysis_file_write("demographic_spreading.csv", values + correct, tick, attr)
