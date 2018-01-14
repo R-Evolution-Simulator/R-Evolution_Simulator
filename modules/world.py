@@ -187,9 +187,10 @@ class World:
         for i in self.alive_creatures:
             i.update()
 
+        tick_to_record = self.tick_count % self.analysis['tick_interval'] == 0
         for i in self.chunk_list:
             for j in i:
-                j.update(self.tick_count % self.analysis['tick_interval'] == 0)
+                j.update(tick_to_record)
 
         self.creature_list = self.creature_list.union(self.new_born)
         self.alive_creatures = self.alive_creatures.union(self.new_born)

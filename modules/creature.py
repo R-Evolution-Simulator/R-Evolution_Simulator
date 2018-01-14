@@ -65,6 +65,7 @@ class Creature:
         """
         self.death_tick = self.world.tick_count
         self.death_cause = cause
+        self._actual_chunk().chunk_creature_set.remove(self)
         self.world.tick_dead.add(self)
 
     def update(self):
@@ -182,8 +183,8 @@ class Creature:
         :return:
         """
 
-        self._actual_chunk().chunk_creature_set.remove(
-            self)
+        self._actual_chunk().chunk_creature_set.remove(self)
+
         speed = self.genes['speed'].get()
         self.coord[0] += (self.dest_coord[0] - self.coord[0]) / math.sqrt((self.dest_coord[0] - self.coord[0]) ** 2 + (
             self.dest_coord[1] - self.coord[1]) ** 2) * speed
@@ -241,6 +242,7 @@ class Creature:
                 self._reproduction(i)
                 self.reprod_ready = False
                 i.reprod_ready = False
+                break
 
     def _reproduction(self, other):
         """
