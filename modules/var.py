@@ -3,6 +3,8 @@ import pygame as pyg
 from . import genes as gns
 
 SIMULATIONS_PATH = os.path.join(os.getcwd(), "simulations")
+DATA_PATH = os.path.join(os.getcwd(), "data")
+TEMPLATES_PATH = os.path.join(DATA_PATH, "templates")
 
 # simulation
 
@@ -58,7 +60,8 @@ FILE_EXTENSIONS = {'numeric_analysis': 'rsan',
                    'chunks_attribute': 'rsca',
                    'creatures_data': 'rscr',
                    'chunks_data': 'rsch',
-                   'simulation_data': 'rssd'}
+                   'simulation_data': 'rssd',
+                   'simulation_template': 'rsst'}
 
 TO_RECORD = {
     'simulation': {'name': None, 'dimension': {'width': None, 'height': None}, 'lifetime': None,

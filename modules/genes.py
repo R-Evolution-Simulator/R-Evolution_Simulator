@@ -256,4 +256,3 @@ class Speed(SecondaryGene, NumberGene):
         :return:
         """
         self.phenotype = self.genotype['agility'].get() / self.genotype['bigness'].get() * 2
-

@@ -7,6 +7,8 @@ from . import var
 from . import utility as utl
 import os
 from math import ceil
+import json
+from .world import World
 
 
 class FinishError(BaseException):
@@ -510,12 +512,58 @@ class NewSimWindow(BaseTkWindow):
         :param father: the father of the window
         :type father: BaseTkWindow
         """
-        self.FRAMES_TEMPLATE = {'new': (frm.NewSim, {}, {'row': 0, 'column': 0})}
         super(NewSimWindow, self).__init__(father)
+        self.sim_name = tk.StringVar(master=self)
+        self.sim_variables = dict()
+        self.load_choice = tk.StringVar(master=self)
+        self.FRAMES_TEMPLATE = {'new': (frm.NewSim, {'load_choice': self.load_choice}, {'row': 0, 'column': 0})}
+
         self.frames_load()
+
+    def load_template(self):
+        name = self.load_choice.get()
+        with open(os.path.join(var.TEMPLATES_PATH, name)) as file:
+            variables = json.loads(file.readline())
+
+            def add_to_sim_variables(obj, to_add):
+                if type(to_add) == int or type(to_add) == float:
+                    obj.delete(0, tk.END)
+                    obj.insert(0, str(to_add))
+                elif type(to_add) == tuple or type(to_add) == list:
+                    for i in range(len(to_add)):
+                        add_to_sim_variables(obj[i], to_add[i])
+                else:
+                    for i in to_add:
+                        add_to_sim_variables(obj[i], to_add[i])
+
+            add_to_sim_variables(self.get_frame('new').sim_variables, variables)
+
+    def _get_from_sim_variables(self, obj):
+        if type(obj) == tk.Entry or type(obj) == tk.Entry:
+            try:
+                return int(obj.get())
+            except ValueError:
+                return float(obj.get())
+        elif type(obj) == tuple or type(obj) == list:
+            to_return = list()
+            for i in range(len(obj)):
+                to_return.append(self._get_from_sim_variables(obj[i]))
+            return to_return
+        else:
+            to_return = dict()
+            for i in obj:
+                to_return[i] = self._get_from_sim_variables(obj[i])
+            return  to_return
+
+    def save_template(self):
+        name = self.get_frame('new').save_choice.get().split('.')[0]
+        with open(os.path.join(var.TEMPLATES_PATH, name + '.' + var.FILE_EXTENSIONS['simulation_template']), 'w') as file:
+            file.write(json.dumps(self._get_from_sim_variables(self.get_frame('new').sim_variables)))
 
     def start_simulation(self):
         frame = self.get_frame('new')
-        name = frame.name_var
-        sim_variables = frame.variables
-        print(sim_variables)
+        sim_name = frame.sim_name.get()
+        if sim_name != '':
+            sim_variables = self._get_from_sim_variables(frame.sim_variables)
+            self.destroy()
+            World(sim_name, sim_variables)

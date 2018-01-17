@@ -56,7 +56,7 @@ class BaseSelectFrame(BaseLabelFrame):
 
 
 class Logo(BaseFrame):
-    START_LOGO = "data/logo.gif"
+    START_LOGO = os.path.join(var.DATA_PATH, "logo.gif")
 
     def __init__(self, father):
         self.photo = tk.PhotoImage(file=os.path.join(os.getcwd(), self.START_LOGO))
@@ -79,43 +79,57 @@ class LoadSim(BaseFrame):
                             tk.Button, {'text': "Load", 'command': windows[0].simulation_file_load}, {'side': tk.RIGHT}),
                         'label': (tk.Label, {'text': "Insert simulation name"}, {'side': tk.LEFT})}
         super(LoadSim, self).__init__(father)
+        self.widgets['entry'].focus_set()
 
 
 class NewSim(GridFrame, BaseFrame):
-    def __init__(self, father):
+    def __init__(self, father, load_choice):
+        super(BaseFrame, self).__init__(father)
         self.WIDGETS = dict()
-        self.variables = dict()
-        self.row = 0
+        self.sim_variables = dict()
+        self.load_choice = load_choice
+        self.load_choice.set('-')
+        self.WIDGETS['name_label'] = (tk.Label, {'text': 'name'}, {'row': 0, 'column': 0})
+        self.sim_name = tk.Entry(self)
+        self.sim_name.grid(row=0, column=1)
+        self.WIDGETS['start_button'] = (tk.Button, {'text': "Start", 'command': father.start_simulation}, {'row': 0, 'column': 2})
+        self.row = 1
         for i in var.DEFAULT_SIM_VARIABLES:
-            self.variables[i] = self._add_widget(i, var.DEFAULT_SIM_VARIABLES[i], 0)
+            self.sim_variables[i] = self._add_widget(i, var.DEFAULT_SIM_VARIABLES[i], 0)
             self.row += 1
-        self.name_var = tk.StringVar()
-        self.WIDGETS['name_label'] = (tk.Label, {'text': 'name'}, {'row': self.row, 'column': 0})
-        self.WIDGETS['name'] = (tk.Entry, {'textvariable': self.name_var}, {'row': self.row, 'column': 1})
-        self.WIDGETS['start_button'] = (tk.Button, {'text': "Start", 'command': father.start_simulation}, {'row': self.row+1, 'column': 0})
-        super(NewSim, self).__init__(father)
+        self.WIDGETS['load_button'] = (tk.Button, {'text': "Load template", 'command': father.load_template}, {'row': self.row, 'column': 1})
+        self.save_choice = tk.Entry(self)
+        self.save_choice.grid(row=self.row, column=2)
+        self.WIDGETS['save_button'] = (tk.Button, {'text': "Save template", 'command': father.save_template}, {'row': self.row, 'column': 3})
+        self.widgets = dict()
+        self._widgets_load(self.WIDGETS)
 
     def _add_widget(self, name, object, column):
         self.WIDGETS[f'{name}_label'] = (tk.Label, {'text': name}, {'row': self.row, 'column': column})
         if type(object) == int or type(object) == float:
-            variable = tk.StringVar()
-            variable.set(str(object))
-            self.WIDGETS[name] = (tk.Entry, {'textvariable': variable}, {'row': self.row, 'column': column + 1})
+            variable = tk.Entry(self)
+            variable.grid(row=self.row, column=column + 1)
         elif type(object) == tuple or type(object) == list:
             variable = list()
             for i in range(len(object)):
-                new_variable = tk.StringVar()
-                new_variable.set(str(object[i]))
+                new_variable = tk.Entry(self)
+                new_variable.grid(row=self.row, column=column + 1 + i)
                 variable.append(new_variable)
-                self.WIDGETS[f'{name}_{i}'] = (
-                    tk.Entry, {'textvariable': new_variable}, {'row': self.row, 'column': column + 1 + i})
         else:
             variable = dict()
             for i in object:
                 variable[i] = self._add_widget(i, object[i], column + 1)
-        self.row +=1
-
+        self.row += 1
         return variable
+
+    def _get_template_choices(self):
+        return os.listdir(var.TEMPLATES_PATH)
+
+    def _widgets_load(self, wid_list):
+        self.widgets = dict()
+        self.widgets['load_options'] = tk.OptionMenu(self, self.load_choice, *self._get_template_choices())
+        self.widgets['load_options'].grid(row=self.row, column=0)
+        super(NewSim, self)._widgets_load(wid_list)
 
 
 class PlayControl(BaseFrame):

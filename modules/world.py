@@ -3,6 +3,7 @@ import shutil
 from random import random as rnd
 import scipy
 import numpy
+import threading as thr
 
 from .noise.simplexnoise.noise import SimplexNoise
 from .chunk import Chunk
@@ -12,7 +13,7 @@ from . import utility as utl
 from . import genes as gns
 
 
-class World:
+class World(thr.Thread):
     """class of the world where creatures live"""
     TO_RECORD = var.TO_RECORD['simulation']
 
@@ -26,6 +27,9 @@ class World:
         :type sim_variables: dict
         :return:
         """
+        super(World, self).__init__()
+        self.setName('Simulation '+name)
+        self.setDaemon(True)
         print(f"{name}: simulation setup")
         self.name = name
         self.path = os.path.join(var.SIMULATIONS_PATH, name)
@@ -63,6 +67,7 @@ class World:
         self.creature_list = self.new_born
         self.alive_creatures = self.new_born
         print(f"{self.name}: simulation setup done")
+        self.start()
 
     def run(self):
         """
