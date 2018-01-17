@@ -229,7 +229,7 @@ class SimReplayControlWindow(BaseTkWindow):
         :type sim_name: str
         """
         self.FRAMES_TEMPLATE = {'play_control': (frm.PlayControl, {}, {'row': 0, 'column': 0}),
-                                'map_set': (frm.SetSuperFrame, {'windows': (self,)}, {'row': 1, 'column': 0}), }
+                                'map_set': (frm.SetSuperFrame, {'windows': (self,),}, {'row': 1, 'column': 0}), }
         self.TITLE = sim_name
         super(SimReplayControlWindow, self).__init__(father)
         self.sim_name = sim_name
@@ -259,7 +259,7 @@ class SimReplayControlWindow(BaseTkWindow):
             self.directories[i] = os.path.join(path, i)
 
         try:
-            simulation_params = open(os.path.join(path, f"params.csv"))
+            simulation_params = open(os.path.join(path, f"params.{var.FILE_EXTENSIONS['simulation_data']}"))
         except FileNotFoundError:
             self.destroy()
         sim_data = simulation_params.readline()
@@ -269,7 +269,7 @@ class SimReplayControlWindow(BaseTkWindow):
         files = dict()
         for i in ['chunks', 'creatures']:
             try:
-                files[i] = open(os.path.join(self.directories['data'], f"{i}.csv"))
+                files[i] = open(os.path.join(self.directories['data'], f"{i}.{var.FILE_EXTENSIONS[i+'_data']}"))
             except FileNotFoundError:
                 self.destroy()
         self.chunk_list = []
@@ -454,12 +454,15 @@ class SimDiagramWindow(BaseTkWindow):
 
         :return:
         """
-        if self.subject in ['agility', 'bigness', 'fertility', 'num_control', 'speed']:
+        ext=self.subject.split('.')[-1]
+        if ext == var.FILE_EXTENSIONS['numeric_analysis']:
             return frm.GeneDiagram
-        elif self.subject in ['demographic_spreading', 'mndl_control_A', 'mndl_control_a', 'temp_resist_c', 'temp_resist_l', 'temp_resist_N']:
+        elif ext == var.FILE_EXTENSIONS['spreading_analysis']:
             return frm.SpreadDiagram
-        elif self.subject == 'population':
+        elif ext == var.FILE_EXTENSIONS['demographic_analysis']:
             return frm.PopulationDiagram
+        else:
+            self.destroy()
 
     def graph_width_set(self):
         """

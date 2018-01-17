@@ -208,7 +208,7 @@ class Creature(object):
         :type i: int
         :return: the chunk coordinates
         """
-        return min(int(self.coord[i] / self.world.chunk_dim), self.world.dimension[i] - 1)
+        return min(int(self.coord[i] / self.world.chunk_dim), self.world.coords_limits[i] - 1)
 
     def _dating_agency(self):
         """
@@ -280,9 +280,9 @@ class Herbivore(Creature):
         maxEn = float("-inf")
 
         for i in range(max(x - self.world.creatures_vars['view_ray'], 0),
-                       min(x + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[0])):
+                       min(x + self.world.creatures_vars['view_ray'] + 1, self.world.dimension['width'])):
             for j in range(max(y - self.world.creatures_vars['view_ray'], 0),
-                           min(y + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[1])):
+                           min(y + self.world.creatures_vars['view_ray'] + 1, self.world.dimension['height'])):
                 for creature in self.world.chunk_list[i][j].chunk_creature_set:
                     if type(creature) == Carnivore:
                         try:
@@ -333,9 +333,9 @@ class Carnivore(Creature):
         self.prey = None
 
         for i in range(max(x - self.world.creatures_vars['view_ray'], 0),
-                       min(x + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[0])):
+                       min(x + self.world.creatures_vars['view_ray'] + 1, self.world.dimension['width'])):
             for j in range(max(y - self.world.creatures_vars['view_ray'], 0),
-                           min(y + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[1])):
+                           min(y + self.world.creatures_vars['view_ray'] + 1, self.world.dimension['height'])):
 
                 for creature in self.world.chunk_list[i][j].chunk_creature_set:
                     try:

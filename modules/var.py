@@ -6,13 +6,13 @@ SIMULATIONS_PATH = os.path.join(os.getcwd(), "simulations")
 
 # simulation
 
-DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
+DFEAULT_SIM_VARIABLES = {'dimension': {'width': 60, 'height': 45},
                          'chunk_dim': 10,
                          'max_lifetime': 10000,
                          'initial_creatures': {
-                                        'herbivors':400,
-                                        'carnivors':100
-                                         },
+                             'herbivors': 400,
+                             'carnivors': 100
+                         },
                          'chunks_vars': {'growth_coeff': 0.0003,
                                          'foodmax_max': 100,
                                          'temperature_max': 100,
@@ -30,9 +30,9 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                                                           'num_control': (0, 100)
                                                           },
                                             'mutation_coeff': 0.05,
+                                            'fertility_energy_coeff': 50000,
                                             'reprod_energy_dec_coeff': 0.8,
-                                            'fertility_energy_coeff':50000,
-                                            'predator_eat_coeff':0.5,
+                                            'predator_eat_coeff': 0.5,
                                             },
                          'analysis': {'tick_interval': 100,
                                       'percentile_parts': 4,
@@ -52,11 +52,19 @@ DIRECTORIES = ['data', 'images', 'analysis']
 
 FILE_SEPARATORS = (';', '/', ',', '|', '§')
 
+FILE_EXTENSIONS = {'numeric_analysis': 'rsan',
+                   'spreading_analysis': 'rsas',
+                   'demographic_analysis': 'rsad',
+                   'chunks_attribute': 'rsca',
+                   'creatures_data': 'rscr',
+                   'chunks_data': 'rsch',
+                   'simulation_data': 'rssd'}
+
 TO_RECORD = {
     'simulation': {'name': None, 'dimension': {'width': None, 'height': None}, 'lifetime': None,
                    'initial_creatures': {
-                                    'herbivors':None,
-                                    'carnivors':None
+                       'herbivors': None,
+                       'carnivors': None
                    }, 'chunk_dim': None, 'tick_count': None,
                    'chunks_vars': {'growth_coeff': None,
                                    'foodmax_max': None,
@@ -77,7 +85,7 @@ TO_RECORD = {
                                       'mutation_coeff': None,
                                       'fertility_energy_coeff': None,
                                       'reprod_energy_dec_coeff': None,
-                                      'predator_eat_coeff':None
+                                      'predator_eat_coeff': None
                                       },
                    'analysis': {'tick_interval': None,
                                 'percentile_parts': None,
@@ -98,15 +106,20 @@ TO_RECORD = {
 
 # graphics
 
-DEFAULT_CREATURES_COLORS = {'N': pyg.Color(255, 255, 255, 255),
-                            'S': (pyg.Color(255, 255, 0, 255), pyg.Color(0, 255, 255, 255)),
-                            'TR': {'c': pyg.Color(255, 0, 0, 255), 'l': pyg.Color(0, 0, 255, 255),
-                                   'N': pyg.Color(128, 128, 128, 255), 'n': pyg.Color(255, 255, 255, 255)}}
+DEFAULT_CREATURES_COLORS = {'none': pyg.Color(255, 255, 255, 255),
+                            'sex': (pyg.Color(255, 255, 0, 255), pyg.Color(0, 255, 255, 255)),
+                            'temp_resist': {'c': pyg.Color(255, 0, 0, 255),
+                                            'l': pyg.Color(0, 0, 255, 255),
+                                            'N': pyg.Color(127, 127, 127, 255),
+                                            'n': pyg.Color(255, 255, 255, 255)},
+                            'mndl_control': {'A': pyg.Color(255, 0, 255, 255),
+                                             'a': pyg.Color(255, 191, 255, 255), }
+                            }
 
-DEFAULT_CREATURES_DIMS = {'N': 7,
-                          'A': (1 / 5, 'agility'),
-                          'B': (1 / 7, 'bigness'),
-                          'NCG': (1 / 9, 'num_control'),
-                          'S': (5, 'speed')}
+DEFAULT_CREATURES_DIMS = {'none': 7,
+                          'agility': 1 / 5,
+                          'bigness': 1 / 7,
+                          'num_control': 1 / 9,
+                          'speed': 5}
 
 DEFAULT_CREATURES_BORDER = {'color': pyg.Color(0, 0, 0, 255), 'width': 1}

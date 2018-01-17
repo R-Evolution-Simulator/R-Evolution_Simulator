@@ -32,41 +32,36 @@ class PygameCanvas(object):
         it creates the background of the world
         :return:
         """
-        #TODO: rimettere a nuovo
-        image_food = Img.new("RGB", (int(self.father.sim_width / 10), int(self.father.sim_height / 10)))
-        draw_food = ImageDraw.Draw(image_food)
-        image_temp = Img.new("RGB", (int(self.father.sim_width / 10), int(self.father.sim_height / 10)))
-        draw_temp = ImageDraw.Draw(image_temp)
-
-        for chunk in self.father.chunk_list:
-            draw_food.rectangle((chunk.coord[0] * self.father.chunk_dim / 10,
-                                 chunk.coord[1] * self.father.chunk_dim / 10,
-                                 (chunk.coord[0] + 1) * self.father.chunk_dim / 10,
-                                 (chunk.coord[1] + 1) * self.father.chunk_dim / 10),
-                                fill=(0, int(chunk.foodmax * 255 / 100), 0))
-            if chunk.temperature > 0:
-                draw_temp.rectangle((chunk.coord[0] * self.father.chunk_dim / 10,
-                                     chunk.coord[1] * self.father.chunk_dim / 10,
-                                     (chunk.coord[0] + 1) * self.father.chunk_dim / 10,
-                                     (chunk.coord[1] + 1) * self.father.chunk_dim / 10),
-                                    fill=(255, int(255 - (chunk.temperature / 100 * 255)),
-                                          int(255 - (chunk.temperature / 100 * 255))))
-            else:
-                draw_temp.rectangle((chunk.coord[0] * self.father.chunk_dim / 10,
-                                     chunk.coord[1] * self.father.chunk_dim / 10,
-                                     (chunk.coord[0] + 1) * self.father.chunk_dim / 10,
-                                     (chunk.coord[1] + 1) * self.father.chunk_dim / 10),
-                                    fill=(int(255 + (chunk.temperature / 100 * 255)),
-                                          int(255 + (chunk.temperature / 100 * 255)), 255))
-
-        backgrounds_paths = {'FM': os.path.join(self.father.directories['images'], "backgroundFM.gif"),
-                             'T': os.path.join(self.father.directories['images'], "backgroundT.gif")}
-
-        image_food.save(backgrounds_paths['FM'], "GIF")
-        image_temp.save(backgrounds_paths['T'], "GIF")
-        for i in backgrounds_paths:
-            self.backgrounds[i] = utl.img_load(backgrounds_paths[i])
-        del image_temp, image_food, draw_food, draw_temp
+        for attr in var.CHUNK_ATTRS:
+            image = Img.new("RGB", (int(self.father.sim_width / 10), int(self.father.sim_height / 10)))
+            draw = ImageDraw.Draw(image)
+            if attr == 'foodmax':
+                for chunk in self.father.chunk_list:
+                    draw.rectangle((chunk.coord[0] * self.father.chunk_dim / 10,
+                                    chunk.coord[1] * self.father.chunk_dim / 10,
+                                    (chunk.coord[0] + 1) * self.father.chunk_dim / 10,
+                                    (chunk.coord[1] + 1) * self.father.chunk_dim / 10),
+                                   fill=(0, int(chunk.foodmax * 255 / 100), 0))
+            elif attr == 'temperature':
+                for chunk in self.father.chunk_list:
+                    if chunk.temperature > 0:
+                        draw.rectangle((chunk.coord[0] * self.father.chunk_dim / 10,
+                                        chunk.coord[1] * self.father.chunk_dim / 10,
+                                        (chunk.coord[0] + 1) * self.father.chunk_dim / 10,
+                                        (chunk.coord[1] + 1) * self.father.chunk_dim / 10),
+                                       fill=(255, int(255 - (chunk.temperature / 100 * 255)),
+                                             int(255 - (chunk.temperature / 100 * 255))))
+                    else:
+                        draw.rectangle((chunk.coord[0] * self.father.chunk_dim / 10,
+                                        chunk.coord[1] * self.father.chunk_dim / 10,
+                                        (chunk.coord[0] + 1) * self.father.chunk_dim / 10,
+                                        (chunk.coord[1] + 1) * self.father.chunk_dim / 10),
+                                       fill=(int(255 + (chunk.temperature / 100 * 255)),
+                                             int(255 + (chunk.temperature / 100 * 255)), 255))
+            path = os.path.join(self.father.directories['images'], f"{attr}_background.gif")
+            image.save(path, "GIF")
+            self.backgrounds[attr] = utl.img_load(path)
+        del image, draw
 
     def resize(self):
         """
@@ -85,19 +80,18 @@ class PygameCanvas(object):
         :param shows: which characteristic is showed
         :return:
         """
-        self.chunk_display(tick, shows)
+        self.chunk_display(tick, shows['ch'])
         self.creatures_display(tick, shows)
         pyg.display.update()
 
-    def chunk_display(self, tick, shows):
+    def chunk_display(self, tick, to_show):
         """
         function which rapresents the chunks
         :param tick: tick represented
         :param shows: which characteristic is showed
         :return:
         """
-        to_show = shows['ch']
-        if to_show == "F":  # con il cibo in un certo momento
+        if to_show == 'food':
             for chunk in self.father.chunk_list:
                 chunk.draw(self.surface, tick, self.father.chunk_dim, self.father.zoom)
         else:
@@ -121,8 +115,6 @@ class PygameCanvas(object):
         :param shows: which characteristic is showed
         :return:
         """
-
-
 
         color = shows['cc']
         dim = shows['cd']

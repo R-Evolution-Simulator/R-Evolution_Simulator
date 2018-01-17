@@ -49,7 +49,7 @@ class BaseSelectFrame(BaseLabelFrame):
             if self.WIDGETS[i][0] == tk.Radiobutton:
                 self.WIDGETS[i][1]['variable'] = windows[0].shows[self.CODE]
                 self.WIDGETS[i][1]['command'] = windows[0].update
-                self.WIDGETS[i][1]['value'] = i
+                self.WIDGETS[i][1]['text'] = self.WIDGETS[i][1]['value'] 
                 self.WIDGETS[i][2] = {'anchor': tk.W}
         windows[0].shows[self.CODE].set(self.START_SHOW)
         super(BaseSelectFrame, self).__init__(father)
@@ -135,31 +135,32 @@ class PlayControl(BaseFrame):
 class ChunksSet(BaseSelectFrame):
     NAME = "Chunk"
     CODE = 'ch'
-    START_SHOW = 'FM'
-    WIDGETS = {'FM': [tk.Radiobutton, {'text': "Food Max"}, {}],
-               'T': [tk.Radiobutton, {'text': "Temperature"}, {}],
-               'F': [tk.Radiobutton, {'text': "Food"}, {}], }
+    START_SHOW = 'foodmax'
+    WIDGETS = {'FM': [tk.Radiobutton, {'value': "foodmax"}, {}],
+               'T': [tk.Radiobutton, {'value': "temperature"}, {}],
+               'F': [tk.Radiobutton, {'value': "food"}, {}], }
 
 
 class CreatureColorSet(BaseSelectFrame):
     NAME = "Color"
     CODE = 'cc'
-    START_SHOW = 'TR'
-    WIDGETS = {'N': [tk.Radiobutton, {'text': "None"}, {}],
-               'S': [tk.Radiobutton, {'text': "Sex"}, {}],
-               'TR': [tk.Radiobutton, {'text': "Temp Resist"}, {}], }
+    START_SHOW = 'temp_resist'
+    WIDGETS = {'N': [tk.Radiobutton, {'value': "none"}, {}],
+               'S': [tk.Radiobutton, {'value': "sex"}, {}],
+               'TR': [tk.Radiobutton, {'value': "temp_resist"}, {}], 
+               'MC': [tk.Radiobutton, {'value': "mndl_control"}, {}],}
 
 
 class CreatureDimSet(BaseSelectFrame):
     NAME = "Dimension"
     CODE = 'cd'
-    START_SHOW = 'E'
-    WIDGETS = {'N': [tk.Radiobutton, {'text': "None"}, {}],
-               'E': [tk.Radiobutton, {'text': "Energy"}, {}],
-               'A': [tk.Radiobutton, {'text': "Agility"}, {}],
-               'B': [tk.Radiobutton, {'text': "Bigness"}, {}],
-               'S': [tk.Radiobutton, {'text': "Speed"}, {}],
-               'NCG': [tk.Radiobutton, {'text': "Num Control Gene"}, {}], }
+    START_SHOW = 'energy'
+    WIDGETS = {'N': [tk.Radiobutton, {'value': "none"}, {}],
+               'E': [tk.Radiobutton, {'value': "energy"}, {}],
+               'A': [tk.Radiobutton, {'value': "agility"}, {}],
+               'B': [tk.Radiobutton, {'value': "bigness"}, {}],
+               'S': [tk.Radiobutton, {'value': "speed"}, {}],
+               'NCG': [tk.Radiobutton, {'value': "num_control"}, {}], }
 
 
 class CreatureSet(BaseLabelFrame):
@@ -173,25 +174,32 @@ class CreatureSet(BaseLabelFrame):
 
 
 class DiagramSet(BaseFrame):
-    CHOICES = ['agility', 'bigness', 'fertility', 'num_control', 'speed', 'mndl_control_a', 'mndl_control_A',
-               'temp_resist_c', 'temp_resist_l', 'temp_resist_N', 'population', 'demographic_spreading']
+    SUPPORTED_FILES = ['numeric_analysis', 'spreading_analysis', 'demographic_analysis']
 
     def __init__(self, father, windows):
         self.father = father
+        self.windows = windows
         self.WIDGETS = {
-            'new': (tk.Button, {'text': "New Diagram", 'command': windows[0].diagram_window_create}, {'anchor': tk.W})}
-        self.diagram_choice = windows[0].diagram_choice
-        self.diagram_choice.set('agility')
+            'new': (tk.Button, {'text': "New Diagram", 'command': self.windows[0].diagram_window_create}, {'anchor': tk.W})}
+        self.diagram_choice = self.windows[0].diagram_choice
+        self.diagram_choice.set('-')
         super(DiagramSet, self).__init__(father)
+
+    def _get_choices(self):
+        files = os.listdir(self.windows[0].directories['analysis'])
+        choices = list()
+        for file in files:
+            ext = file.split('.')[-1]
+            for i in self.SUPPORTED_FILES:
+                if ext == var.FILE_EXTENSIONS[i]:
+                    choices.append(file)
+        return choices
 
     def _widgets_load(self, wid_list):
         self.widgets = dict()
-        self.widgets['menu'] = tk.OptionMenu(self, self.diagram_choice, *self.CHOICES)
+        self.widgets['menu'] = tk.OptionMenu(self, self.diagram_choice, *self._get_choices())
         self.widgets['menu'].pack(anchor=tk.W, fill=tk.X)
-        for i in wid_list:
-            new = wid_list[i][0](self, **wid_list[i][1])
-            new.pack(**wid_list[i][2])
-            self.widgets[i] = new
+        super(DiagramSet, self)._widgets_load(wid_list)
 
 
 class SetSuperFrame(BaseFrame):
@@ -255,7 +263,7 @@ class BaseDiagramCanvasFrame(BaseFrame):
         :return:
         """
         raw_data = list()
-        file = open(os.path.join(self.directory, f"{self.subject}.csv"))
+        file = open(os.path.join(self.directory, self.subject))
         for line in file:
             raw_data.append(utl.get_from_string(line, 0, None))
         self.data = [[raw_data[j][i] for j in range(len(raw_data))] for i in range(len(raw_data[0]))]
@@ -388,7 +396,7 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
         :return:
         """
         raw_data = list()
-        file = open(os.path.join(self.directory, f"{self.subject}.csv"))
+        file = open(os.path.join(self.directory, self.subject))
         for line in file:
             raw_data.append(utl.get_from_string(line, 0, None))
         self.chunk_attribute = raw_data[0][:-1]

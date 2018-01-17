@@ -6,7 +6,7 @@ import numpy
 
 from .noise.simplexnoise.noise import SimplexNoise
 from .chunk import Chunk
-from .creature import Herbivore,Carnivore
+from .creature import Herbivore, Carnivore
 from . import var
 from . import utility as utl
 from . import genes as gns
@@ -35,8 +35,9 @@ class World:
         self.noises = {'foodmax': SimplexNoise(num_octaves=6, persistence=0.1, dimensions=2, noise_scale=700),
                        'temperature': SimplexNoise(num_octaves=6, persistence=0.1, dimensions=2, noise_scale=700)}
         self.ID_count = 0
-        self.chunk_list = [[None for x in range(self.dimension[1])] for y in
-                           range(self.dimension[0])]
+        self.coords_limits=(self.dimension['width'], self.dimension['height'])
+        self.chunk_list = [[None for x in range(self.dimension['height'])] for y in
+                           range(self.dimension['width'])]
         self.creature_list = set()
         self.alive_creatures = set()
         self.tick_dead = set()
@@ -111,13 +112,13 @@ class World:
 
         :return:
         """
-        with open(os.path.join(self.directories['data'], "chunks.csv"), 'w') as file:
+        with open(os.path.join(self.directories['data'], f"chunks.{var.FILE_EXTENSIONS['chunks_data']}"), 'w') as file:
             for i in self.chunk_list:
                 for j in i:
                     j.end(file)
         for i in self.alive_creatures:
             i.death()
-        with open(os.path.join(self.directories['data'], "creatures.csv"), 'w') as file:
+        with open(os.path.join(self.directories['data'], f"creatures.{var.FILE_EXTENSIONS['creatures_data']}"), 'w') as file:
             for i in self.creature_list:
                 i.end(file)
 
@@ -146,7 +147,7 @@ class World:
         to_write = str()
         for i in self.TO_RECORD:
             to_write += utl.add_to_write(self.__dict__[i], self.analysis['rounding'])
-        with open(os.path.join(self.path, "params.csv"), 'w') as file:
+        with open(os.path.join(self.path, f"params.{var.FILE_EXTENSIONS['simulation_data']}"), 'w') as file:
             try:
                 file.write(to_write[:-1])
             except ValueError:
@@ -161,7 +162,7 @@ class World:
         """
         coord = [0, 0]
         for i in range(2):
-            coord[i] = rnd() * self.dimension[i] * self.chunk_dim
+            coord[i] = rnd() * self.coords_limits[i] * self.chunk_dim
         energy = 50 + rnd() * 100
         sex = int(rnd() * 2)
         lims = self.creatures_vars['genes_lim']
@@ -246,7 +247,7 @@ class World:
             self._analysis_demographic_change(tick)
             self._analysis_demographic_spreading(tick)
 
-    def _analysis_file_write(self, file_name, to_write, tick=None, attr=None):
+    def _analysis_file_write(self, file_name, file_type, to_write, tick=None, attr=None):
         """
         Writes to file_name the tick if present and then the items in to_write
 
@@ -258,6 +259,7 @@ class World:
         :type tick: int
         :return:
         """
+        file_name = file_name + '.' + var.FILE_EXTENSIONS[file_type]
         try:
             file = open(os.path.join(self.directories['analysis'], file_name), 'r+')
             file.seek(0, 2)
@@ -288,7 +290,7 @@ class World:
                     values.append(chunk.__dict__[attr])
             parts = numpy.histogram(values, self.analysis['parts'], (0, self.chunks_vars[attr + '_max']))[0]
             self.chunk_attrs_freq[attr] = parts
-            self._analysis_file_write(f"{attr}.csv", parts)
+            self._analysis_file_write(attr, 'chunks_attribute', parts)
 
     def _analysis_num_gene(self, gene, alive, tick):
         """
@@ -309,7 +311,7 @@ class World:
         for part in range(0, self.analysis['percentile_parts'] + 1):
             parts.append(scipy.percentile(values, part * 100 / self.analysis['percentile_parts']))
         parts.append(scipy.average(values))
-        self._analysis_file_write(f"{gene}.csv", parts, tick)
+        self._analysis_file_write(gene, 'numeric_analysis', parts, tick)
 
     def _analysis_spr_gene(self, gene, tick):
         """
@@ -351,7 +353,7 @@ class World:
                     correct[phen][part] = values[phen][part] / self.chunk_attrs_freq[attr][part]
                 else:
                     correct[phen][part] = 0
-            self._analysis_file_write(f"{gene}_{classes[phen][0]}.csv", values[phen] + correct[phen], tick, attr)
+            self._analysis_file_write(gene + '_' + classes[phen][0], 'spreading_analysis', values[phen] + correct[phen], tick, attr)
 
     def _analysis_demographic_change(self, tick):
         """
@@ -368,7 +370,7 @@ class World:
                 born += 1
             if tick <= creature.death_tick < tick + self.analysis['tick_interval']:
                 deaths[creature.death_cause] += 1
-        self._analysis_file_write("population.csv", [born, deaths['s'], deaths['t'], deaths['a']], tick)
+        self._analysis_file_write('demographic_change', 'demographic_analysis', [born, deaths['s'], deaths['t'], deaths['a']], tick)
 
     def _analysis_demographic_spreading(self, tick):
         index = tick // self.analysis['tick_interval']
@@ -391,4 +393,4 @@ class World:
                 correct[part] = values[part] / self.chunk_attrs_freq[attr][part]
             else:
                 correct[part] = 0
-        self._analysis_file_write("demographic_spreading.csv", values + correct, tick, attr)
+        self._analysis_file_write("demographic_spreading", 'spreading_analysis', values + correct, tick, attr)

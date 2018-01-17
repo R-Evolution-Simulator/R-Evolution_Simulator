@@ -32,9 +32,14 @@ class ChunkD:
 
         :return:
         """
-        pyg.draw.rect(surface, pyg.Color(0, int(self.food_history[int(tick) - 1] * 255 / 100), 0, 255),
-                      pyg.Rect(self.coord[0] * chunk_dim * zoom / 10, self.coord[1] * chunk_dim * zoom / 10,
-                               chunk_dim * zoom / 10, chunk_dim * zoom / 10))
+        pyg.draw.rect(surface, self._get_color(tick), self._get_rect(chunk_dim, zoom))
+
+    def _get_color(self, tick):
+        return pyg.Color(0, int(self.food_history[int(tick) - 1] * 255 / 100), 0, 255)
+
+    def _get_rect(self, chunk_dim, zoom):
+        fact = chunk_dim * zoom/10
+        return pyg.Rect(self.coord[0] * fact, self.coord[1] * fact, fact, fact)
 
 
 class CreaturesD:
@@ -64,16 +69,21 @@ class CreaturesD:
 
         :return:
         """
-        self.colors['N'] = self.COLORS['N']
-        self.colors['S'] = self.COLORS['S'][self.sex]
-        self.colors['TR'] = self.COLORS['TR'][self.genes['temp_resist']]
+        for key in self.COLORS:
+            if key == 'none':
+                self.colors[key] = self.COLORS[key]
+            elif key == 'sex':
+                self.colors[key] = self.COLORS[key][self.sex]
+            else:
+                self.colors[key] = self.COLORS[key][self.genes[key]]
 
-        self.dims['N'] = self.DIMS['N']
-        for i in self.DIMS:
-            if i is not 'N':
-                self.dims[i] = self.genes[self.DIMS[i][1]] * self.DIMS[i][0]
+        for key in self.DIMS:
+            if key == 'none':
+                self.dims[key] = self.DIMS[key]
+            else:
+                self.dims[key] = self.genes[key] * self.DIMS[key]
 
-    def draw(self, surface, tick, color, dim, zoom):
+    def draw(self, surface, tick, color, dim_flag, zoom):
         """
         Draws the creature
 
@@ -82,33 +92,31 @@ class CreaturesD:
         :type tick: int
         :param color: tuple with the RGB color
         :type color: tuple
-        :param dim: dimension of the circle
-        :type dim: int
+        :param dim_flag: dimension of the circle
+        :type dim_flag: int
         :param zoom: zoom factor
         :type zoom: float
 
         :return:
         """
+        fact = zoom / 10
         birth = max(self.birth_tick + 1, 1)
-        coord = (
-            int((self.tick_history[tick - birth][0]) * zoom / 10), int(self.tick_history[tick - birth][1] * zoom / 10))
-        if dim == 'E':
-            self.draw_shape(surface, self.colors[color], coord,
-                            int(self.tick_history[tick - birth][2] / 10 * zoom / 10))
-            try:
-                self.draw_shape(surface, self.BORDER['color'], coord,
-                                int(self.tick_history[tick - birth][2] / 10 * zoom / 10), self.BORDER['width'])
-            except ValueError:
-                pass
-        else:
-            self.draw_shape(surface, self.colors[color], coord, int(self.dims[dim] * zoom / 10))
-            try:
-                self.draw_shape(surface, self.BORDER['color'], coord,
-                                int(self.tick_history[tick - birth][2] / 10 * zoom / 10), self.BORDER['width'])
-            except ValueError:
-                pass
+        coord = [0, 0]
+        for i in range(2):
+            coord[i] = int(self.tick_history[tick - birth][i] * fact)
 
-    def draw_shape(self, surface, color, coord, dim, border=0):
+        if dim_flag == 'energy':
+            dim = int(self.tick_history[tick - birth][2] / 10 * fact)
+        else:
+            dim = int(self.dims[dim_flag] * fact)
+
+        self._draw_shape(surface, self.colors[color], coord, dim)
+        try:
+            self._draw_shape(surface, self.BORDER['color'], coord, dim, self.BORDER['width'])
+        except ValueError:
+            pass
+
+    def _draw_shape(self, surface, color, coord, dim, border=0):
         if self.diet == 'H':
             pyg.draw.circle(surface, color, coord, dim, border)
         elif self.diet == 'C':
