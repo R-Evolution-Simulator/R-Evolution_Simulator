@@ -43,7 +43,7 @@ class Creature(object):
         self.age = 0  # age set to 0
         self.dest_chunk = [self.chunk_coord(0), self.chunk_coord(1)]
         self.sex = sex
-        self.diet=self.DIET
+        self.diet = self.DIET
         self.death_tick = None
         self.death_cause = None
 
@@ -218,7 +218,7 @@ class Creature(object):
         """
         for i in self._actual_chunk().chunk_creature_set:
 
-            if i.reprod_ready and i.sex != self.sex and type(self)==type(i):
+            if i.reprod_ready and i.sex != self.sex and type(self) == type(i):
                 self._reproduction(i)
                 self.reprod_ready = False
                 i.reprod_ready = False
@@ -257,13 +257,14 @@ class Creature(object):
 
 class Herbivore(Creature):
     DIET = 'H'
+
     def __init__(self, *args, **kwargs):
         super(Herbivore, self).__init__(*args, **kwargs)
         self.eaten = False
 
     def _death_control(self):
         if self.eaten:
-            self.death(cause='a') # TODO add eaten cause
+            self.death(cause='a')  # TODO add eaten cause
         else:
             super(Herbivore, self)._death_control()
 
@@ -282,6 +283,16 @@ class Herbivore(Creature):
                        min(x + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[0])):
             for j in range(max(y - self.world.creatures_vars['view_ray'], 0),
                            min(y + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[1])):
+                for creature in self.world.chunk_list[i][j].chunk_creature_set:
+                    if type(creature) == Carnivore:
+                        try:
+                            self.dest_chunk = [2 * x - i, 2 * y - j]
+                        except IndexError:
+                            pass
+                        else:
+                            self.dest_coord = [(self.dest_chunk[0] + 0.5) * self.world.chunk_dim, (
+                                self.dest_chunk[1] + 0.5) * self.world.chunk_dim]
+                            return
 
                 if self.world.chunk_list[i][j].food * self.genes['bigness'].get() * self.world.creatures_vars[
                     'eat_coeff'] * self.world.creatures_vars['en_inc_coeff'] - self._energy_consume(i, j) > maxEn:
@@ -305,6 +316,7 @@ class Herbivore(Creature):
 
 class Carnivore(Creature):
     DIET = 'C'
+
     def __init__(self, *args, **kwargs):
         super(Carnivore, self).__init__(*args, **kwargs)
         self.prey = None
@@ -318,7 +330,7 @@ class Carnivore(Creature):
 
         x = self.chunk_coord(0)
         y = self.chunk_coord(1)
-        self.prey=None
+        self.prey = None
 
         for i in range(max(x - self.world.creatures_vars['view_ray'], 0),
                        min(x + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[0])):
@@ -329,7 +341,7 @@ class Carnivore(Creature):
                     try:
                         if type(creature) == Herbivore and (self.prey.energy - self._energy_consume(*self.prey.coord)) < creature.energy:
                             self.prey = creature
-                            self.dest_chunk = [i,j]
+                            self.dest_chunk = [i, j]
                     except AttributeError:
                         self.prey = creature
                         self.dest_chunk = [i, j]
@@ -337,8 +349,8 @@ class Carnivore(Creature):
             self.dest_coord = [(self.prey.chunk_coord(0) + 0.5) * self.world.chunk_dim, (
                 self.prey.chunk_coord(1) + 0.5) * self.world.chunk_dim]
         else:
-            self.dest_chunk = [0,0]
-            self.dest_coord = [5,5]
+            self.dest_chunk = [0, 0]
+            self.dest_coord = [5, 5]
 
     def _eat(self):
         """
@@ -346,5 +358,5 @@ class Carnivore(Creature):
 
         :return:
         """
-        self.energy += self.prey.energy*self.world.creatures_vars['predator_eat_coeff']
+        self.energy += self.prey.energy * self.world.creatures_vars['predator_eat_coeff']
         self.prey.eaten = True
