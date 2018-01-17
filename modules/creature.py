@@ -318,6 +318,7 @@ class Carnivore(Creature):
 
         x = self.chunk_coord(0)
         y = self.chunk_coord(1)
+        self.prey=None
 
         for i in range(max(x - self.world.creatures_vars['view_ray'], 0),
                        min(x + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[0])):
