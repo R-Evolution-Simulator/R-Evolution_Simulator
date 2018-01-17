@@ -88,8 +88,8 @@ class NewSim(GridFrame, BaseFrame):
                         'name': (tk.Entry, {'textvariable': self.name_var}, {'row': 0, 'column': 1})}
         self.variables = dict()
         self.row = 0
-        for i in var.DFEAULT_SIM_VARIABLES:
-            self.variables[i] = self._add_widget(i, var.DFEAULT_SIM_VARIABLES[i], 0)
+        for i in var.DEFAULT_SIM_VARIABLES:
+            self.variables[i] = self._add_widget(i, var.DEFAULT_SIM_VARIABLES[i], 0)
         super(NewSim, self).__init__(father)
 
     def _add_widget(self, name, object, column):

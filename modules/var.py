@@ -6,7 +6,7 @@ SIMULATIONS_PATH = os.path.join(os.getcwd(), "simulations")
 
 # simulation
 
-DFEAULT_SIM_VARIABLES = {'dimension': {'width': 60, 'height': 45},
+DEFAULT_SIM_VARIABLES = {'dimension': {'width': 60, 'height': 45},
                          'chunk_dim': 10,
                          'max_lifetime': 10000,
                          'initial_creatures': {

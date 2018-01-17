@@ -161,24 +161,6 @@ class MainMenuWindow(BaseTkWindow):
         self.new_window_dependent(LoadSimWindow)
 
 
-class NewSimWindow(BaseTkWindow):
-    """
-    New simulation window class
-    """
-    TITLE = "New Simulation"
-
-    def __init__(self, father):
-        """
-        Creates a new simulation window
-
-        :param father: the father of the window
-        :type father: BaseTkWindow
-        """
-        self.FRAMES_TEMPLATE = {'new': (frm.NewSim, {}, {'row': 0, 'column': 0})}
-        super(NewSimWindow, self).__init__(father)
-        self.frames_load()
-
-
 class LoadSimWindow(BaseTkWindow):
     """
     Load simulation window class
@@ -229,7 +211,7 @@ class SimReplayControlWindow(BaseTkWindow):
         :type sim_name: str
         """
         self.FRAMES_TEMPLATE = {'play_control': (frm.PlayControl, {}, {'row': 0, 'column': 0}),
-                                'map_set': (frm.SetSuperFrame, {'windows': (self,),}, {'row': 1, 'column': 0}), }
+                                'map_set': (frm.SetSuperFrame, {'windows': (self,), }, {'row': 1, 'column': 0}), }
         self.TITLE = sim_name
         super(SimReplayControlWindow, self).__init__(father)
         self.sim_name = sim_name
@@ -454,7 +436,7 @@ class SimDiagramWindow(BaseTkWindow):
 
         :return:
         """
-        ext=self.subject.split('.')[-1]
+        ext = self.subject.split('.')[-1]
         if ext == var.FILE_EXTENSIONS['numeric_analysis']:
             return frm.GeneDiagram
         elif ext == var.FILE_EXTENSIONS['spreading_analysis']:
@@ -513,3 +495,21 @@ class SimDiagramWindow(BaseTkWindow):
             self.stat_axes_set()
         self.get_widget('diagram_canvas', 'canvas').draw()
         super(SimDiagramWindow, self).update()
+
+
+class NewSimWindow(BaseTkWindow):
+    """
+    New simulation window class
+    """
+    TITLE = "New Simulation"
+
+    def __init__(self, father):
+        """
+        Creates a new simulation window
+
+        :param father: the father of the window
+        :type father: BaseTkWindow
+        """
+        self.FRAMES_TEMPLATE = {'new': (frm.NewSim, {}, {'row': 0, 'column': 0})}
+        super(NewSimWindow, self).__init__(father)
+        self.frames_load()
