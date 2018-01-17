@@ -15,7 +15,6 @@ class PygameCanvas(object):
         :param father: the simulation window
         """
         self.father = father
-        self.surface = None
         self.backgrounds = dict()
         self.resized_backgrounds = dict()
         self.surface = pyg.display.set_mode(self.START_RESOLUTION)
@@ -33,6 +32,7 @@ class PygameCanvas(object):
         it creates the background of the world
         :return:
         """
+        #TODO: rimettere a nuovo
         image_food = Img.new("RGB", (int(self.father.sim_width / 10), int(self.father.sim_height / 10)))
         draw_food = ImageDraw.Draw(image_food)
         image_temp = Img.new("RGB", (int(self.father.sim_width / 10), int(self.father.sim_height / 10)))
@@ -59,8 +59,8 @@ class PygameCanvas(object):
                                     fill=(int(255 + (chunk.temperature / 100 * 255)),
                                           int(255 + (chunk.temperature / 100 * 255)), 255))
 
-        backgrounds_paths = {'FM': os.path.join(var.SIMULATIONS_PATH, self.father.sim_name, "backgroundFM.gif"),
-                             'T': os.path.join(var.SIMULATIONS_PATH, self.father.sim_name, "backgroundT.gif")}
+        backgrounds_paths = {'FM': os.path.join(self.father.directories['images'], "backgroundFM.gif"),
+                             'T': os.path.join(self.father.directories['images'], "backgroundT.gif")}
 
         image_food.save(backgrounds_paths['FM'], "GIF")
         image_temp.save(backgrounds_paths['T'], "GIF")
@@ -103,6 +103,17 @@ class PygameCanvas(object):
         else:
             self.surface.blit(self.resized_backgrounds[to_show], (0, 0))
 
+    def tick_creature_list(self, tick):
+        """
+        it creates a list with all the creature alive in a certain tick
+        :return: the list of all the creature alive in a certain tick
+        """
+        L = []
+        for i in self.father.creature_list:
+            if i.birth_tick <= tick <= i.death_tick:
+                L.append(i)
+        return L
+
     def creatures_display(self, tick, shows):
         """
         function which rapresents the creature
@@ -111,19 +122,10 @@ class PygameCanvas(object):
         :return:
         """
 
-        def tick_creature_list():
-            """
-            it creates a list with all the creature alive in a certain tick
-            :return: the list of all the creature alive in a certain tick
-            """
-            L = []
-            for i in self.father.creature_list:
-                if i.birth_tick <= tick <= i.death_tick:
-                    L.append(i)
-            return L
+
 
         color = shows['cc']
         dim = shows['cd']
 
-        for creature in tick_creature_list():
+        for creature in self.tick_creature_list(tick):
             creature.draw(self.surface, tick, color, dim, self.father.zoom)

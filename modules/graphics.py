@@ -52,7 +52,7 @@ class CreaturesD:
         """
         restored = utl.get_from_string(creature_data, 0, var.TO_RECORD['creature'])
         self.__dict__.update(restored)
-
+        self.shape
         self.colors = dict()
         self.dims = dict()
         self.color_dims_creation()
@@ -74,7 +74,7 @@ class CreaturesD:
 
     def draw(self, surface, tick, color, dim, zoom):
         """
-        it draws the creature
+        Draws the creature
 
         :param surface: pygame surface
         :param tick: tick considered
