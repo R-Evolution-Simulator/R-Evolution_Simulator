@@ -238,7 +238,7 @@ class Creature(object):
         file.write(to_write[:-1] + '\n')
 
 
-class Herbivours(Creature):
+class Herbivore(Creature):
     def _dest_calc(self):
         """
         Evaluates the most convenient chunk to go to
