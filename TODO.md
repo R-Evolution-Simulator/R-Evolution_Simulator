@@ -1,13 +1,13 @@
 # (R)EVOLUTION SIMULATOR to do:
+
 - Loading Bar per il caricamento del replay
 - GUI creazione simulazione
-- To Correct:
-    - Riproduzione per media dei caratteri genetici:
-        - Grafo Bipartito (?)
-        - Geni: riproduzione sessuata ma per i geni numerici un solo genitore scelto a caso (con peso gene numerico?)
+
 - Features:
-    - Specie: Carnivori/Erbivori (?) [Equazioni di Lotka-Volterra]
-    - Fiumi (???)
-    - Graphics: finestra dettaglio Creatura
-    - Malattie
-- Remote Control (SossoBot) (????????????????)
+    1. Specie: Carnivori/Erbivori (?) [Equazioni di Lotka-Volterra]
+    2. Malattie/Vaccini  
+    4. Fiumi (???)
+    5. Stagioni
+    6. Altitudine
+   
+Graphics: finestra dettaglio Creatura

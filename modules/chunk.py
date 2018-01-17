@@ -1,6 +1,7 @@
 from .noise.simplexnoise.noise import normalize
 from . import var
 from . import utility as utl
+from random import random
 
 
 class Chunk:
@@ -27,7 +28,7 @@ class Chunk:
                 self.__dict__[i] = normalize(self.world.noises[i].noise(*coord)) * self.world.chunks_vars[i + '_max']
             if i == 'temperature':
                 self.__dict__[i] = (normalize(self.world.noises[i].noise(*coord)) - 0.5) * self.world.chunks_vars[i + '_max'] * 2
-        self.food = self.foodmax / 2  # all'inizio il cibo e' al massimo
+        self.food = self.foodmax*random()  # all'inizio il cibo e' al massimo
         self.growth_rate = self.foodmax * self.world.chunks_vars[
             'growth_coeff']  # la crescita e' direttamente proporzionale all'erba massima
         self.food_history = list()
