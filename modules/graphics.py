@@ -113,3 +113,5 @@ class CreaturesD:
             pyg.draw.circle(surface, color, coord, dim, border)
         elif self.diet == 'C':
             pyg.draw.rect(surface, color, (coord[0] - dim, coord[1] - dim, 2 * dim, 2 * dim), border)
+        else:
+            raise NotImplementedError
