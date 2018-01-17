@@ -41,7 +41,7 @@ class Creature(object):
         self.death_date = int(random.gauss(self.world.creatures_vars['average_age'], self.world.creatures_vars[
             'dev_age_prob']))  # crearture's age of death definition
         self.age = 0  # age set to 0
-        self.dest_chunk = [self._chunk_coord(0), self._chunk_coord(1)]
+        self.dest_chunk = [self.chunk_coord(0), self.chunk_coord(1)]
         self.sex = sex
         self.death_tick = None
         self.death_cause = None
@@ -85,8 +85,8 @@ class Creature(object):
 
         # food search
         self._dest_calc()
-        if not [self._chunk_coord(0),
-                self._chunk_coord(1)] == self.dest_chunk:
+        if not [self.chunk_coord(0),
+                self.chunk_coord(1)] == self.dest_chunk:
             self._step()
 
         else:
@@ -107,7 +107,7 @@ class Creature(object):
 
         :return: the Chunk object in which the creature is
         """
-        return self.world.chunk_list[self._chunk_coord(0)][self._chunk_coord(1)]
+        return self.world.chunk_list[self.chunk_coord(0)][self.chunk_coord(1)]
 
     def _death_control(self):
         """
@@ -158,6 +158,22 @@ class Creature(object):
         """
         pass
 
+    def _energy_consume(self, x, y):
+        """
+        Evaluates the quantity of the energy that would be used to reach
+        another chunk
+
+        :param x: first coordinate of the destination chunk to reach
+        :type x: int
+        :param y: second coordinate of the destination chunk to reach
+        :type y: int
+        :return: energy consumption value
+        """
+
+        return (math.sqrt(
+            (x * self.world.chunk_dim + 5 - self.coord[0]) ** 2 + (y * self.world.chunk_dim + 5 - self.coord[1]) ** 2) /
+                self.genes['speed'].get()) * self.world.creatures_vars['en_dec_coeff'] * self.energy
+
     def _step(self):
         """
         Makes the creature move towards dest_coord and adds it to the chunk set
@@ -183,7 +199,7 @@ class Creature(object):
         """
         pass
 
-    def _chunk_coord(self, i):
+    def chunk_coord(self, i):
         """
         Evaluates the chunk coordinates where the creature is
         
@@ -246,8 +262,8 @@ class Herbivore(Creature):
         :return:
         """
 
-        x = self._chunk_coord(0)
-        y = self._chunk_coord(1)
+        x = self.chunk_coord(0)
+        y = self.chunk_coord(1)
         maxEn = float("-inf")
 
         for i in range(max(x - self.world.creatures_vars['view_ray'], 0),
@@ -274,18 +290,32 @@ class Herbivore(Creature):
         self.energy += food_eaten * self.world.creatures_vars['en_inc_coeff']
         self._actual_chunk().food -= food_eaten
 
-    def _energy_consume(self, x, y):
-        """
-        Evaluates the quantity of the energy that would be used to reach
-        another chunk
 
-        :param x: first coordinate of the destination chunk to reach
-        :type x: int
-        :param y: second coordinate of the destination chunk to reach
-        :type y: int
-        :return: energy consumption value
+class Carnivore(Creature):
+    def _dest_calc(self):
+        """
+        Evaluates the most convenient chunk to go to
+
+        :return:
         """
 
-        return (math.sqrt(
-            (x * self.world.chunk_dim + 5 - self.coord[0]) ** 2 + (y * self.world.chunk_dim + 5 - self.coord[1]) ** 2) /
-                self.genes['speed'].get()) * self.world.creatures_vars['en_dec_coeff'] * self.energy
+        x = self.chunk_coord(0)
+        y = self.chunk_coord(1)
+        prey = None
+
+        for i in range(max(x - self.world.creatures_vars['view_ray'], 0),
+                       min(x + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[0])):
+            for j in range(max(y - self.world.creatures_vars['view_ray'], 0),
+                           min(y + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[1])):
+
+                for creature in self.world.chunk_list[i][j].chunk_creature_set():
+                    try:
+                        if type(creature) == Herbivore and (prey.energy - self._energy_consume(*prey.coord)) < creature.energy:
+                            prey = creature
+                    except AttributeError:
+                        prey = creature
+
+        self.dest_coord = [(prey.chunk_coord(0) + 0.5) * self.world.chunk_dim, (
+            prey.chunk_coord(1) + 0.5) * self.world.chunk_dim]
+
+    def _eat(self):
