@@ -1,6 +1,7 @@
 import os
 import pygame as pyg
 from . import genes as gns
+from . import creature
 
 SIMULATIONS_PATH = os.path.join(os.getcwd(), "simulations")
 
@@ -9,7 +10,10 @@ SIMULATIONS_PATH = os.path.join(os.getcwd(), "simulations")
 DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                          'chunk_dim': 10,
                          'max_lifetime': 10000,
-                         'initial_creatures': 750,
+                         'initial_creatures': {
+                                        'herbivors':(creature.Herbivore, 300),
+                                        'carnivors':(creature.Carnivore, 25)
+                                         },
                          'chunks_vars': {'growth_coeff': 0.0003,
                                          'foodmax_max': 100,
                                          'temperature_max': 100,
@@ -29,6 +33,7 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                                             'mutation_coeff': 0.05,
                                             'reprod_energy_dec_coeff': 0.8,
                                             'fertility_energy_coeff':10000,
+                                            'predator_eat_coeff':1,
                                             },
                          'analysis': {'tick_interval': 100,
                                       'percentile_parts': 4,
@@ -50,7 +55,10 @@ FILE_SEPARATORS = (';', '/', ',', '|', '§')
 
 TO_RECORD = {
     'simulation': {'name': None, 'dimension': {'width': None, 'height': None}, 'lifetime': None,
-                   'initial_creatures': None, 'chunk_dim': None, 'tick_count': None,
+                   'initial_creatures': {
+                                    'herbivors':None,
+                                    'carnivors':None
+                   }, 'chunk_dim': None, 'tick_count': None,
                    'chunks_vars': {'growth_coeff': None,
                                    'foodmax_max': None,
                                    'temperature_max': None,
@@ -69,7 +77,8 @@ TO_RECORD = {
                                                     },
                                       'mutation_coeff': None,
                                       'fertility_energy_coeff': None,
-                                      'reprod_energy_dec_coeff': None
+                                      'reprod_energy_dec_coeff': None,
+                                      'predator_eat_coeff':None
                                       },
                    'analysis': {'tick_interval': None,
                                 'percentile_parts': None,
