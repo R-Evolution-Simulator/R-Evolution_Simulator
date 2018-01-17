@@ -11,14 +11,14 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                          'max_lifetime': 10000,
                          'initial_creatures': {
                                         'herbivors':300,
-                                        'carnivors':5
+                                        'carnivors':10
                                          },
                          'chunks_vars': {'growth_coeff': 0.0003,
                                          'foodmax_max': 100,
                                          'temperature_max': 100,
                                          },
                          'creatures_vars': {'view_ray': 3,
-                                            'en_dec_coeff': 0.02,
+                                            'en_dec_coeff': 0.04,
                                             'eat_coeff': 0.005,
                                             'en_inc_coeff': 1.5,
                                             'average_age': 1000,
@@ -32,7 +32,7 @@ DFEAULT_SIM_VARIABLES = {'dimension': (60, 45),  # in chunks
                                             'mutation_coeff': 0.05,
                                             'reprod_energy_dec_coeff': 0.8,
                                             'fertility_energy_coeff':10000,
-                                            'predator_eat_coeff':0.1,
+                                            'predator_eat_coeff':0.5,
                                             },
                          'analysis': {'tick_interval': 100,
                                       'percentile_parts': 4,

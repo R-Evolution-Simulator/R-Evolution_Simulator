@@ -327,13 +327,16 @@ class Carnivore(Creature):
                 for creature in self.world.chunk_list[i][j].chunk_creature_set:
                     try:
                         if type(creature) == Herbivore and (self.prey.energy - self._energy_consume(*self.prey.coord)) < creature.energy:
-                            prey = creature
+                            self.prey = creature
+                            self.dest_chunk = [i,j]
                     except AttributeError:
                         self.prey = creature
-        if not self.prey:
-            self.dest_coord = [(prey.chunk_coord(0) + 0.5) * self.world.chunk_dim, (
-                prey.chunk_coord(1) + 0.5) * self.world.chunk_dim]
+                        self.dest_chunk = [i, j]
+        if self.prey != None:
+            self.dest_coord = [(self.prey.chunk_coord(0) + 0.5) * self.world.chunk_dim, (
+                self.prey.chunk_coord(1) + 0.5) * self.world.chunk_dim]
         else:
+            self.dest_chunk = [0,0]
             self.dest_coord = [5,5]
 
     def _eat(self):
