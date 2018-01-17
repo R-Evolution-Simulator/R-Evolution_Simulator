@@ -49,8 +49,10 @@ class World:
                 self.chunk_list[i][j] = Chunk(self, (i, j))
 
         print(f"        - creating creatures")
-        for i in range(self.initial_creatures):
-            Creature(*self._creature_randomization())
+
+        for i in self.initial_creatures:
+            for j in range(self.initial_creatures[i[1]]):
+                i[0](*self._creature_randomization())
 
         for i in self.chunk_list:
             for j in i:

@@ -217,7 +217,7 @@ class Creature(object):
         """
         for i in self._actual_chunk().chunk_creature_set:
 
-            if i.reprod_ready and i.sex != self.sex:
+            if i.reprod_ready and i.sex != self.sex and type(self)==type(i):
                 self._reproduction(i)
                 self.reprod_ready = False
                 i.reprod_ready = False
@@ -237,7 +237,7 @@ class Creature(object):
         energy = (self.energy + other.energy) / 2
         for i in self.genes:
             genes[i] = self.genes[i].reproduce(other.genes[i], self.world.creatures_vars['mutation_coeff'])
-        Creature(self.world, start_coord, (self.ID, other.ID), energy, sex, genes)
+        type(self)(self.world, start_coord, (self.ID, other.ID), energy, sex, genes)
         self.energy *= self.world.creatures_vars['reprod_energy_dec_coeff']
         other.energy *= self.world.creatures_vars['reprod_energy_dec_coeff']
 
@@ -295,6 +295,9 @@ class Herbivore(Creature):
 
 class Carnivore(Creature):
     DIET = 'C'
+    def __init__(self, *args, **kwargs):
+        super(Carnivore, self).__init__(*args, **kwargs)
+        self.prey = None
 
     def _dest_calc(self):
         """
@@ -305,7 +308,6 @@ class Carnivore(Creature):
 
         x = self.chunk_coord(0)
         y = self.chunk_coord(1)
-        prey = None
 
         for i in range(max(x - self.world.creatures_vars['view_ray'], 0),
                        min(x + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[0])):
@@ -314,10 +316,19 @@ class Carnivore(Creature):
 
                 for creature in self.world.chunk_list[i][j].chunk_creature_set():
                     try:
-                        if type(creature) == Herbivore and (prey.energy - self._energy_consume(*prey.coord)) < creature.energy:
+                        if type(creature) == Herbivore and (self.prey.energy - self._energy_consume(*prey.coord)) < creature.energy:
                             prey = creature
                     except AttributeError:
-                        prey = creature
+                        self.prey = creature
 
         self.dest_coord = [(prey.chunk_coord(0) + 0.5) * self.world.chunk_dim, (
             prey.chunk_coord(1) + 0.5) * self.world.chunk_dim]
+
+    def _eat(self):
+        """
+        it increases the energy of the predator
+
+        :return:
+        """
+        self.energy += self.prey.energy*self.world.creatures_vars['predator_eat_coeff']
+        self.prey.death(cause="a") #TODO mdkdmdmmdm4dn
