@@ -513,3 +513,9 @@ class NewSimWindow(BaseTkWindow):
         self.FRAMES_TEMPLATE = {'new': (frm.NewSim, {}, {'row': 0, 'column': 0})}
         super(NewSimWindow, self).__init__(father)
         self.frames_load()
+
+    def start_simulation(self):
+        frame = self.get_frame('new')
+        name = frame.name_var
+        sim_variables = frame.variables
+        print(sim_variables)

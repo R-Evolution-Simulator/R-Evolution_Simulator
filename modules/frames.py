@@ -49,7 +49,7 @@ class BaseSelectFrame(BaseLabelFrame):
             if self.WIDGETS[i][0] == tk.Radiobutton:
                 self.WIDGETS[i][1]['variable'] = windows[0].shows[self.CODE]
                 self.WIDGETS[i][1]['command'] = windows[0].update
-                self.WIDGETS[i][1]['text'] = self.WIDGETS[i][1]['value'] 
+                self.WIDGETS[i][1]['text'] = self.WIDGETS[i][1]['value']
                 self.WIDGETS[i][2] = {'anchor': tk.W}
         windows[0].shows[self.CODE].set(self.START_SHOW)
         super(BaseSelectFrame, self).__init__(father)
@@ -83,13 +83,16 @@ class LoadSim(BaseFrame):
 
 class NewSim(GridFrame, BaseFrame):
     def __init__(self, father):
-        self.name_var = tk.StringVar()
-        self.WIDGETS = {'name_label': (tk.Label, {'text': 'name'}, {'row': 0, 'column': 0}),
-                        'name': (tk.Entry, {'textvariable': self.name_var}, {'row': 0, 'column': 1})}
+        self.WIDGETS = dict()
         self.variables = dict()
         self.row = 0
         for i in var.DEFAULT_SIM_VARIABLES:
             self.variables[i] = self._add_widget(i, var.DEFAULT_SIM_VARIABLES[i], 0)
+            self.row += 1
+        self.name_var = tk.StringVar()
+        self.WIDGETS['name_label'] = (tk.Label, {'text': 'name'}, {'row': self.row, 'column': 0})
+        self.WIDGETS['name'] = (tk.Entry, {'textvariable': self.name_var}, {'row': self.row, 'column': 1})
+        self.WIDGETS['start_button'] = (tk.Button, {'text': "Start", 'command': father.start_simulation}, {'row': self.row+1, 'column': 0})
         super(NewSim, self).__init__(father)
 
     def _add_widget(self, name, object, column):
@@ -98,7 +101,6 @@ class NewSim(GridFrame, BaseFrame):
             variable = tk.StringVar()
             variable.set(str(object))
             self.WIDGETS[name] = (tk.Entry, {'textvariable': variable}, {'row': self.row, 'column': column + 1})
-            self.row += 1
         elif type(object) == tuple or type(object) == list:
             variable = list()
             for i in range(len(object)):
@@ -106,12 +108,13 @@ class NewSim(GridFrame, BaseFrame):
                 new_variable.set(str(object[i]))
                 variable.append(new_variable)
                 self.WIDGETS[f'{name}_{i}'] = (
-                    tk.Entry, {'textvariable': new_variable}, {'row': self.row, 'column': column + i + 1})
-            self.row += 1
+                    tk.Entry, {'textvariable': new_variable}, {'row': self.row, 'column': column + 1 + i})
         else:
             variable = dict()
             for i in object:
                 variable[i] = self._add_widget(i, object[i], column + 1)
+        self.row +=1
+
         return variable
 
 
@@ -147,8 +150,8 @@ class CreatureColorSet(BaseSelectFrame):
     START_SHOW = 'temp_resist'
     WIDGETS = {'N': [tk.Radiobutton, {'value': "none"}, {}],
                'S': [tk.Radiobutton, {'value': "sex"}, {}],
-               'TR': [tk.Radiobutton, {'value': "temp_resist"}, {}], 
-               'MC': [tk.Radiobutton, {'value': "mndl_control"}, {}],}
+               'TR': [tk.Radiobutton, {'value': "temp_resist"}, {}],
+               'MC': [tk.Radiobutton, {'value': "mndl_control"}, {}], }
 
 
 class CreatureDimSet(BaseSelectFrame):
