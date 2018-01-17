@@ -345,12 +345,9 @@ class Carnivore(Creature):
                     except AttributeError:
                         self.prey = creature
                         self.dest_chunk = [i, j]
-        if self.prey != None:
-            self.dest_coord = [(self.prey.chunk_coord(0) + 0.5) * self.world.chunk_dim, (
-                self.prey.chunk_coord(1) + 0.5) * self.world.chunk_dim]
-        else:
-            self.dest_chunk = [0, 0]
-            self.dest_coord = [5, 5]
+        if self.prey == None:
+            self.dest_chunk = [self.chunk_coord(0)+(-1+int(rnd()*2)*2)*6, self.chunk_coord(1)+(-1+int(rnd()*2)*2)*6]
+        self.dest_coord = [(self.dest_chunk[0] + 0.5) * self.world.chunk_dim, (self.dest_chunk[1]+ 0.5) * self.world.chunk_dim]
 
     def _eat(self):
         """
