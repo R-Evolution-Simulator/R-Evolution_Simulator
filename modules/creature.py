@@ -255,6 +255,8 @@ class Creature(object):
 
 
 class Herbivore(Creature):
+    DIET = 'H'
+
     def _dest_calc(self):
         """
         Evaluates the most convenient chunk to go to
@@ -292,6 +294,8 @@ class Herbivore(Creature):
 
 
 class Carnivore(Creature):
+    DIET = 'C'
+
     def _dest_calc(self):
         """
         Evaluates the most convenient chunk to go to
@@ -317,5 +321,3 @@ class Carnivore(Creature):
 
         self.dest_coord = [(prey.chunk_coord(0) + 0.5) * self.world.chunk_dim, (
             prey.chunk_coord(1) + 0.5) * self.world.chunk_dim]
-
-    def _eat(self):

@@ -76,7 +76,7 @@ TO_RECORD = {
                                 'parts': None,
                                 'rounding': None},
                    'ID_count': None},
-    'creature': {'ID': None, 'birth_tick': None, 'parents_ID': None, 'sex': None,
+    'creature': {'ID': None, 'birth_tick': None, 'parents_ID': None, 'sex': None, 'DIET': None,
                  'genes': {'agility': None,
                            'bigness': None,
                            'fertility': None,
