@@ -2,10 +2,12 @@ import pygame as pyg
 from . import var
 from . import utility as utl
 
+
 class ChunkD:
     """
     class to represent a Chunk object on the screen
     """
+
     def __init__(self, chunk_data):
         """
         creates a new object
@@ -92,17 +94,23 @@ class CreaturesD:
         coord = (
             int((self.tick_history[tick - birth][0]) * zoom / 10), int(self.tick_history[tick - birth][1] * zoom / 10))
         if dim == 'E':
-            pyg.draw.circle(surface, self.colors[color], coord,
+            self.draw_shape(surface, self.colors[color], coord,
                             int(self.tick_history[tick - birth][2] / 10 * zoom / 10))
             try:
-                pyg.draw.circle(surface, self.BORDER['color'], coord,
+                self.draw_shape(surface, self.BORDER['color'], coord,
                                 int(self.tick_history[tick - birth][2] / 10 * zoom / 10), self.BORDER['width'])
             except ValueError:
                 pass
         else:
-            pyg.draw.circle(surface, self.colors[color], coord, int(self.dims[dim] * zoom / 10))
+            self.draw_shape(surface, self.colors[color], coord, int(self.dims[dim] * zoom / 10))
             try:
-                pyg.draw.circle(surface, self.BORDER['color'], coord,
+                self.draw_shape(surface, self.BORDER['color'], coord,
                                 int(self.tick_history[tick - birth][2] / 10 * zoom / 10), self.BORDER['width'])
             except ValueError:
                 pass
+
+    def draw_shape(self, surface, color, coord, dim, border):
+        if self.DIET == 'H':
+            pyg.draw.circle(surface, color, coord, dim, border)
+        elif self.DIET == 'C':
+            pyg.draw.rect(surface, color, (coord[0] - dim, coord[1] - dim, 2 * dim, 2 * dim), border)
