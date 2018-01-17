@@ -48,7 +48,7 @@ class Creature:
 
         # creature's genes definition
         self.genes = genes
-        self.reprod_countdown = self.genes['fertility'].get() + self.world.creatures_vars['initial_fert_countdown']
+        self.reprod_countdown = self.genes['fertility'].get()
 
         # phenotypical characteristics valuation
 
@@ -75,7 +75,7 @@ class Creature:
         :return:
         """
         # reproduction control
-        if self.energy > 70 and self.reprod_countdown <= 0:
+        if self.energy > self.world.creatures_vars['fertility_energy_coeff']/self.genes['fertility'].get() and self.reprod_countdown <= 0:
             self.reprod_ready = True
             self._dating_agency()
 
