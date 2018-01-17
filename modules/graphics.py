@@ -54,7 +54,6 @@ class CreaturesD:
         """
         restored = utl.get_from_string(creature_data, 0, var.TO_RECORD['creature'])
         self.__dict__.update(restored)
-        self.shape
         self.colors = dict()
         self.dims = dict()
         self.color_dims_creation()
@@ -109,8 +108,8 @@ class CreaturesD:
             except ValueError:
                 pass
 
-    def draw_shape(self, surface, color, coord, dim, border):
-        if self.DIET == 'H':
+    def draw_shape(self, surface, color, coord, dim, border=0):
+        if self.diet == 'H':
             pyg.draw.circle(surface, color, coord, dim, border)
-        elif self.DIET == 'C':
+        elif self.diet == 'C':
             pyg.draw.rect(surface, color, (coord[0] - dim, coord[1] - dim, 2 * dim, 2 * dim), border)

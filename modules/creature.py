@@ -8,7 +8,7 @@ from . import genes as gns
 
 class Creature(object):
     """class of creatures"""
-    TO_RECORD = var.TO_RECORD['creature']
+    TO_RECORD_ = var.TO_RECORD['creature']
 
     def __init__(self, world, start_coord, parents_ID, energy, sex, genes, start_count=0):
         """
@@ -43,6 +43,7 @@ class Creature(object):
         self.age = 0  # age set to 0
         self.dest_chunk = [self.chunk_coord(0), self.chunk_coord(1)]
         self.sex = sex
+        self.diet=self.DIET
         self.death_tick = None
         self.death_cause = None
 
@@ -249,13 +250,22 @@ class Creature(object):
         :return:
         """
         to_write = str()
-        for i in self.TO_RECORD:
+        for i in self.TO_RECORD_:
             to_write += utl.add_to_write(self.__dict__[i], self.world.analysis['rounding'])
         file.write(to_write[:-1] + '\n')
 
 
 class Herbivore(Creature):
     DIET = 'H'
+    def __init__(self, *args, **kwargs):
+        super(Herbivore, self).__init__(*args, **kwargs)
+        self.eaten = False
+
+    def _death_control(self):
+        if self.eaten:
+            self.death(cause='a') # TODO add eaten cause
+        else:
+            super(Herbivore, self)._death_control()
 
     def _dest_calc(self):
         """
@@ -314,15 +324,17 @@ class Carnivore(Creature):
             for j in range(max(y - self.world.creatures_vars['view_ray'], 0),
                            min(y + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[1])):
 
-                for creature in self.world.chunk_list[i][j].chunk_creature_set():
+                for creature in self.world.chunk_list[i][j].chunk_creature_set:
                     try:
-                        if type(creature) == Herbivore and (self.prey.energy - self._energy_consume(*prey.coord)) < creature.energy:
+                        if type(creature) == Herbivore and (self.prey.energy - self._energy_consume(*self.prey.coord)) < creature.energy:
                             prey = creature
                     except AttributeError:
                         self.prey = creature
-
-        self.dest_coord = [(prey.chunk_coord(0) + 0.5) * self.world.chunk_dim, (
-            prey.chunk_coord(1) + 0.5) * self.world.chunk_dim]
+        if not self.prey:
+            self.dest_coord = [(prey.chunk_coord(0) + 0.5) * self.world.chunk_dim, (
+                prey.chunk_coord(1) + 0.5) * self.world.chunk_dim]
+        else:
+            self.dest_coord = [5,5]
 
     def _eat(self):
         """
@@ -331,4 +343,4 @@ class Carnivore(Creature):
         :return:
         """
         self.energy += self.prey.energy*self.world.creatures_vars['predator_eat_coeff']
-        self.prey.death(cause="a") #TODO mdkdmdmmdm4dn
+        self.prey.eaten = True

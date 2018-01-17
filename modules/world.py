@@ -6,7 +6,7 @@ import numpy
 
 from .noise.simplexnoise.noise import SimplexNoise
 from .chunk import Chunk
-from .creature import Creature
+from .creature import Herbivore,Carnivore
 from . import var
 from . import utility as utl
 from . import genes as gns
@@ -50,9 +50,10 @@ class World:
 
         print(f"        - creating creatures")
 
-        for i in self.initial_creatures:
-            for j in range(self.initial_creatures[i[1]]):
-                i[0](*self._creature_randomization())
+        for j in range(self.initial_creatures['carnivors']):
+            Carnivore(*self._creature_randomization())
+        for j in range(self.initial_creatures['herbivors']):
+            Herbivore(*self._creature_randomization())
 
         for i in self.chunk_list:
             for j in i:
