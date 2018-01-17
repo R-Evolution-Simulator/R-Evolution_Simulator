@@ -75,7 +75,7 @@ class Creature(object):
         :return:
         """
         # reproduction control
-        if self.energy > self.world.creatures_vars['fertility_energy_coeff']/self.genes['fertility'].get() and self.reprod_countdown <= 0:
+        if self.energy > self.world.creatures_vars['fertility_energy_coeff'] / self.genes['fertility'].get() and self.reprod_countdown <= 0:
             self.reprod_ready = True
             self._dating_agency()
 
@@ -237,6 +237,7 @@ class Creature(object):
             to_write += utl.add_to_write(self.__dict__[i], self.world.analysis['rounding'])
         file.write(to_write[:-1] + '\n')
 
+
 class Herbivours(Creature):
     def _dest_calc(self):
         """
@@ -287,4 +288,4 @@ class Herbivours(Creature):
 
         return (math.sqrt(
             (x * self.world.chunk_dim + 5 - self.coord[0]) ** 2 + (y * self.world.chunk_dim + 5 - self.coord[1]) ** 2) /
-                    self.genes['speed'].get()) * self.world.creatures_vars['en_dec_coeff'] * self.energy
+                self.genes['speed'].get()) * self.world.creatures_vars['en_dec_coeff'] * self.energy
