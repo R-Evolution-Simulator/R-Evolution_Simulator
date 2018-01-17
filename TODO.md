@@ -11,3 +11,5 @@
     6. Altitudine
    
 Graphics: finestra dettaglio Creatura
+
+A
