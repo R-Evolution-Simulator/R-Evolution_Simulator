@@ -6,7 +6,7 @@ from . import var
 from . import genes as gns
 
 
-class Creature:
+class Creature(object):
     """class of creatures"""
     TO_RECORD = var.TO_RECORD['creature']
 
@@ -156,24 +156,7 @@ class Creature:
         
         :return:
         """
-
-        x = self._chunk_coord(0)
-        y = self._chunk_coord(1)
-        maxEn = float("-inf")
-
-        for i in range(max(x - self.world.creatures_vars['view_ray'], 0),
-                       min(x + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[0])):
-            for j in range(max(y - self.world.creatures_vars['view_ray'], 0),
-                           min(y + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[1])):
-
-                if self.world.chunk_list[i][j].food * self.genes['bigness'].get() * self.world.creatures_vars[
-                    'eat_coeff'] * self.world.creatures_vars['en_inc_coeff'] - self._energy_consume(i, j) > maxEn:
-                    maxEn = self.world.chunk_list[i][j].food * self.genes['bigness'].get() * self.world.creatures_vars[
-                        'eat_coeff'] * self.world.creatures_vars['en_inc_coeff'] - self._energy_consume(i, j)
-                    self.dest_chunk = [i, j]
-
-        self.dest_coord = [(self.dest_chunk[0] + 0.5) * self.world.chunk_dim, (
-            self.dest_chunk[1] + 0.5) * self.world.chunk_dim]
+        pass
 
     def _step(self):
         """
@@ -198,26 +181,7 @@ class Creature:
 
         :return:
         """
-        food_eaten = self._actual_chunk().food * min(self.genes['bigness'].get() * self.world.creatures_vars['eat_coeff'], 0.9)
-        self.energy += food_eaten * self.world.creatures_vars['en_inc_coeff']
-        self._actual_chunk().food -= food_eaten
-        self.energy = min(self.energy, 100)
-
-    def _energy_consume(self, x, y):
-        """
-        Evaluates the quantity of the energy that would be used to reach
-        another chunk
-        
-        :param x: first coordinate of the destination chunk to reach
-        :type x: int
-        :param y: second coordinate of the destination chunk to reach
-        :type y: int
-        :return: energy consumption value
-        """
-
-        return (math.sqrt(
-            (x * self.world.chunk_dim + 5 - self.coord[0]) ** 2 + (y * self.world.chunk_dim + 5 - self.coord[1]) ** 2) /
-                self.genes['speed'].get()) * self.world.creatures_vars['en_dec_coeff'] * self.energy
+        pass
 
     def _chunk_coord(self, i):
         """
@@ -272,3 +236,55 @@ class Creature:
         for i in self.TO_RECORD:
             to_write += utl.add_to_write(self.__dict__[i], self.world.analysis['rounding'])
         file.write(to_write[:-1] + '\n')
+
+class Herbivours(Creature):
+    def _dest_calc(self):
+        """
+        Evaluates the most convenient chunk to go to
+
+        :return:
+        """
+
+        x = self._chunk_coord(0)
+        y = self._chunk_coord(1)
+        maxEn = float("-inf")
+
+        for i in range(max(x - self.world.creatures_vars['view_ray'], 0),
+                       min(x + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[0])):
+            for j in range(max(y - self.world.creatures_vars['view_ray'], 0),
+                           min(y + self.world.creatures_vars['view_ray'] + 1, self.world.dimension[1])):
+
+                if self.world.chunk_list[i][j].food * self.genes['bigness'].get() * self.world.creatures_vars[
+                    'eat_coeff'] * self.world.creatures_vars['en_inc_coeff'] - self._energy_consume(i, j) > maxEn:
+                    maxEn = self.world.chunk_list[i][j].food * self.genes['bigness'].get() * self.world.creatures_vars[
+                        'eat_coeff'] * self.world.creatures_vars['en_inc_coeff'] - self._energy_consume(i, j)
+                    self.dest_chunk = [i, j]
+
+        self.dest_coord = [(self.dest_chunk[0] + 0.5) * self.world.chunk_dim, (
+            self.dest_chunk[1] + 0.5) * self.world.chunk_dim]
+
+    def _eat(self):
+        """
+        Increases the energy of the creature by eating and consequently decreases the food in the chunk
+
+        :return:
+        """
+        food_eaten = self._actual_chunk().food * min(self.genes['bigness'].get() * self.world.creatures_vars['eat_coeff'], 0.9)
+        self.energy += food_eaten * self.world.creatures_vars['en_inc_coeff']
+        self._actual_chunk().food -= food_eaten
+
+    def _energy_consume(self, x, y):
+        """
+        Evaluates the quantity of the energy that would be used to reach
+        another chunk
+
+        :param x: first coordinate of the destination chunk to reach
+        :type x: int
+        :param y: second coordinate of the destination chunk to reach
+        :type y: int
+        :return: energy consumption value
+        """
+
+        return (math.sqrt(
+            (x * self.world.chunk_dim + 5 - self.coord[0]) ** 2 + (y * self.world.chunk_dim + 5 - self.coord[1]) ** 2) /
+                    self.genes['speed'].get()) * self.world.creatures_vars['en_dec_coeff'] * self.energy
