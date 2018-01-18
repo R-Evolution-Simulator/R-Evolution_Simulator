@@ -12,25 +12,55 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class BaseFrame(tk.Frame):
-    WIDGETS = None
+    """general class of a frame"""
+    WIDGETS = None #list of the widgets present in the frame
 
     def __init__(self, father):
+        """
+        creates a new frame
+
+        :param father: the father window
+        """
         super(BaseFrame, self).__init__(father)
-        self.widgets = dict()
+        self.widgets = dict() #dictionary with all the widget
         self._widgets_load(self.WIDGETS)
 
     def _widgets_load(self, wid_list):
+        """
+        it loads the widget in the frame
+
+        :param wid_list: list with all the widgets to be added
+
+        :return:
+        """
         for i in wid_list:
             new = wid_list[i][0](self, **wid_list[i][1])
             new.pack(**wid_list[i][2])
             self.widgets[i] = new
 
     def get_widget(self, widget):
+        """
+        it used to get a certain form the frame
+
+        :param widget: widget to be got
+        :return: the widget considered
+        """
         return self.widgets[widget]
 
 
 class GridFrame(BaseFrame):
+    """
+    class derived from BaseFrame which uses the method .grid instead of .pack
+    when placing a widget in the frame
+    """
     def _widgets_load(self, wid_list):
+        """
+        it loads the widget in the frame
+
+        :param wid_list: list with all the widgets to be added
+
+        :return:
+        """
         for i in wid_list:
             new = wid_list[i][0](self, **wid_list[i][1])
             new.grid(**wid_list[i][2])
@@ -38,14 +68,31 @@ class GridFrame(BaseFrame):
 
 
 class BaseLabelFrame(tk.LabelFrame, BaseFrame):
+    """
+    class with a frame for the label widget
+    """
     def __init__(self, father):
+        """
+        it creates the frame
+
+        :param father: father window
+        """
         super(BaseLabelFrame, self).__init__(father, text=self.NAME)
         self.widgets = dict()
         self._widgets_load(self.WIDGETS)
 
 
 class BaseSelectFrame(BaseLabelFrame):
+    """
+    class used for frames with selection widget
+    """
     def __init__(self, father, windows):
+        """
+        it creates the frame
+
+        :param father: the father window
+        :param windows:
+        """
         for i in self.WIDGETS:
             if self.WIDGETS[i][0] == tk.Radiobutton:
                 self.WIDGETS[i][1]['variable'] = windows[0].shows[self.CODE]
@@ -57,16 +104,33 @@ class BaseSelectFrame(BaseLabelFrame):
 
 
 class Logo(BaseFrame):
+    """
+    frame used to place the logo of the project
+    """
     START_LOGO = os.path.join(var.DATA_PATH, "logo.gif")
 
     def __init__(self, father):
+        """
+        it creates the frame
+
+        :param father: father window
+        """
         self.photo = tk.PhotoImage(file=os.path.join(os.getcwd(), self.START_LOGO))
         self.WIDGETS = {'image': (tk.Label, {'image': self.photo}, {})}
         super(Logo, self).__init__(father)
 
 
 class MainMenuOptions(BaseFrame):
+    """
+    class for the options in the main menu: creating a new simulation or loading some already done
+    """
     def __init__(self, father, windows):
+        """
+        created the menu
+
+        :param father: the father window
+        :param windows:
+        """
         self.WIDGETS = {'new': (tk.Button, {'text': "New simulation", 'command': windows[0].new_sim_window}, {}),
                         'load': (tk.Button, {'text': "Load simulation", 'command': windows[0].load_sim_window}, {})
                         }
@@ -74,7 +138,17 @@ class MainMenuOptions(BaseFrame):
 
 
 class LoadSim(BaseFrame):
+    """
+    frame used to load a simulation (by inserting the name)
+    """
+
     def __init__(self, father, windows):
+        """
+        created the frame
+
+        :param father: the father window
+        :param windows:
+        """
         self.WIDGETS = {'entry': (tk.Entry, {}, {}),
                         'button': (
                             tk.Button, {'text': "Load", 'command': windows[0].simulation_file_load}, {'side': tk.RIGHT}),
@@ -84,20 +158,31 @@ class LoadSim(BaseFrame):
 
 
 class NewSim(GridFrame, BaseFrame):
+    """
+    class used to start a new simulation
+    """
     def __init__(self, father, load_choice):
+        """
+        it creates the frame
+
+        :param father: the father window
+        :param load_choice: list of the possible templates already created
+        """
         super(BaseFrame, self).__init__(father)
         self.WIDGETS = dict()
         self.sim_variables = dict()
-        self.load_choice = load_choice
+        self.load_choice = load_choice #list of the possible templates
         self.load_choice.set('-')
         self.WIDGETS['name_label'] = (tk.Label, {'text': 'name'}, {'row': 0, 'column': 0})
-        self.sim_name = tk.Entry(self)
+        self.sim_name = tk.Entry(self) #entry for chosing the name of the simulation
         self.sim_name.grid(row=0, column=1)
         self.WIDGETS['start_button'] = (tk.Button, {'text': "Start", 'command': father.start_simulation}, {'row': 0, 'column': 2})
         self.row = 1
+        # for all the variables, the program adds the widgets
         for i in var.DEFAULT_SIM_VARIABLES:
             self.sim_variables[i] = self._add_widget(i, var.DEFAULT_SIM_VARIABLES[i], 0)
             self.row += 1
+        #widget used to load a new template or to save another one just created
         self.WIDGETS['load_button'] = (tk.Button, {'text': "Load template", 'command': father.load_template}, {'row': self.row, 'column': 1})
         self.save_choice = tk.Entry(self)
         self.save_choice.grid(row=self.row, column=2)
@@ -106,6 +191,14 @@ class NewSim(GridFrame, BaseFrame):
         self._widgets_load(self.WIDGETS)
 
     def _add_widget(self, name, object, column):
+        """
+        function which adds a couple of widgets for every parameter of the world created
+
+        :param name: name to be written in the label
+        :param object: object that has to be inserted in the widgets
+        :param column: column where the entry and label has to be placed (it increases with dict or list)
+        :return: the entry where you can place the values
+        """
         self.WIDGETS[f'{name}_label'] = (tk.Label, {'text': name}, {'row': self.row, 'column': column})
         if type(object) == int or type(object) == float:
             variable = tk.Entry(self)
@@ -124,9 +217,21 @@ class NewSim(GridFrame, BaseFrame):
         return variable
 
     def _get_template_choices(self):
+        """
+        function to get the possible templates already created from the folder
+
+        :return: the list of the templates
+        """
         return os.listdir(var.TEMPLATES_PATH)
 
     def _widgets_load(self, wid_list):
+        """
+        it loads the widget in the frame
+
+        :param wid_list: list with all the widgets to be added
+
+        :return:
+        """
         self.widgets = dict()
         self.widgets['load_options'] = tk.OptionMenu(self, self.load_choice, *self._get_template_choices())
         self.widgets['load_options'].grid(row=self.row, column=0)
@@ -134,7 +239,15 @@ class NewSim(GridFrame, BaseFrame):
 
 
 class PlayControl(BaseFrame):
+    """
+    class for the frame used to control the simulation
+    """
     def __init__(self, father):
+        """
+        it creates the frame with all the widgets used
+
+        :param father: th father window
+        """
         self.WIDGETS = {'play': (tk.Button, {'text': "Play", 'command': father.start_play}, {'side': tk.TOP}),
                         'fps': (tk.Label, {'text': "fps: 00.0"}, {'side': tk.TOP}),
                         'tick_entry': (tk.Spinbox, {'from_': 1, 'to': father.lifetime, 'width': 15}, {'side': tk.TOP}),
@@ -151,6 +264,9 @@ class PlayControl(BaseFrame):
 
 
 class ChunksSet(BaseSelectFrame):
+    """
+    class used in PlayControl for controlling the chunks' representation
+    """
     NAME = "Chunk"
     CODE = 'ch'
     START_SHOW = 'foodmax'
@@ -160,6 +276,9 @@ class ChunksSet(BaseSelectFrame):
 
 
 class CreatureColorSet(BaseSelectFrame):
+    """
+    class used in PlayControl for controlling the creatures' representation (for the color of the circles)
+    """
     NAME = "Color"
     CODE = 'cc'
     START_SHOW = 'temp_resist'
@@ -170,6 +289,9 @@ class CreatureColorSet(BaseSelectFrame):
 
 
 class CreatureDimSet(BaseSelectFrame):
+    """
+    class used in PlayControl for controlling the creatures' representation (for the dimension of the circles)
+    """
     NAME = "Dimension"
     CODE = 'cd'
     START_SHOW = 'energy'
@@ -182,6 +304,9 @@ class CreatureDimSet(BaseSelectFrame):
 
 
 class CreatureSet(BaseLabelFrame):
+    """
+    class used to place CreatureColorSet and CreatureDimSet
+    """
     NAME = "Creatures"
 
     def __init__(self, father, windows):
@@ -192,9 +317,19 @@ class CreatureSet(BaseLabelFrame):
 
 
 class DiagramSet(BaseFrame):
+    """
+    class used to create the different types of graphs
+    """
+
     SUPPORTED_FILES = ['numeric_analysis', 'spreading_analysis', 'demographic_analysis']
 
     def __init__(self, father, windows):
+        """
+        the frame is created
+
+        :param father: the father window
+        :param windows:
+        """
         self.father = father
         self.windows = windows
         self.WIDGETS = {
@@ -204,6 +339,11 @@ class DiagramSet(BaseFrame):
         super(DiagramSet, self).__init__(father)
 
     def _get_choices(self):
+        """
+        it gets the possible characteristics that can be represented
+
+        :return: the list of the possible choices
+        """
         files = os.listdir(self.windows[0].directories['analysis'])
         choices = list()
         for file in files:
@@ -214,6 +354,13 @@ class DiagramSet(BaseFrame):
         return choices
 
     def _widgets_load(self, wid_list):
+        """
+        it loads the widget in the frame
+
+        :param wid_list: list with all the widgets to be added
+
+        :return:
+        """
         self.widgets = dict()
         self.widgets['menu'] = tk.OptionMenu(self, self.diagram_choice, *self._get_choices())
         self.widgets['menu'].pack(anchor=tk.W, fill=tk.X)
@@ -221,7 +368,16 @@ class DiagramSet(BaseFrame):
 
 
 class SetSuperFrame(BaseFrame):
+    """
+    it is a frame for the set of widget divided by topic
+    """
     def __init__(self, father, windows):
+        """
+        the frame is created
+
+        :param father: the father window
+        :param windows:
+        """
         self.WIDGETS = {'ch': (ChunksSet, {'windows': windows}, {'anchor': tk.W, 'fill': tk.X}),
                         'cr': (CreatureSet, {'windows': windows}, {'anchor': tk.W, 'fill': tk.X}),
                         'dgrm': (DiagramSet, {'windows': windows}, {'anchor': tk.W, 'fill': tk.X})
@@ -230,7 +386,17 @@ class SetSuperFrame(BaseFrame):
 
 
 class DiagramCommandBar(BaseFrame):
+    """
+    frame used to control a diagram (if it as to follow the etc.)
+    """
     def __init__(self, father, windows, tick_interval):
+        """
+        the frame is created
+
+        :param father: the father window
+        :param windows:
+        :param tick_interval: how many tick has to be represented
+        """
         self.WIDGETS = {'follow_play': (
             tk.Checkbutton, {'text': "Follow play", 'command': windows[0].toggle_follow_play}, {'side': tk.LEFT}),
             'graph_width': (tk.Spinbox, {'from_': tick_interval, 'to': windows[1].lifetime,
@@ -243,6 +409,10 @@ class DiagramCommandBar(BaseFrame):
 
 
 class BaseDiagramCanvasFrame(BaseFrame):
+    """
+    class for the base canvas where has to placed a diagram
+    """
+
     SUBPLOTS = 1
 
     def __init__(self, father, directory, subject, params):
@@ -311,12 +481,21 @@ class BaseDiagramCanvasFrame(BaseFrame):
         pass
 
     def _widgets_load(self, wid_list):
+        """
+        it loads the widget in the frame
+
+        :param wid_list: list with all the widgets to be added
+
+        :return:
+        """
         for i in wid_list:
             new = wid_list[i][0](**wid_list[i][1])
             new.show()
             wid = new.get_tk_widget()
             wid.pack(**wid_list[i][2])
             self.widgets[i] = new
+
+    #TODO finire di commentare da qui in avanti
 
     def stat_axes_set(self, max_tick):
         for subplot in self.subplots:

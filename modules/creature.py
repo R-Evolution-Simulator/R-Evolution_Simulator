@@ -257,9 +257,17 @@ class Creature(object):
 
 
 class Herbivore(Creature):
+    """
+    class of herbivores
+    """
     DIET = 'H'
 
     def __init__(self, *args, **kwargs):
+        """
+        it creates a new herbivore, with the new boolean eaten
+        :param args:
+        :param kwargs:
+        """
         super(Herbivore, self).__init__(*args, **kwargs)
         self.eaten = False
 
@@ -316,9 +324,18 @@ class Herbivore(Creature):
 
 
 class Carnivore(Creature):
+    """
+    class of carnivores
+    """
     DIET = 'C'
 
     def __init__(self, *args, **kwargs):
+        """
+        it creats a new carnivore (with the new variable prey)
+
+        :param args:
+        :param kwargs:
+        """
         super(Carnivore, self).__init__(*args, **kwargs)
         self.prey = None
 
