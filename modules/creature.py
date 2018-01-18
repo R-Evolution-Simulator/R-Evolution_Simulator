@@ -76,7 +76,8 @@ class Creature(object):
         :return:
         """
         # reproduction control
-        if self.energy > self.world.creatures_vars['fertility_energy_coeff'] / self.genes['fertility'].get() and self.reprod_countdown <= 0:
+        #if self.energy > self.world.creatures_vars['fertility_energy_coeff'] / self.genes['fertility'].get() and self.reprod_countdown <= 0:
+        if self.energy > 50 and self.reprod_countdown <= 0:
             self.reprod_ready = True
             self._dating_agency()
 

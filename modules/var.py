@@ -119,10 +119,11 @@ DEFAULT_CREATURES_COLORS = {'none': pyg.Color(255, 255, 255, 255),
                                              'a': pyg.Color(255, 191, 255, 255), }
                             }
 
-DEFAULT_CREATURES_DIMS = {'none': 7,
-                          'agility': 1 / 5,
-                          'bigness': 1 / 7,
-                          'num_control': 1 / 9,
-                          'speed': 5}
+DEFAULT_CREATURES_DIMS = {'none': 49,
+                          'agility': 5,
+                          'bigness': 5,
+                          'num_control': 5,
+                          'speed': 25,
+                          'energy':5}
 
 DEFAULT_CREATURES_BORDER = {'color': pyg.Color(0, 0, 0, 255), 'width': 1}
