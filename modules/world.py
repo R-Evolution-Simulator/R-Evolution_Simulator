@@ -94,7 +94,7 @@ class World(object):
         self._progress_update('status', 'Cleaning up and terminating')
         self._finalize()
         self._progress_update('status', 'Finished')
-        self._progress_update('details', (None, None))
+        self._progress_update('details', tuple())
 
     def get_ID(self):
         """
@@ -231,9 +231,9 @@ class World(object):
         self.creature_list = self.creature_list.union(self.new_born)
         self.alive_creatures = self.alive_creatures.union(self.new_born)
         self.alive_creatures = self.alive_creatures.difference(self.tick_dead)
-        # self._progress_update('details', ('Tick #', (self.tick_count, self.max_lifetime)))
-        # self._progress_update('percent', self.tick_count / self.max_lifetime)
-        # self._progress_update('eta', (time.time() - self.start_time) / self.tick_count * (self.max_lifetime - self.tick_count))
+        self._progress_update('details', ('Tick #', (self.tick_count, self.max_lifetime)))
+        self._progress_update('percent', self.tick_count / self.max_lifetime)
+        self._progress_update('eta', (time.time() - self.start_time) / self.tick_count * (self.max_lifetime - self.tick_count))
 
     def _tick_creature_get(self, tick):
         """
@@ -257,7 +257,7 @@ class World(object):
         """
 
 
-        self._progress_update('details', ('analysing chunk attributes', None))
+        self._progress_update('details', ('analysing chunk attributes',))
 
         self._analysis_chunk_attrs()
 
@@ -267,7 +267,7 @@ class World(object):
 
         for tick in range(0, self.lifetime, self.analysis['tick_interval']):
             self._progress_update('details', ('analysing tick #', (tick, self.lifetime//self.analysis['tick_interval'])))
-            self._progress_update('percent', tick/self.lifetime//self.analysis['tick_interval'])
+            self._progress_update('percent', tick/(self.lifetime//self.analysis['tick_interval']))
             alive = self._tick_creature_get(tick)
 
             for gene in genes:

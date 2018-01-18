@@ -7,6 +7,7 @@ from matplotlib.figure import Figure
 from tkinter import ttk
 
 mpl.use("Tkagg")
+mpl.use('agg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 

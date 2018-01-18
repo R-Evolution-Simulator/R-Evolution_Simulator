@@ -573,8 +573,6 @@ class NewSimWindow(BaseTkWindow):
 class ProgressStatusWindow(BaseTkWindow):
     def __init__(self, father, to_call):
         super(ProgressStatusWindow, self).__init__(father)
-        self.thread = thr.Thread(target=self.class_load, daemon=True)
-        self.to_call = to_call
         self.queues = dict()
         to_pass = dict()
         for key in ['status', 'details', 'percent', 'eta']:
@@ -584,10 +582,10 @@ class ProgressStatusWindow(BaseTkWindow):
         self.FRAMES_TEMPLATE = {'progress_frame': (frm.ProgressStatus, to_pass, {'row': 0, 'column': 0}), }
         self.percent_int = 0
         self.frames_load()
+        self.to_call = to_call
+        self.to_call[2]['progress_queues']=self.queues
+        self.thread = thr.Thread(target=self.to_call[0], args=self.to_call[1], kwargs=self.to_call[2], daemon=True)
         self.thread.start()
-
-    def class_load(self):
-        self.to_call[0](progress_queues=self.queues, *self.to_call[1], **self.to_call[2])
 
     def update(self):
         for key in self.queues:
