@@ -4,7 +4,7 @@ from random import random as rnd
 import scipy
 import numpy
 import threading as thr
-
+import time
 from .noise.simplexnoise.noise import SimplexNoise
 from .chunk import Chunk
 from .creature import Herbivore, Carnivore
@@ -13,11 +13,11 @@ from . import utility as utl
 from . import genes as gns
 
 
-class World(thr.Thread):
+class World():
     """class of the world where creatures live"""
     TO_RECORD = var.TO_RECORD['simulation']
 
-    def __init__(self, name, sim_variables):
+    def __init__(self, name, sim_variables, progress_queues):
         """
         Creates new simulation
 
@@ -27,10 +27,8 @@ class World(thr.Thread):
         :type sim_variables: dict
         :return:
         """
-        super(World, self).__init__()
-        self.setName('Simulation '+name)
-        self.setDaemon(True)
-        print(f"{name}: simulation setup")
+        self.prgr_que = progress_queues
+        self._progress_update('status', 'Simulation setup')
         self.name = name
         self.path = os.path.join(var.SIMULATIONS_PATH, name)
         self.directories = dict()
@@ -39,7 +37,7 @@ class World(thr.Thread):
         self.noises = {'foodmax': SimplexNoise(num_octaves=6, persistence=0.1, dimensions=2, noise_scale=700),
                        'temperature': SimplexNoise(num_octaves=6, persistence=0.1, dimensions=2, noise_scale=700)}
         self.ID_count = 0
-        self.coords_limits=(self.dimension['width'], self.dimension['height'])
+        self.coords_limits = (self.dimension['width'], self.dimension['height'])
         self.chunk_list = [[None for x in range(self.dimension['height'])] for y in
                            range(self.dimension['width'])]
         self.creature_list = set()
@@ -47,18 +45,26 @@ class World(thr.Thread):
         self.tick_dead = set()
         self.new_born = set()
         self._directory_setup()
-
-        print(f"        - creating chunks")
+        tot_chunks = self.dimension['width'] * self.dimension['height']
+        chunk = 0
         for i in range(len(self.chunk_list)):  # quindi ogni 0 e' sostituito con un Chunk
             for j in range(len(self.chunk_list[0])):
                 self.chunk_list[i][j] = Chunk(self, (i, j))
+                chunk += 1
+                self._progress_update('details', ('creating chunks', (chunk, tot_chunks)))
+                self._progress_update('percent', chunk / tot_chunks)
 
-        print(f"        - creating creatures")
-
-        for j in range(self.initial_creatures['carnivors']):
+        tot_carnivores = self.initial_creatures['carnivores']
+        for j in range(tot_carnivores):
             Carnivore(*self._creature_randomization())
-        for j in range(self.initial_creatures['herbivors']):
+            self._progress_update('details', ('creating carnivores', (j, tot_carnivores)))
+            self._progress_update('percent', j / tot_carnivores)
+
+        tot_herbivores = self.initial_creatures['herbivores']
+        for j in range(tot_herbivores):
             Herbivore(*self._creature_randomization())
+            self._progress_update('details', ('creating herbivores', (j, tot_herbivores)))
+            self._progress_update('percent', j / tot_herbivores)
 
         for i in self.chunk_list:
             for j in i:
@@ -66,8 +72,7 @@ class World(thr.Thread):
 
         self.creature_list = self.new_born
         self.alive_creatures = self.new_born
-        print(f"{self.name}: simulation setup done")
-        self.start()
+        self.run()
 
     def run(self):
         """
@@ -75,7 +80,8 @@ class World(thr.Thread):
 
         :return:
         """
-        print(f"{self.name}: simulation running...")
+        self._progress_update('status', 'Simulation running...')
+        self.start_time = time.time()
         for i in range(self.max_lifetime):
             self._update()
             if len(self.alive_creatures) == 0:
@@ -203,12 +209,12 @@ class World(thr.Thread):
             for j in i:
                 j.update(tick_to_record)
 
-        if tick_to_record:
-            print(f"        - tick #{self.tick_count} --- {len(self.alive_creatures)} alive")
-
         self.creature_list = self.creature_list.union(self.new_born)
         self.alive_creatures = self.alive_creatures.union(self.new_born)
         self.alive_creatures = self.alive_creatures.difference(self.tick_dead)
+        self._progress_update('details', ('Tick #', (self.tick_count, self.max_lifetime)))
+        #self._progress_update('percent', self.tick_count / self.max_lifetime)
+        #self._progress_update('eta', (time.time() - self.start_time) / self.tick_count * (self.max_lifetime - self.tick_count))
 
     def _tick_creature_get(self, tick):
         """
@@ -399,3 +405,6 @@ class World(thr.Thread):
             else:
                 correct[part] = 0
         self._analysis_file_write("demographic_spreading", 'spreading_analysis', values + correct, tick, attr)
+
+    def _progress_update(self, type, msg):
+        self.prgr_que[type].put(msg)

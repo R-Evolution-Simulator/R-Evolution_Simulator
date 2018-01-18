@@ -3,8 +3,8 @@ from . import var
 from . import utility as utl
 import os
 import matplotlib as mpl
-import matplotlib.colors as clrs
 from matplotlib.figure import Figure
+from tkinter import ttk
 
 mpl.use("Tkagg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -467,3 +467,16 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
             handles, labels = self.subplots[i].get_legend_handles_labels()
             self.subplots[i].legend(reversed(handles), reversed(labels), loc=2, fontsize=7)
         self.figure.subplots_adjust(hspace=.5)
+
+
+class ProgressStatus(BaseFrame):
+    def __init__(self, father, status, details, percent, eta):
+        self.WIDGETS = {'status_label': (tk.Label, {'textvariable': status}, {'side': tk.TOP}),
+                        'details_label': (tk.Label, {'textvariable': details}, {'side': tk.TOP}),
+                        'percent_label': (tk.Label, {'textvariable': percent}, {'side': tk.TOP}),
+
+                        'prograss_bar': (ttk.Progressbar, {}, {'side': tk.TOP}),
+                        'eta_label': (tk.Label, {'textvariable': eta}, {'side': tk.TOP}),
+                        #'cancel_button': (tk.Button, {'text': 'Cancel'}, {'side': tk.TOP}),
+                        }
+        super(ProgressStatus, self).__init__(father)

@@ -12,8 +12,8 @@ DEFAULT_SIM_VARIABLES = {'dimension': {'width': 60, 'height': 45},
                          'chunk_dim': 10,
                          'max_lifetime': 10000,
                          'initial_creatures': {
-                             'herbivors': 400,
-                             'carnivors': 100
+                             'herbivores': 400,
+                             'carnivores': 100
                          },
                          'chunks_vars': {'growth_coeff': 0.0003,
                                          'foodmax_max': 100,
@@ -66,8 +66,8 @@ FILE_EXTENSIONS = {'numeric_analysis': 'rsan',
 TO_RECORD = {
     'simulation': {'name': None, 'dimension': {'width': None, 'height': None}, 'lifetime': None,
                    'initial_creatures': {
-                       'herbivors': None,
-                       'carnivors': None
+                       'herbivores': None,
+                       'carnivores': None
                    }, 'chunk_dim': None, 'tick_count': None,
                    'chunks_vars': {'growth_coeff': None,
                                    'foodmax_max': None,

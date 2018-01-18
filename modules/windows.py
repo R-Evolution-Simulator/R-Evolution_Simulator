@@ -5,6 +5,8 @@ from .canvas import PygameCanvas
 from .graphics import CreaturesD, ChunkD
 from . import var
 from . import utility as utl
+import threading as thr
+import queue as que
 import os
 from math import ceil
 import json
@@ -553,7 +555,7 @@ class NewSimWindow(BaseTkWindow):
             to_return = dict()
             for i in obj:
                 to_return[i] = self._get_from_sim_variables(obj[i])
-            return  to_return
+            return to_return
 
     def save_template(self):
         name = self.get_frame('new').save_choice.get().split('.')[0]
@@ -565,5 +567,64 @@ class NewSimWindow(BaseTkWindow):
         sim_name = frame.sim_name.get()
         if sim_name != '':
             sim_variables = self._get_from_sim_variables(frame.sim_variables)
-            self.destroy()
-            World(sim_name, sim_variables)
+            self.new_window_substitute(ProgressStatusWindow, (World, (sim_name, sim_variables), {}))
+
+
+class ProgressStatusWindow(BaseTkWindow):
+    def __init__(self, father, to_call):
+        super(ProgressStatusWindow, self).__init__(father)
+        self.thread = thr.Thread(target=self.class_load, daemon=True)
+        self.to_call = to_call
+        self.queues = dict()
+        to_pass = dict()
+        for key in ['status', 'details', 'percent', 'eta']:
+            to_pass[key] = tk.StringVar(self)
+            self.queues[key] = que.Queue(1)
+        self.__dict__.update(to_pass)
+        self.FRAMES_TEMPLATE = {'progress_frame': (frm.ProgressStatus, to_pass, {'row': 0, 'column': 0}), }
+        self.percent_int = 0
+        self.frames_load()
+        self.thread.start()
+
+    def class_load(self):
+        self.to_call[0](progress_queues=self.queues, *self.to_call[1], **self.to_call[2])
+
+    def update(self):
+        for key in self.queues:
+            queue = self.queues[key]
+            if not queue.empty():
+                value = queue.get(False)
+                getattr(self, f'_{key}_update')(value)
+        super(ProgressStatusWindow, self).update()
+
+    def _status_update(self, status):
+        self.status.set(status)
+
+    def _details_update(self, raw_details):
+        try:
+            details = raw_details[0]
+        except IndexError:
+            self.details.set('')
+        else:
+            try:
+                out_of = raw_details[1]
+            except IndexError:
+                self.details.set(details)
+            else:
+                self.details.set(f"{details}    {out_of[0]}/{out_of[1]}")
+
+    def _percent_update(self, percent):
+        percent *= 100
+        if percent:
+            print()
+            self.percent.set(f"{int(percent)} %")
+            self.get_widget('progress_frame', 'prograss_bar').step(percent - self.percent_int)
+            self.percent_int = percent
+        else:
+            self.percent.set("")
+
+    def _eta_update(self, eta):
+        if eta:
+            self.eta.set(f"ETA: {eta} s")
+        else:
+            self.eta.set('')
