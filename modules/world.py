@@ -13,7 +13,7 @@ from . import utility as utl
 from . import genes as gns
 
 
-class World():
+class World(object):
     """class of the world where creatures live"""
     TO_RECORD = var.TO_RECORD['simulation']
 
@@ -45,14 +45,14 @@ class World():
         self.tick_dead = set()
         self.new_born = set()
         self._directory_setup()
-        tot_chunks = self.dimension['width'] * self.dimension['height']
+        self.tot_chunks = self.dimension['width'] * self.dimension['height']
         chunk = 0
         for i in range(len(self.chunk_list)):  # quindi ogni 0 e' sostituito con un Chunk
             for j in range(len(self.chunk_list[0])):
                 self.chunk_list[i][j] = Chunk(self, (i, j))
                 chunk += 1
-                self._progress_update('details', ('creating chunks', (chunk, tot_chunks)))
-                self._progress_update('percent', chunk / tot_chunks)
+                self._progress_update('details', ('creating chunks', (chunk, self.tot_chunks)))
+                self._progress_update('percent', chunk / self.tot_chunks)
 
         tot_carnivores = self.initial_creatures['carnivores']
         for j in range(tot_carnivores):
@@ -87,10 +87,14 @@ class World():
             if len(self.alive_creatures) == 0:
                 break
         self.lifetime = self.tick_count
-        print(f"{self.name}: run finished")
+        self._progress_update('status', 'Simulation ended')
         self._end()
+        self._progress_update('status', 'Simulation analysis')
         self._analysis()
+        self._progress_update('status', 'Cleaning up and terminating')
         self._finalize()
+        self._progress_update('status', 'Finished')
+        self._progress_update('details', (None, None))
 
     def get_ID(self):
         """
@@ -124,14 +128,28 @@ class World():
         :return:
         """
         with open(os.path.join(self.directories['data'], f"chunks.{var.FILE_EXTENSIONS['chunks_data']}"), 'w') as file:
+            count = 0
             for i in self.chunk_list:
                 for j in i:
                     j.end(file)
+                    count += 1
+                    self._progress_update('details', ('saving chunks data', (count, self.tot_chunks)))
+                    self._progress_update('percent', count / self.tot_chunks)
+        tot_creatures = len(self.alive_creatures)
+        count = 0
         for i in self.alive_creatures:
             i.death()
+            count += 1
+            self._progress_update('details', ('killing alive creatures', (count, tot_creatures)))
+            self._progress_update('percent', count / tot_creatures)
         with open(os.path.join(self.directories['data'], f"creatures.{var.FILE_EXTENSIONS['creatures_data']}"), 'w') as file:
+            tot_creatures = len(self.creature_list)
+            count = 0
             for i in self.creature_list:
                 i.end(file)
+                count += 1
+                self._progress_update('details', ('saving creatures data', (count, tot_creatures)))
+                self._progress_update('percent', count / tot_creatures)
 
     def _finalize(self):
         """
@@ -140,21 +158,23 @@ class World():
         :return:
         """
 
-        print(f"{self.name}: simulation ending...")
-        print(f"        - deleting creatures")
+        tot_creatures = len(self.creature_list)
+        count = 0
         for i in self.creature_list:
-            try:
-                del i
-            except AttributeError:
-                print("--error closing creature")
+            del i
+            count += 1
+            self._progress_update('details', ('deleting creatures', (count, tot_creatures)))
+            self._progress_update('percent', count / tot_creatures)
 
-        print(f"        - deleting chunks")
+        count = 0
         for i in self.chunk_list:
             for j in i:
-                try:
-                    del j
-                except AttributeError:
-                    print("error")
+                del j
+            count += 1
+            self._progress_update('details', ('deleting creatures', (count, self.tot_chunks)))
+            self._progress_update('percent', count / self.tot_chunks)
+
+        self._progress_update('details', ('saving simulation data', None))
         to_write = str()
         for i in self.TO_RECORD:
             to_write += utl.add_to_write(self.__dict__[i], self.analysis['rounding'])
@@ -163,7 +183,6 @@ class World():
                 file.write(to_write[:-1])
             except ValueError:
                 pass
-        print(f"{self.name}: simulation ended")
 
     def _creature_randomization(self):
         """
@@ -212,9 +231,9 @@ class World():
         self.creature_list = self.creature_list.union(self.new_born)
         self.alive_creatures = self.alive_creatures.union(self.new_born)
         self.alive_creatures = self.alive_creatures.difference(self.tick_dead)
-        self._progress_update('details', ('Tick #', (self.tick_count, self.max_lifetime)))
-        #self._progress_update('percent', self.tick_count / self.max_lifetime)
-        #self._progress_update('eta', (time.time() - self.start_time) / self.tick_count * (self.max_lifetime - self.tick_count))
+        # self._progress_update('details', ('Tick #', (self.tick_count, self.max_lifetime)))
+        # self._progress_update('percent', self.tick_count / self.max_lifetime)
+        # self._progress_update('eta', (time.time() - self.start_time) / self.tick_count * (self.max_lifetime - self.tick_count))
 
     def _tick_creature_get(self, tick):
         """
@@ -236,7 +255,9 @@ class World():
 
         :return:
         """
-        print(f"{self.name}: analysis setup")
+
+
+        self._progress_update('details', ('analysing chunk attributes', None))
 
         self._analysis_chunk_attrs()
 
@@ -245,6 +266,8 @@ class World():
         genes.update(var.CREATURES_SECONDARY_GENES)
 
         for tick in range(0, self.lifetime, self.analysis['tick_interval']):
+            self._progress_update('details', ('analysing tick #', (tick, self.lifetime//self.analysis['tick_interval'])))
+            self._progress_update('percent', tick/self.lifetime//self.analysis['tick_interval'])
             alive = self._tick_creature_get(tick)
 
             for gene in genes:
@@ -410,5 +433,5 @@ class World():
         if self.prgr_que:
             self.prgr_que[type].put(msg)
         else:
-            if not type=='eta':
+            if not type == 'eta':
                 print(f"{self.name} - {type}: {msg} ")
