@@ -17,7 +17,7 @@ class World():
     """class of the world where creatures live"""
     TO_RECORD = var.TO_RECORD['simulation']
 
-    def __init__(self, name, sim_variables, progress_queues):
+    def __init__(self, name, sim_variables, progress_queues=None):
         """
         Creates new simulation
 
@@ -27,9 +27,9 @@ class World():
         :type sim_variables: dict
         :return:
         """
+        self.name = name
         self.prgr_que = progress_queues
         self._progress_update('status', 'Simulation setup')
-        self.name = name
         self.path = os.path.join(var.SIMULATIONS_PATH, name)
         self.directories = dict()
         self.__dict__.update(sim_variables)
@@ -407,4 +407,8 @@ class World():
         self._analysis_file_write("demographic_spreading", 'spreading_analysis', values + correct, tick, attr)
 
     def _progress_update(self, type, msg):
-        self.prgr_que[type].put(msg)
+        if self.prgr_que:
+            self.prgr_que[type].put(msg)
+        else:
+            if not type=='eta':
+                print(f"{self.name} - {type}: {msg} ")
