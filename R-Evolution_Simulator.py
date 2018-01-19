@@ -4,5 +4,5 @@ a = Main()
 try:
     a.run()
 except Exception:
-    print('allah akbar')
+    print('error')
     exit(123456)
