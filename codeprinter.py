@@ -1,5 +1,5 @@
 """
-    Just some pointless lines that print the code in files "world.py", "creature.py", "chunk.py", "analysis.py", "graphics.py"
+Just some pointless lines that print the code in files "world.py", "creature.py", "chunk.py", "analysis.py", "graphics.py"
 """
 
 from time import *

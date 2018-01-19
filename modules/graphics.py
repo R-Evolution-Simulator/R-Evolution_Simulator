@@ -1,6 +1,7 @@
 import pygame as pyg
 from . import var
 from . import utility as utl
+import math
 
 
 class ChunkD:
@@ -80,7 +81,7 @@ class CreaturesD:
         for key in self.DIMS:
             if key == 'none':
                 self.dims[key] = self.DIMS[key]
-            else:
+            elif key != 'energy':
                 self.dims[key] = self.genes[key] * self.DIMS[key]
 
     def draw(self, surface, tick, color, dim_flag, zoom):
@@ -106,7 +107,7 @@ class CreaturesD:
             coord[i] = int(self.tick_history[tick - birth][i] * fact)
 
         if dim_flag == 'energy':
-            dim = int(self.tick_history[tick - birth][2] / 10 * fact)
+            dim = int(self.tick_history[tick - birth][2] / 10 * fact)*self.DIMS['energy']
         else:
             dim = int(self.dims[dim_flag] * fact)
 
@@ -118,8 +119,8 @@ class CreaturesD:
 
     def _draw_shape(self, surface, color, coord, dim, border=0):
         if self.diet == 'H':
-            pyg.draw.circle(surface, color, coord, dim, border)
+            pyg.draw.circle(surface, color, coord, int(math.sqrt(dim)), border)
         elif self.diet == 'C':
-            pyg.draw.rect(surface, color, (coord[0] - dim, coord[1] - dim, 2 * dim, 2 * dim), border)
+            pyg.draw.rect(surface, color, (coord[0] - int(math.sqrt(dim)), coord[1] - int(math.sqrt(dim)), 2 * int(math.sqrt(dim)), 2 * int(math.sqrt(dim))), border)
         else:
             raise NotImplementedError

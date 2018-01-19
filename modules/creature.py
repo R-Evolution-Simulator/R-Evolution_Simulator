@@ -76,7 +76,8 @@ class Creature(object):
         :return:
         """
         # reproduction control
-        if self.energy > self.world.creatures_vars['fertility_energy_coeff'] / self.genes['fertility'].get() and self.reprod_countdown <= 0:
+        #if self.energy > self.world.creatures_vars['fertility_energy_coeff'] / self.genes['fertility'].get() and self.reprod_countdown <= 0:
+        if self.energy > 50 and self.reprod_countdown <= 0:
             self.reprod_ready = True
             self._dating_agency()
 
@@ -256,9 +257,17 @@ class Creature(object):
 
 
 class Herbivore(Creature):
+    """
+    class of herbivores
+    """
     DIET = 'H'
 
     def __init__(self, *args, **kwargs):
+        """
+        it creates a new herbivore, with the new boolean eaten
+        :param args:
+        :param kwargs:
+        """
         super(Herbivore, self).__init__(*args, **kwargs)
         self.eaten = False
 
@@ -315,9 +324,18 @@ class Herbivore(Creature):
 
 
 class Carnivore(Creature):
+    """
+    class of carnivores
+    """
     DIET = 'C'
 
     def __init__(self, *args, **kwargs):
+        """
+        it creats a new carnivore (with the new variable prey)
+
+        :param args:
+        :param kwargs:
+        """
         super(Carnivore, self).__init__(*args, **kwargs)
         self.prey = None
 
