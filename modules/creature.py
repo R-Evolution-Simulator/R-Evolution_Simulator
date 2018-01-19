@@ -1,3 +1,8 @@
+"""
+This modulo contains the class Creature and the two subclasses Herbivore and Carnivore.
+It controls all the functions and variables of each creature (eating, moving, reproducting, etc.)
+"""
+
 import math
 import random
 from random import random as rnd

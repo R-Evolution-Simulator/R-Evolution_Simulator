@@ -1,3 +1,7 @@
+"""
+this module contains classes which control the windows of the graphic interface
+"""
+
 import tkinter as tk
 from time import time, sleep
 from . import frames as frm

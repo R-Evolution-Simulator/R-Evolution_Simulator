@@ -1,3 +1,8 @@
+"""
+this modulo is used for the class Alleles which controls creation,
+reproduction and transmission of alleles
+"""
+
 DOMINANT = 1
 RECESSIVE = 0
 

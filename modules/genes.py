@@ -1,3 +1,8 @@
+"""
+This modulo contains all the classes to control the different types of genes in
+a creature (numeric, mendelian etc.), how they are transmitted and their mutations
+"""
+
 from random import random as rnd, gauss
 from .alleles import *
 

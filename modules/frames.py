@@ -1,3 +1,8 @@
+"""
+This modulo contains classes for the frames used to allow the user to creat,
+represent and control a simulation
+"""
+
 import tkinter as tk
 from . import var
 from . import utility as utl
@@ -495,41 +500,86 @@ class BaseDiagramCanvasFrame(BaseFrame):
             wid.pack(**wid_list[i][2])
             self.widgets[i] = new
 
-    #TODO finire di commentare da qui in avanti
-
     def stat_axes_set(self, max_tick):
+        """
+        function which limits the x axes of the plot in the static configuration
+
+        :param max_tick: max tick represented in the plot
+
+        :return:
+        """
         for subplot in self.subplots:
             subplot.set_xlim([0, max_tick])
 
     def dyn_axes_set(self, tick):
+        """
+        function which limits the x axes of the plot in the dynamic configuration
+
+        :param tick: tick considered
+
+        :return:
+        """
         for subplot in self.subplots:
             subplot.set_xlim([tick - self.father.tick_difference, tick])
 
     def add_show_tick(self, tick):
+        """
+        function which represent a vertical line which indicates the actual tick
+
+        :param tick: the tick considered
+
+        :return:
+        """
         for subplot in self.subplots:
             self.tick_lines.append(subplot.axvline(x=tick))
 
     def remove_show_tick(self):
+        """
+        it removes the line showing the actual tick
+
+        :return:
+        """
         for line in self.tick_lines:
             line.remove()
         self.tick_lines = []
 
     def tick_line_set(self, tick):
+        """
+
+        :param tick:
+        :return:
+        """
         for line in self.tick_lines:
             line.set_xdata(tick)
 
 
 class GeneDiagram(BaseDiagramCanvasFrame):
+    """
+    class for the diagrams of genes
+    """
+
     COLOURS = ['dimgray', 'red', 'darkgray', 'lightgrey']
     TEXTS = [["", "Tick", ""]]
     LABELS = ["Average", "{percent}th percentile"]
 
     def _set_subplots(self):
+        """
+        it creates the subplots considering the number of percentile parts inserted
+
+        :return:
+        """
         parts = self.params['percentile_parts']
         for part in range(parts + 2):
             self.subplots[0].plot(self.data[0], self.data[part + 1], color=self._get_colour(part), label=self._get_label(part))
 
     def _get_colour(self, part):
+        """
+        function which returns the color of a certain line (percentile fixed)
+
+        :param part: the part considered
+
+        :return: the color
+        """
         parts = self.params['percentile_parts']
         if part == 0 or part == parts:
             return self.COLOURS[0]
@@ -541,6 +591,13 @@ class GeneDiagram(BaseDiagramCanvasFrame):
             return self.COLOURS[3]
 
     def _get_label(self, part):
+        """
+        it returns the label used it the legend
+
+        :param part: percentile part considered
+
+        :return: the string to be written in the label
+        """
         parts = self.params['percentile_parts']
         if part == parts + 1:
             return self.LABELS[0]
@@ -548,6 +605,11 @@ class GeneDiagram(BaseDiagramCanvasFrame):
             return self.LABELS[1].format(percent=(part / parts) * 100)
 
     def _set_titles(self):
+        """
+        function which sets the titles in the diagram
+
+        :return:
+        """
         self.subplots[0].set_title(self.subject)
         self.subplots[0].set_xlabel(self.TEXTS[0][1])
         self.subplots[0].set_ylabel(self.subject)
@@ -556,23 +618,41 @@ class GeneDiagram(BaseDiagramCanvasFrame):
 
 
 class PopulationDiagram(BaseDiagramCanvasFrame):
+    """
+    class for the population diagram
+    """
     COLOURS = [['darkgreen', 'saddlebrown'], ['peru', 'lightskyblue', 'lightgreen']]
     TEXTS = [["Births and Deaths", "Tick", "Number of Creatures"], ["Causes of Death", "Tick", "Number of Creatures"]]
     LABELS = [["Births", "Deaths"], ["Starvation", "Temperature", "Old Age"]]
     SUBPLOTS = 2
 
     def _data_calc(self):
+        """
+        function which evaluates the data to be represented
+
+        :return:
+        """
         self.data.append(list())
         for i in range(len(self.data[0])):
             self.data[5].append(self.data[2][i] + self.data[3][i] + self.data[4][i])
 
     def _set_subplots(self):
+        """
+        function which creates the subplots of the diagram
+
+        :return:
+        """
         self.subplots[0].plot(self.data[0], self.data[1], color=self.COLOURS[0][0], label=self.LABELS[0][0])
         self.subplots[0].plot(self.data[0], self.data[5], color=self.COLOURS[0][1], label=self.LABELS[0][1])
         for i in range(3):
             self.subplots[1].plot(self.data[0], self.data[i + 2], color=self.COLOURS[1][i], label=self.LABELS[1][i])
 
     def _set_titles(self):
+        """
+        function which creates the titles
+
+        :return:
+        """
         for i in range(2):
             self.subplots[i].set_title(self.TEXTS[i][0])
             self.subplots[i].set_xlabel(self.TEXTS[i][1])
@@ -582,6 +662,9 @@ class PopulationDiagram(BaseDiagramCanvasFrame):
 
 
 class SpreadDiagram(BaseDiagramCanvasFrame):
+    """
+    class for spreading diagrams
+    """
     TEXTS = [["Spreading of ", "Tick", "Number of Creatures in 100 chunks"],
              ["Percentual spreading of ", "Tick", "Percentage of Creatures"]]
     SUBPLOTS = 2
@@ -601,6 +684,11 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
         self.data = [[raw_data[j][i] for j in range(len(raw_data))] for i in range(len(raw_data[0]))]
 
     def _data_calc(self):
+        """
+        elaborates the data
+
+        :return:
+        """
         parts = self.params['parts']
         for i in range(parts):
             self.data.append([])
@@ -611,6 +699,11 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
                 self.data[j + parts].append(self.data[j][i] / self.data[2 * parts][i] * 100)
 
     def _set_subplots(self):
+        """
+        creates the subplots
+
+        :return:
+        """
         parts = self.params['parts']
         for subplot in range(2):
             self.subplots[subplot].fill_between(self.data[0], self.data[(subplot + 1) * parts + 1], color=self._get_colour(0), label=self._get_label(0))
@@ -619,6 +712,13 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
                                                     color=self._get_colour(part), label=self._get_label(part))
 
     def _get_colour(self, part):
+        """
+        gets the colour depending on what is represented
+
+        :param part: the part considered
+
+        :return: the RGB 3 numbers for the colour
+        """
         parts = self.params['parts']
         if self.chunk_attribute == 'temperature':
             half = (parts - 1) / 2
@@ -630,6 +730,13 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
             return 0, part / (parts - 1), 0
 
     def _get_label(self, part):
+        """
+        creates the string to be written in the legend
+
+        :param part: the part considered
+
+        :return: the string
+        """
         parts = self.params['parts']
         max = self.father.father.chunks_vars[f'{self.chunk_attribute}_max']
         section = max / parts
@@ -640,6 +747,11 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
             return f"{(section*part)} <> {(section*(part+1))}"
 
     def _set_titles(self):
+        """
+        function which creates the titles
+
+        :return:
+        """
         for i in range(2):
             self.subplots[i].set_title(f"{self.TEXTS[i][0]}{self.subject}")
             self.subplots[i].set_xlabel(self.TEXTS[i][1])
@@ -650,7 +762,18 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
 
 
 class ProgressStatus(BaseFrame):
+    """
+    class to create the of the progress status
+    """
     def __init__(self, father, status, details, percent, eta):
+        """
+
+        :param father: the father window
+        :param status: status of the simulation
+        :param details: what th program is doing
+        :param percent: how much has already done
+        :param eta: how many time it needs to finish
+        """
         self.WIDGETS = {'status_label': (tk.Label, {'textvariable': status}, {'side': tk.TOP}),
                         'details_label': (tk.Label, {'textvariable': details}, {'side': tk.TOP}),
                         'percent_label': (tk.Label, {'textvariable': percent}, {'side': tk.TOP}),
