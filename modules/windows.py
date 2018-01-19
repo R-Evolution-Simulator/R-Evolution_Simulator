@@ -644,6 +644,6 @@ class ProgressStatusWindow(BaseTkWindow):
 
     def _eta_update(self, eta):
         if eta:
-            self.eta.set(f"ETA: {datetime.timedelta(seconds=eta)}")
+            self.eta.set(f"ETA: {datetime.timedelta(seconds=int(eta))}")
         else:
             self.eta.set('')

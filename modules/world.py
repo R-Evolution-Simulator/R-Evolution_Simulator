@@ -176,7 +176,7 @@ class World(object):
             self._progress_update('details', ('deleting creatures', (count, self.tot_chunks)))
             self._progress_update('percent', count / self.tot_chunks)
 
-        self._progress_update('details', ('saving simulation data', None))
+        self._progress_update('details', ('saving simulation data',))
         to_write = str()
         for i in self.TO_RECORD:
             to_write += utl.add_to_write(self.__dict__[i], self.analysis['rounding'])
