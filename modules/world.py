@@ -97,6 +97,9 @@ class World(object):
         self._finalize()
         self._progress_update('status', 'Finished')
         self._progress_update('details', tuple())
+        self._progress_update('percent', None)
+        self.thr_termination[1].set()
+        exit()
 
     def get_ID(self):
         """
@@ -440,8 +443,9 @@ class World(object):
 
     def _termination_control(self):
         try:
-            if self.thr_termination.is_set():
-                self.thr_termination.clear()
+            if self.thr_termination[0].is_set():
+                shutil.rmtree(self.path)
+                self.thr_termination[1].set()
                 exit()
         except AttributeError:
             pass

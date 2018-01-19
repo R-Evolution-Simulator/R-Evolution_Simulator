@@ -587,8 +587,8 @@ class ProgressStatusWindow(BaseTkWindow):
         self.percent_int = 0
         self.frames_load()
         self.to_call = to_call
-        self.thr_termination = thr.Event()
-        self.terminating = False
+        self.thr_terminating = thr.Event()
+        self.thr_terminated = thr.Event()
         self.thread = thr.Thread(target=self.thread_start, daemon=True)
         self.thread.start()
 
@@ -599,18 +599,16 @@ class ProgressStatusWindow(BaseTkWindow):
                 value = queue.get(False)
                 getattr(self, f'_{key}_update')(value)
         super(ProgressStatusWindow, self).update()
-        if self.terminating:
+        if self.thr_terminating.is_set():
             self.destroy()
 
     def thread_start(self):
-        called = self.to_call[0](*self.to_call[1], **self.to_call[2], progress_queues=self.queues, termination_event=self.thr_termination)
+        called = self.to_call[0](*self.to_call[1], **self.to_call[2], progress_queues=self.queues, termination_event=(self.thr_terminating, self.thr_terminated))
         self.destroy()
 
     def destroy(self):
-        if not self.terminating:
-            self.thr_termination.set()
-            self.terminating = True
-        elif not self.thr_termination.is_set():
+        self.thr_terminating.set()
+        if self.thr_terminated.is_set():
             super(ProgressStatusWindow, self).destroy()
 
     def _status_update(self, status):
@@ -635,10 +633,11 @@ class ProgressStatusWindow(BaseTkWindow):
             self.percent.set(f"{int(percent)} %")
             if percent < self.percent_int:
                 percent = 0
-            self.get_widget('progress_frame', 'prograss_bar').step(percent - self.percent_int)
-            self.percent_int = percent
         else:
-            self.percent.set("")
+            self.percent.set('')
+            percent = 100
+        self.get_widget('progress_frame', 'prograss_bar').step(percent - self.percent_int)
+        self.percent_int = percent
 
     def _eta_update(self, eta):
         if eta:
