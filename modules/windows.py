@@ -587,7 +587,7 @@ class ProgressStatusWindow(BaseTkWindow):
         self.percent_int = 0
         self.frames_load()
         self.to_call = to_call
-        self.to_call[2]['progress_queues']=self.queues
+        self.to_call[2]['progress_queues'] = self.queues
         self.thread = thr.Thread(target=self.to_call[0], args=self.to_call[1], kwargs=self.to_call[2], daemon=True)
         self.thread.start()
 
