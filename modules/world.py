@@ -17,7 +17,7 @@ class World(object):
     """class of the world where creatures live"""
     TO_RECORD = var.TO_RECORD['simulation']
 
-    def __init__(self, name, sim_variables, progress_queues=None):
+    def __init__(self, name, sim_variables, progress_queues=None, termination_event=None):
         """
         Creates new simulation
 
@@ -30,6 +30,7 @@ class World(object):
         self.name = name
         self.prgr_que = progress_queues
         self._progress_update('status', 'Simulation setup')
+        self.thr_termination = termination_event
         self.path = os.path.join(var.SIMULATIONS_PATH, name)
         self.directories = dict()
         self.__dict__.update(sim_variables)
@@ -88,6 +89,7 @@ class World(object):
                 break
         self.lifetime = self.tick_count
         self._progress_update('status', 'Simulation ended')
+        self._progress_update('eta', None)
         self._end()
         self._progress_update('status', 'Simulation analysis')
         self._analysis()
@@ -231,7 +233,7 @@ class World(object):
         self.creature_list = self.creature_list.union(self.new_born)
         self.alive_creatures = self.alive_creatures.union(self.new_born)
         self.alive_creatures = self.alive_creatures.difference(self.tick_dead)
-        self._progress_update('details', ('Tick #', (self.tick_count, self.max_lifetime)))
+        self._progress_update('details', (f'tick # {self.tick_count}  -  alive: {len(self.alive_creatures)}',))
         self._progress_update('percent', self.tick_count / self.max_lifetime)
         self._progress_update('eta', (time.time() - self.start_time) / self.tick_count * (self.max_lifetime - self.tick_count))
 
@@ -256,7 +258,6 @@ class World(object):
         :return:
         """
 
-
         self._progress_update('details', ('analysing chunk attributes',))
 
         self._analysis_chunk_attrs()
@@ -266,8 +267,8 @@ class World(object):
         genes.update(var.CREATURES_SECONDARY_GENES)
 
         for tick in range(0, self.lifetime, self.analysis['tick_interval']):
-            self._progress_update('details', ('analysing tick #', (tick, self.lifetime//self.analysis['tick_interval'])))
-            self._progress_update('percent', tick/(self.lifetime//self.analysis['tick_interval']))
+            self._progress_update('details', ('analysing tick #', (tick, self.lifetime // self.analysis['tick_interval'])))
+            self._progress_update('percent', tick / (self.lifetime // self.analysis['tick_interval']))
             alive = self._tick_creature_get(tick)
 
             for gene in genes:
@@ -430,8 +431,17 @@ class World(object):
         self._analysis_file_write("demographic_spreading", 'spreading_analysis', values + correct, tick, attr)
 
     def _progress_update(self, type, msg):
+        self._termination_control()
         if self.prgr_que:
             self.prgr_que[type].put(msg)
         else:
             if not type == 'eta':
                 print(f"{self.name} - {type}: {msg} ")
+
+    def _termination_control(self):
+        try:
+            if self.thr_termination.is_set():
+                self.thr_termination.clear()
+                exit()
+        except AttributeError:
+            pass

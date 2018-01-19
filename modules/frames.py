@@ -24,7 +24,7 @@ class BaseFrame(tk.Frame):
         super(BaseFrame, self).__init__(father)
         self.widgets = dict() #dictionary with all the widget
         self._widgets_load(self.WIDGETS)
-
+        
     def _widgets_load(self, wid_list):
         """
         it loads the widget in the frame
@@ -161,7 +161,7 @@ class NewSim(GridFrame, BaseFrame):
     """
     class used to start a new simulation
     """
-    def __init__(self, father, load_choice):
+    def __init__(self, father):
         """
         it creates the frame
 
@@ -171,7 +171,7 @@ class NewSim(GridFrame, BaseFrame):
         super(BaseFrame, self).__init__(father)
         self.WIDGETS = dict()
         self.sim_variables = dict()
-        self.load_choice = load_choice #list of the possible templates
+        self.load_choice = tk.StringVar(master=self) #list of the possible templates
         self.load_choice.set('-')
         self.WIDGETS['name_label'] = (tk.Label, {'text': 'name'}, {'row': 0, 'column': 0})
         self.sim_name = tk.Entry(self) #entry for chosing the name of the simulation
@@ -657,6 +657,6 @@ class ProgressStatus(BaseFrame):
 
                         'prograss_bar': (ttk.Progressbar, {}, {'side': tk.TOP}),
                         'eta_label': (tk.Label, {'textvariable': eta}, {'side': tk.TOP}),
-                        #'cancel_button': (tk.Button, {'text': 'Cancel'}, {'side': tk.TOP}),
+                        'cancel_button': (tk.Button, {'text': 'Cancel', 'command': father.destroy}, {'side': tk.TOP}),
                         }
         super(ProgressStatus, self).__init__(father)

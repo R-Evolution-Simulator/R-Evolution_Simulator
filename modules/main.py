@@ -6,5 +6,5 @@ class Main(object):
         self.windows = [wndw.MainMenuWindow(self), ]
 
     def run(self):
-        while True:
+        while self.windows[0].active:
             self.windows[0].update()

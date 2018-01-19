@@ -1,5 +1,5 @@
 import tkinter as tk
-from time import time
+from time import time, sleep
 from . import frames as frm
 from .canvas import PygameCanvas
 from .graphics import CreaturesD, ChunkD
@@ -11,6 +11,7 @@ import os
 from math import ceil
 import json
 from .world import World
+import datetime
 
 
 class FinishError(BaseException):
@@ -33,6 +34,7 @@ class BaseTkWindow(tk.Tk):
         """
         super(BaseTkWindow, self).__init__()
         self.father = father
+        self.active = True
         self.windows = list()
         self.protocol("WM_DELETE_WINDOW", self.destroy)
         self.title(self.TITLE)
@@ -46,7 +48,7 @@ class BaseTkWindow(tk.Tk):
         """
         for i in self.windows:
             i.destroy()
-        self.father.windows.remove(self)
+        self.active = False
         super(BaseTkWindow, self).destroy()
 
     def get_widget(self, frame, widget):
@@ -105,8 +107,9 @@ class BaseTkWindow(tk.Tk):
         :param kwargs: kwargs to pass to new window __init__
         :return:
         """
+        father = self.father
         self.destroy()
-        self.father.new_window_dependent(wind_class, *args, **kwargs)
+        father.new_window_dependent(wind_class, *args, **kwargs)
 
     def update(self):
         """
@@ -115,7 +118,8 @@ class BaseTkWindow(tk.Tk):
         :return:
         """
         for i in self.windows:
-            i.update()
+            if i.active:
+                i.update()
         super(BaseTkWindow, self).update()
 
 
@@ -515,15 +519,11 @@ class NewSimWindow(BaseTkWindow):
         :type father: BaseTkWindow
         """
         super(NewSimWindow, self).__init__(father)
-        self.sim_name = tk.StringVar(master=self)
-        self.sim_variables = dict()
-        self.load_choice = tk.StringVar(master=self)
-        self.FRAMES_TEMPLATE = {'new': (frm.NewSim, {'load_choice': self.load_choice}, {'row': 0, 'column': 0})}
-
+        self.FRAMES_TEMPLATE = {'new': (frm.NewSim, {}, {'row': 0, 'column': 0})}
         self.frames_load()
 
     def load_template(self):
-        name = self.load_choice.get()
+        name = self.get_frame('new').load_choice.get()
         with open(os.path.join(var.TEMPLATES_PATH, name)) as file:
             variables = json.loads(file.readline())
 
@@ -583,8 +583,9 @@ class ProgressStatusWindow(BaseTkWindow):
         self.percent_int = 0
         self.frames_load()
         self.to_call = to_call
-        self.to_call[2]['progress_queues'] = self.queues
-        self.thread = thr.Thread(target=self.to_call[0], args=self.to_call[1], kwargs=self.to_call[2], daemon=True)
+        self.thr_termination = thr.Event()
+        self.terminating = False
+        self.thread = thr.Thread(target=self.thread_start, daemon=True)
         self.thread.start()
 
     def update(self):
@@ -594,6 +595,21 @@ class ProgressStatusWindow(BaseTkWindow):
                 value = queue.get(False)
                 getattr(self, f'_{key}_update')(value)
         super(ProgressStatusWindow, self).update()
+        if self.terminating:
+            self.destroy()
+
+    def thread_start(self):
+        called = self.to_call[0](*self.to_call[1], **self.to_call[2], progress_queues=self.queues, termination_event=self.thr_termination)
+
+        '''while True:
+            print('just Boh')'''
+
+    def destroy(self):
+        if not self.terminating:
+            self.thr_termination.set()
+            self.terminating = True
+        elif not self.thr_termination.is_set():
+            super(ProgressStatusWindow, self).destroy()
 
     def _status_update(self, status):
         self.status.set(status)
@@ -614,8 +630,9 @@ class ProgressStatusWindow(BaseTkWindow):
     def _percent_update(self, percent):
         percent *= 100
         if percent:
-            print()
             self.percent.set(f"{int(percent)} %")
+            if percent < self.percent_int:
+                percent = 0
             self.get_widget('progress_frame', 'prograss_bar').step(percent - self.percent_int)
             self.percent_int = percent
         else:
@@ -623,6 +640,6 @@ class ProgressStatusWindow(BaseTkWindow):
 
     def _eta_update(self, eta):
         if eta:
-            self.eta.set(f"ETA: {eta} s")
+            self.eta.set(f"ETA: {datetime.timedelta(seconds=eta)}")
         else:
             self.eta.set('')
