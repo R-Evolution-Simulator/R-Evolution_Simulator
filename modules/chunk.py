@@ -1,3 +1,8 @@
+"""
+this modulo contains the class Chunk which controls all the functions and variable of
+every portion of the world (quantity of food, temperature, growth of the food, etc.)
+"""
+
 from .noise.simplexnoise.noise import normalize
 from . import var
 from . import utility as utl

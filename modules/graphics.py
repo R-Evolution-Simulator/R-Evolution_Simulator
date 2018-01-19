@@ -1,3 +1,7 @@
+"""
+this module contains the instructions to create the graphics of a chunk or a creature
+"""
+
 import pygame as pyg
 from . import var
 from . import utility as utl
@@ -118,6 +122,17 @@ class CreaturesD:
             pass
 
     def _draw_shape(self, surface, color, coord, dim, border=0):
+        """
+        it draws the creature
+
+        :param surface: pygame surface
+        :param color: color of the creature
+        :param coord: where to draw the creature
+        :param dim: the dimension
+        :param border: the border of the shape
+
+        :return:
+        """
         if self.diet == 'H':
             pyg.draw.circle(surface, color, coord, int(math.sqrt(dim)), border)
         elif self.diet == 'C':

@@ -1,3 +1,7 @@
+"""
+this module contains classes which control the windows of the graphic interface
+"""
+
 import tkinter as tk
 from time import time
 from . import frames as frm
@@ -623,6 +627,6 @@ class ProgressStatusWindow(BaseTkWindow):
 
     def _eta_update(self, eta):
         if eta:
-            self.eta.set(f"ETA: {eta} s")
+            self.eta.set(f"ETA: {int(eta)} s")
         else:
             self.eta.set('')

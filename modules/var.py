@@ -1,3 +1,7 @@
+"""
+this module contains all the variables used and their values
+"""
+
 import os
 import pygame as pyg
 from . import genes as gns

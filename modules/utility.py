@@ -1,3 +1,7 @@
+"""
+this module contains some functions useful somwwhere in the other parts of the program
+"""
+
 import pygame as pyg
 from . import var
 

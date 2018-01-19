@@ -1,3 +1,8 @@
+"""
+this modulo is used to created the canvas where pygame will represent the
+world, especially the background (of foodmax and temperature)
+"""
+
 from math import ceil
 import pygame as pyg
 from PIL import ImageDraw, Image as Img
