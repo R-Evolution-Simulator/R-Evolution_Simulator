@@ -478,9 +478,19 @@ class SimDiagramWindow(BaseTkWindow):
         self.follow_play = not self.follow_play
 
     def dyn_axes_set(self):
+        """
+        sets the axes values in the dynamic status
+
+        :return:
+        """
         self.get_frame('diagram_canvas').dyn_axes_set(self.father.graph_tick)
 
     def stat_axes_set(self):
+        """
+        sets the axes values in the static status
+
+        :return:
+        """
         self.get_frame('diagram_canvas').stat_axes_set(self.father.lifetime)
 
     def change_show_tick(self):
@@ -491,6 +501,11 @@ class SimDiagramWindow(BaseTkWindow):
             self.get_frame('diagram_canvas').remove_show_tick()
 
     def tick_line_set(self):
+        """
+        sets the line following the actual tick
+
+        :return:
+        """
         self.get_frame('diagram_canvas').tick_line_set(self.father.tick)
 
     def update(self):
@@ -527,6 +542,11 @@ class NewSimWindow(BaseTkWindow):
         self.frames_load()
 
     def load_template(self):
+        """
+        loads the template already saved
+
+        :return:
+        """
         name = self.get_frame('new').load_choice.get()
         with open(os.path.join(var.TEMPLATES_PATH, name)) as file:
             variables = json.loads(file.readline())
@@ -545,6 +565,12 @@ class NewSimWindow(BaseTkWindow):
             add_to_sim_variables(self.get_frame('new').sim_variables, variables)
 
     def _get_from_sim_variables(self, obj):
+        """
+        gets the variable inserted
+
+        :param obj: the object containing the variable
+        :return:
+        """
         if type(obj) == tk.Entry or type(obj) == tk.Entry:
             try:
                 return int(obj.get())
@@ -562,11 +588,21 @@ class NewSimWindow(BaseTkWindow):
             return to_return
 
     def save_template(self):
+        """
+        saves a new template created
+
+        :return:
+        """
         name = self.get_frame('new').save_choice.get().split('.')[0]
         with open(os.path.join(var.TEMPLATES_PATH, name + '.' + var.FILE_EXTENSIONS['simulation_template']), 'w') as file:
             file.write(json.dumps(self._get_from_sim_variables(self.get_frame('new').sim_variables)))
 
     def start_simulation(self):
+        """
+        it starts the simulation
+
+        :return:
+        """
         frame = self.get_frame('new')
         sim_name = frame.sim_name.get()
         if sim_name != '':
@@ -575,7 +611,16 @@ class NewSimWindow(BaseTkWindow):
 
 
 class ProgressStatusWindow(BaseTkWindow):
+    """
+    class for the window which represent the status of the simulation
+    """
     def __init__(self, father, to_call):
+        """
+        creates the window
+
+        :param father: the father window
+        :param to_call:
+        """
         super(ProgressStatusWindow, self).__init__(father)
         self.queues = dict()
         to_pass = dict()
@@ -628,7 +673,7 @@ class ProgressStatusWindow(BaseTkWindow):
                 self.details.set(f"{details}    {out_of[0]}/{out_of[1]}")
 
     def _percent_update(self, percent):
-        percent *= 100
+        percent = float(percent)*100
         if percent:
             self.percent.set(f"{int(percent)} %")
             if percent < self.percent_int:

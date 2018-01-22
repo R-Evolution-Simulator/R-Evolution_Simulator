@@ -54,7 +54,7 @@ class Creature(object):
 
         # creature's genes definition
         self.genes = genes
-        self.reprod_countdown = self.genes['fertility'].get()
+        self.reprod_countdown = self.genes['fertility'].get()+self.world.creatures_vars['initial_reprod_countdown']
 
         # phenotypical characteristics valuation
 
@@ -82,7 +82,7 @@ class Creature(object):
         """
         # reproduction control
         #if self.energy > self.world.creatures_vars['fertility_energy_coeff'] / self.genes['fertility'].get() and self.reprod_countdown <= 0:
-        if self.energy > 50 and self.reprod_countdown <= 0:
+        if self.energy > 60 and self.reprod_countdown <= 0:
             self.reprod_ready = True
             self._dating_agency()
 
@@ -343,6 +343,8 @@ class Carnivore(Creature):
         """
         super(Carnivore, self).__init__(*args, **kwargs)
         self.prey = None
+        #self.genes['fertility'].phenotype /= self.world.creatures_vars['help_for_predator']
+        #self.genes['speed'].phenotype *= self.world.creatures_vars['help_for_predator']
 
     def _dest_calc(self):
         """
