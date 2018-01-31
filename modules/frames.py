@@ -10,7 +10,6 @@ import os
 import matplotlib as mpl
 from matplotlib.figure import Figure
 from tkinter import ttk
-
 mpl.use("Tkagg")
 mpl.use('agg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -423,14 +422,11 @@ class DiagramCommandBar(BaseFrame):
         :param windows:
         :param tick_interval: how many tick has to be represented
         """
-        self.WIDGETS = {'follow_play': (
-            tk.Checkbutton, {'text': "Follow play", 'command': windows[0].toggle_follow_play}, {'side': tk.LEFT}),
-            'graph_width': (tk.Spinbox, {'from_': tick_interval, 'to': windows[1].lifetime,
-                                         'increment': tick_interval,
-                                         'command': windows[0].graph_width_set}, {'side': tk.LEFT}),
-            'show_tick': (tk.Checkbutton, {'text': "Show tick", 'command': windows[0].change_show_tick},
-                          {'side': tk.LEFT}),
-        }
+        self.WIDGETS = {'follow_play': (tk.Checkbutton, {'text': "Follow play", 'command': windows[0].toggle_follow_play}, {'side': tk.LEFT}),
+                        'graph_width': (tk.Spinbox, {'from_': tick_interval, 'to': windows[1].lifetime, 'increment': tick_interval, 'command': windows[0].graph_width_set}, {'side': tk.LEFT}),
+                        'show_tick': (tk.Checkbutton, {'text': "Show tick", 'command': windows[0].change_show_tick}, {'side': tk.LEFT}),
+                        'save_diagram': (tk.Button, {'text': "Save diagram", 'command': windows[0].save_diagram}, {'side': tk.LEFT})
+                        }
         super(DiagramCommandBar, self).__init__(father)
 
 
@@ -441,7 +437,7 @@ class BaseDiagramCanvasFrame(BaseFrame):
 
     SUBPLOTS = 1
 
-    def __init__(self, father, directory, subject, params):
+    def __init__(self, father, directories, subject, params):
         """
         Frame for Matplotlib diagrams
 
@@ -454,8 +450,9 @@ class BaseDiagramCanvasFrame(BaseFrame):
         self.WIDGETS = {
             'canvas': (FigureCanvasTkAgg, {'figure': self.figure, 'master': self}, {'fill': tk.BOTH, 'expand': True})}
         self.father = father
-        self.directory = directory
+        self.directories = directories
         self.subject = subject
+        self.TITLE = subject.split('.')[0]
         self.params = params
         self.widgets = dict()
         self.subplots = []
@@ -477,7 +474,7 @@ class BaseDiagramCanvasFrame(BaseFrame):
         :return:
         """
         raw_data = list()
-        file = open(os.path.join(self.directory, self.subject))
+        file = open(os.path.join(self.directories['analysis'], self.subject))
         for line in file:
             raw_data.append(utl.get_from_string(line, 0, None))
         self.data = [[raw_data[j][i] for j in range(len(raw_data))] for i in range(len(raw_data[0]))]
@@ -573,6 +570,10 @@ class BaseDiagramCanvasFrame(BaseFrame):
         for line in self.tick_lines:
             line.set_xdata(tick)
 
+    def save_diagram(self):
+        self.remove_show_tick()
+        self.figure.savefig(os.path.join(self.directories['images'], "diagrams", self.subject + ".jpeg"))
+
 
 class GeneDiagram(BaseDiagramCanvasFrame):
     """
@@ -631,9 +632,9 @@ class GeneDiagram(BaseDiagramCanvasFrame):
 
         :return:
         """
-        self.subplots[0].set_title(self.subject)
+        self.subplots[0].set_title(self.TITLE)
         self.subplots[0].set_xlabel(self.TEXTS[0][1])
-        self.subplots[0].set_ylabel(self.subject)
+        self.subplots[0].set_ylabel(self.TITLE)
         handles, labels = self.subplots[0].get_legend_handles_labels()
         self.subplots[0].legend(reversed(handles), reversed(labels), loc=2, fontsize=7)
 
@@ -697,7 +698,7 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
         :return:
         """
         raw_data = list()
-        file = open(os.path.join(self.directory, self.subject))
+        file = open(os.path.join(self.directories['analysis'], self.subject))
         for line in file:
             raw_data.append(utl.get_from_string(line, 0, None))
         self.chunk_attribute = raw_data[0][:-1]
@@ -717,7 +718,10 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
             for j in range(parts + 1, 2 * parts):
                 self.data[j + 1][i] += self.data[j][i]
             for j in range(parts + 1, 2 * parts + 1):
-                self.data[j + parts].append(self.data[j][i] / self.data[2 * parts][i] * 100)
+                try:
+                    self.data[j + parts].append(self.data[j][i] / self.data[2 * parts][i] * 100)
+                except ZeroDivisionError:
+                    self.data[j + parts].append(0)
 
     def _set_subplots(self):
         """
@@ -774,7 +778,7 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
         :return:
         """
         for i in range(2):
-            self.subplots[i].set_title(f"{self.TEXTS[i][0]}{self.subject}")
+            self.subplots[i].set_title(f"{self.TEXTS[i][0]}{self.TITLE}")
             self.subplots[i].set_xlabel(self.TEXTS[i][1])
             self.subplots[i].set_ylabel(self.TEXTS[i][2])
             handles, labels = self.subplots[i].get_legend_handles_labels()

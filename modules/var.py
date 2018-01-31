@@ -56,7 +56,7 @@ CREATURES_SECONDARY_GENES = {'speed': gns.Speed}
 
 # files
 
-DIRECTORIES = {'data': dict(), 'images': {'screenshots': dict()}, 'analysis': dict()}
+DIRECTORIES = {'data': dict(), 'images': {'screenshots': dict(), 'diagrams': dict()}, 'analysis': dict()}
 
 FILE_SEPARATORS = (';', '/', ',', '|', '§')
 

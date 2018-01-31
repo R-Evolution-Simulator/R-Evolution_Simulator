@@ -443,9 +443,9 @@ class SimDiagramWindow(BaseTkWindow):
         :type subject: str
         """
         self.subject = subject
-        self.TITLE = self.subject
+        self.TITLE = self.subject.split('.')[0]
         self.FRAMES_TEMPLATE = {
-            'diagram_canvas': (self._get_frame_class(), {'directory': father.directories['analysis'], 'subject': subject, 'params': father.analysis}, {'row': 0, 'column': 0}),
+            'diagram_canvas': (self._get_frame_class(), {'directories': father.directories, 'subject': subject, 'params': father.analysis}, {'row': 0, 'column': 0}),
             'command_bar': (frm.DiagramCommandBar, {'windows': (self, father), 'tick_interval': father.analysis['tick_interval']}, {'row': 1, 'column': 0}), }
         super(SimDiagramWindow, self).__init__(father)
         self.__dict__.update(self.START_VARIABLES)
@@ -532,6 +532,9 @@ class SimDiagramWindow(BaseTkWindow):
             self.stat_axes_set()
         self.get_widget('diagram_canvas', 'canvas').draw()
         super(SimDiagramWindow, self).update()
+
+    def save_diagram(self):
+        self.get_frame('diagram_canvas').save_diagram()
 
 
 class NewSimWindow(BaseTkWindow):
