@@ -538,7 +538,7 @@ class BaseDiagramCanvasFrame(BaseFrame):
         :return:
         """
         for subplot in self.subplots:
-            subplot.set_xlim([tick - self.father.tick_difference, tick])
+            subplot.set_xlim([tick - self.father.graph_width, tick])
 
     def add_show_tick(self, tick):
         """

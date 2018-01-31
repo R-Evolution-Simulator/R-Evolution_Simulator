@@ -56,6 +56,16 @@ class PygameCanvas(object):
         :param shows: which characteristic is showed
         :return:
         """
+        events = pyg.event.get()
+        for event in events:
+            if event.type == pyg.KEYDOWN:
+                char=event.unicode
+                if char == ' ':
+                    self.father.start_play()
+                elif char == '+':
+                    self.father.inc_zoom()
+                elif char == '-':
+                    self.father.dec_zoom()
         self.chunk_display(tick, shows['ch'])
         self.creatures_display(tick, shows)
         pyg.display.update()

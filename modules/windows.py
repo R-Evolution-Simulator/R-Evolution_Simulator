@@ -232,6 +232,7 @@ class SimReplayControlWindow(BaseTkWindow):
         self.sim_name = sim_name
         self.__dict__.update(self.START_VARIABLES)
         self.is_playing = False
+        self.bind('<KeyPress>', self.get_key_event)
         self._files_load()
         self.sim_width = self.dimension['width'] * self.chunk_dim
         self.sim_height = self.dimension['height'] * self.chunk_dim
@@ -301,7 +302,16 @@ class SimReplayControlWindow(BaseTkWindow):
             pass
         self._upd_tick(int(self.tick))
         super(SimReplayControlWindow, self).update()
-
+    
+    def get_key_event(self, event):
+        if event.char == ' ':
+            self.start_play()
+        elif event.char == '+':
+            self.inc_zoom()
+        elif event.char == '-':
+            self.dec_zoom()
+        
+    
     def destroy(self):
         """
         Destroys the canvas, all dependent windows and then the window itself
