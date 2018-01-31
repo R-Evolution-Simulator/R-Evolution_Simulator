@@ -673,8 +673,8 @@ class ProgressStatusWindow(BaseTkWindow):
                 self.details.set(f"{details}    {out_of[0]}/{out_of[1]}")
 
     def _percent_update(self, percent):
-        percent = float(percent)*100
         if percent:
+            percent *= 100
             self.percent.set(f"{int(percent)} %")
             if percent < self.percent_int:
                 percent = 0
