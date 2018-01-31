@@ -97,3 +97,6 @@ class PygameCanvas(object):
 
         for creature in self.tick_creature_list(tick):
             creature.draw(self.surface, tick, color, dim, self.father.zoom)
+
+    def take_screenshot(self, path):
+        pyg.image.save(self.surface, path)

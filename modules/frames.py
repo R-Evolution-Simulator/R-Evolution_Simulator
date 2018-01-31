@@ -18,7 +18,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class BaseFrame(tk.Frame):
     """general class of a frame"""
-    WIDGETS = None #list of the widgets present in the frame
+    WIDGETS = None  # list of the widgets present in the frame
 
     def __init__(self, father):
         """
@@ -27,9 +27,9 @@ class BaseFrame(tk.Frame):
         :param father: the father window
         """
         super(BaseFrame, self).__init__(father)
-        self.widgets = dict() #dictionary with all the widget
+        self.widgets = dict()  # dictionary with all the widget
         self._widgets_load(self.WIDGETS)
-        
+
     def _widgets_load(self, wid_list):
         """
         it loads the widget in the frame
@@ -58,6 +58,7 @@ class GridFrame(BaseFrame):
     class derived from BaseFrame which uses the method .grid instead of .pack
     when placing a widget in the frame
     """
+
     def _widgets_load(self, wid_list):
         """
         it loads the widget in the frame
@@ -76,6 +77,7 @@ class BaseLabelFrame(tk.LabelFrame, BaseFrame):
     """
     class with a frame for the label widget
     """
+
     def __init__(self, father):
         """
         it creates the frame
@@ -91,6 +93,7 @@ class BaseSelectFrame(BaseLabelFrame):
     """
     class used for frames with selection widget
     """
+
     def __init__(self, father, windows):
         """
         it creates the frame
@@ -129,6 +132,7 @@ class MainMenuOptions(BaseFrame):
     """
     class for the options in the main menu: creating a new simulation or loading some already done
     """
+
     def __init__(self, father, windows):
         """
         created the menu
@@ -166,6 +170,7 @@ class NewSim(GridFrame, BaseFrame):
     """
     class used to start a new simulation
     """
+
     def __init__(self, father):
         """
         it creates the frame
@@ -176,10 +181,10 @@ class NewSim(GridFrame, BaseFrame):
         super(BaseFrame, self).__init__(father)
         self.WIDGETS = dict()
         self.sim_variables = dict()
-        self.load_choice = tk.StringVar(master=self) #list of the possible templates
+        self.load_choice = tk.StringVar(master=self)  # list of the possible templates
         self.load_choice.set('-')
         self.WIDGETS['name_label'] = (tk.Label, {'text': 'name'}, {'row': 0, 'column': 0})
-        self.sim_name = tk.Entry(self) #entry for chosing the name of the simulation
+        self.sim_name = tk.Entry(self)  # entry for chosing the name of the simulation
         self.sim_name.grid(row=0, column=1)
         self.WIDGETS['start_button'] = (tk.Button, {'text': "Start", 'command': father.start_simulation}, {'row': 0, 'column': 2})
         self.row = 1
@@ -187,7 +192,7 @@ class NewSim(GridFrame, BaseFrame):
         for i in var.DEFAULT_SIM_VARIABLES:
             self.sim_variables[i] = self._add_widget(i, var.DEFAULT_SIM_VARIABLES[i], 0)
             self.row += 1
-        #widget used to load a new template or to save another one just created
+        # widget used to load a new template or to save another one just created
         self.WIDGETS['load_button'] = (tk.Button, {'text': "Load template", 'command': father.load_template}, {'row': self.row, 'column': 1})
         self.save_choice = tk.Entry(self)
         self.save_choice.grid(row=self.row, column=2)
@@ -247,6 +252,7 @@ class PlayControl(BaseFrame):
     """
     class for the frame used to control the simulation
     """
+
     def __init__(self, father):
         """
         it creates the frame with all the widgets used
@@ -376,6 +382,7 @@ class SetSuperFrame(BaseFrame):
     """
     it is a frame for the set of widget divided by topic
     """
+
     def __init__(self, father, windows):
         """
         the frame is created
@@ -390,10 +397,24 @@ class SetSuperFrame(BaseFrame):
         super(SetSuperFrame, self).__init__(father)
 
 
+class TakeScreenshot(BaseFrame):
+    def __init__(self, father, windows):
+        """
+        the frame is created
+
+        :param father: the father window
+        :param windows:
+        """
+        self.WIDGETS = {'take_screen': (tk.Button, {'text': "Take screenshot", 'command': windows[0].take_screenshot}, {'anchor': tk.W}),
+                        }
+        super(TakeScreenshot, self).__init__(father)
+
+
 class DiagramCommandBar(BaseFrame):
     """
     frame used to control a diagram (if it as to follow the etc.)
     """
+
     def __init__(self, father, windows, tick_interval):
         """
         the frame is created
@@ -765,6 +786,7 @@ class ProgressStatus(BaseFrame):
     """
     class to create the of the progress status
     """
+
     def __init__(self, father, status, details, percent, eta):
         """
 

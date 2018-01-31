@@ -51,7 +51,8 @@ class BaseTkWindow(tk.Tk):
         :return:
         """
         for i in self.windows:
-            i.destroy()
+            if i.active:
+                i.destroy()
         self.active = False
         super(BaseTkWindow, self).destroy()
 
@@ -223,7 +224,9 @@ class SimReplayControlWindow(BaseTkWindow):
         :type sim_name: str
         """
         self.FRAMES_TEMPLATE = {'play_control': (frm.PlayControl, {}, {'row': 0, 'column': 0}),
-                                'map_set': (frm.SetSuperFrame, {'windows': (self,), }, {'row': 1, 'column': 0}), }
+                                'map_set': (frm.SetSuperFrame, {'windows': (self,), }, {'row': 1, 'column': 0}),
+                                'screenshots_control': (frm.TakeScreenshot, {'windows': (self,), }, {'row': 2, 'column': 0}),
+                                }
         self.TITLE = sim_name
         super(SimReplayControlWindow, self).__init__(father)
         self.sim_name = sim_name
@@ -378,6 +381,13 @@ class SimReplayControlWindow(BaseTkWindow):
         """
         self._resize(1)
         self._upd_zoom()
+
+    def take_screenshot(self):
+        name = str(int(self.tick))
+        for i in self.shows:
+            name += '-' + self.shows[i].get()
+        path = os.path.join(self.directories['images'], "screenshots", name + ".jpeg")
+        self.canvas.take_screenshot(path)
 
     def _upd_speed(self):
         """
@@ -614,6 +624,7 @@ class ProgressStatusWindow(BaseTkWindow):
     """
     class for the window which represent the status of the simulation
     """
+
     def __init__(self, father, to_call):
         """
         creates the window
