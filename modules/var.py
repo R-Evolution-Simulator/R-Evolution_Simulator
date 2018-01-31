@@ -38,8 +38,9 @@ DEFAULT_SIM_VARIABLES = {'dimension': {'width': 60, 'height': 45},
                                             'mutation_coeff': 0.05,
                                             'initial_reprod_countdown': 50,
                                             'reprod_energy_dec_coeff': 0.8,
+                                            'reprod_min_energy': 60,
                                             'predator_eat_coeff': 0.5,
-                                            'help_for_predator':1.5,
+                                            'help_for_predator': 1.5,
                                             },
                          'analysis': {'tick_interval': 100,
                                       'percentile_parts': 4,
@@ -55,7 +56,7 @@ CREATURES_SECONDARY_GENES = {'speed': gns.Speed}
 
 # files
 
-DIRECTORIES = ['data', 'images', 'analysis']
+DIRECTORIES = {'data': dict(), 'images': {'screenshots': dict()}, 'analysis': dict()}
 
 FILE_SEPARATORS = (';', '/', ',', '|', '§')
 
@@ -93,8 +94,9 @@ TO_RECORD = {
                                       'mutation_coeff': None,
                                       'initial_reprod_countdown': None,
                                       'reprod_energy_dec_coeff': None,
+                                      'reprod_min_energy': None,
                                       'predator_eat_coeff': None,
-                                      'help_for_predator':None,
+                                      'help_for_predator': None,
                                       },
                    'analysis': {'tick_interval': None,
                                 'percentile_parts': None,
@@ -130,6 +132,6 @@ DEFAULT_CREATURES_DIMS = {'none': 49,
                           'bigness': 5,
                           'num_control': 5,
                           'speed': 25,
-                          'energy':5}
+                          'energy': 5}
 
 DEFAULT_CREATURES_BORDER = {'color': pyg.Color(0, 0, 0, 255), 'width': 1}

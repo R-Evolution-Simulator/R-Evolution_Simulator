@@ -3,7 +3,7 @@ import shutil
 from random import random as rnd
 import scipy
 import numpy
-import threading as thr
+from PIL import ImageDraw, Image as Img
 import time
 from .noise.simplexnoise.noise import SimplexNoise
 from .chunk import Chunk
@@ -93,6 +93,8 @@ class World(object):
         self._end()
         self._progress_update('status', 'Simulation analysis')
         self._analysis()
+        self._progress_update('status', 'Drawing backgrounds')
+        self._draw_backgrounds()
         self._progress_update('status', 'Cleaning up and terminating')
         self._finalize()
         self._progress_update('status', 'Finished')
@@ -122,9 +124,15 @@ class World(object):
             shutil.rmtree(self.path)
             os.makedirs(self.path)
         for i in var.DIRECTORIES:
-            new_directory = os.path.join(self.path, i)
-            os.makedirs(new_directory)
-            self.directories[i] = new_directory
+            self.directories[i] = self._create_directory(self.path, i, var.DIRECTORIES)
+
+    def _create_directory(self, path, name, dir_dict):
+        new_directory = os.path.join(path, name)
+        os.makedirs(new_directory)
+        sub_dir = dir_dict[name]
+        for dir in sub_dir:
+            self._create_directory(new_directory, dir, sub_dir)
+        return new_directory
 
     def _end(self):
         """
@@ -432,6 +440,46 @@ class World(object):
             else:
                 correct[part] = 0
         self._analysis_file_write("demographic_spreading", 'spreading_analysis', values + correct, tick, attr)
+
+    def _draw_backgrounds(self):
+        for attr in var.CHUNK_ATTRS:
+            image = Img.new("RGB", (int(self.dimension['width']), int(self.dimension['height'])))
+            draw = ImageDraw.Draw(image)
+            if attr == 'foodmax':
+                count=0
+                for chunk_row in self.chunk_list:
+                    for chunk in chunk_row:
+                        draw.rectangle((chunk.coord[0] * self.chunk_dim / 10,
+                                        chunk.coord[1] * self.chunk_dim / 10,
+                                        (chunk.coord[0] + 1) * self.chunk_dim / 10,
+                                        (chunk.coord[1] + 1) * self.chunk_dim / 10),
+                                       fill=(0, int(chunk.foodmax * 255 / 100), 0))
+                        count += 1
+                        self._progress_update('details', (attr, (count, self.tot_chunks)))
+                        self._progress_update('percent', count / self.tot_chunks)
+            elif attr == 'temperature':
+                count=0
+                for chunk_row in self.chunk_list:
+                    for chunk in chunk_row:
+                        if chunk.temperature > 0:
+                            draw.rectangle((chunk.coord[0] * self.chunk_dim / 10,
+                                            chunk.coord[1] * self.chunk_dim / 10,
+                                            (chunk.coord[0] + 1) * self.chunk_dim / 10,
+                                            (chunk.coord[1] + 1) * self.chunk_dim / 10),
+                                           fill=(255, int(255 - (chunk.temperature / 100 * 255)),
+                                                 int(255 - (chunk.temperature / 100 * 255))))
+                        else:
+                            draw.rectangle((chunk.coord[0] * self.chunk_dim / 10,
+                                            chunk.coord[1] * self.chunk_dim / 10,
+                                            (chunk.coord[0] + 1) * self.chunk_dim / 10,
+                                            (chunk.coord[1] + 1) * self.chunk_dim / 10),
+                                           fill=(int(255 + (chunk.temperature / 100 * 255)),
+                                                 int(255 + (chunk.temperature / 100 * 255)), 255))
+                        count += 1
+                        self._progress_update('details', (attr, (count, self.tot_chunks)))
+                        self._progress_update('percent', count / self.tot_chunks)
+            path = os.path.join(self.directories['images'], f"{attr}_background.gif")
+            image.save(path, "GIF")
 
     def _progress_update(self, type, msg):
         self._termination_control()
