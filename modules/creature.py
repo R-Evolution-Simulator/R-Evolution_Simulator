@@ -54,7 +54,7 @@ class Creature(object):
 
         # creature's genes definition
         self.genes = genes
-        self.reprod_countdown = self.genes['fertility'].get() + self.world.creatures_vars['initial_reprod_countdown']
+        self.reprod_countdown = self.genes['fertility'].get() + self.world.creatures_vars['initial_reprod_countdown']-start_count
         # phenotypical characteristics valuation
 
         self.world.new_born.add(self)  # creature's adding to the list of creatures
@@ -143,10 +143,10 @@ class Creature(object):
         chunk_temp = self._actual_chunk().temperature
         temp_max = self.world.chunks_vars['temperature_max']
         if temp_resist == 'c':
-            rel_temp = chunk_temp / 2 * temp_max
+            rel_temp = chunk_temp / (2 * temp_max)
             prob = (rel_temp * (1 - rel_temp) + (1 / 4))
         elif temp_resist == 'l':
-            rel_temp = chunk_temp / 2 * temp_max
+            rel_temp = chunk_temp / (2 * temp_max)
             prob = (rel_temp * (1 + rel_temp) + (1 / 4))
         elif temp_resist == 'N' or temp_resist == 'n':
             prob = ((chunk_temp ** 2) / (temp_max ** 2))
