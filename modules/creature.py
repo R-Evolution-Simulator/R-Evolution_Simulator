@@ -54,8 +54,7 @@ class Creature(object):
 
         # creature's genes definition
         self.genes = genes
-        self.reprod_countdown = self.genes['fertility'].get()+self.world.creatures_vars['initial_reprod_countdown']
-
+        self.reprod_countdown = self.genes['fertility'].get() + self.world.creatures_vars['initial_reprod_countdown']
         # phenotypical characteristics valuation
 
         self.world.new_born.add(self)  # creature's adding to the list of creatures
@@ -81,7 +80,7 @@ class Creature(object):
         :return:
         """
         # reproduction control
-        if self.energy > self.world.creatures_vars['reprod_min_energy'] and self.reprod_countdown <= 0:
+        if self.energy > (self.world.creatures_vars['reprod_energy_need_coeff'] / self.genes['fertility'].get()) and self.reprod_countdown <= 0:
             self.reprod_ready = True
             self._dating_agency()
 
@@ -140,21 +139,19 @@ class Creature(object):
         
         :return: the probablity to die for temperature reasons
         """
-        t = self.world.chunks_vars['temperature_max']
         temp_resist = self.genes['temp_resist'].get()
+        chunk_temp = self._actual_chunk().temperature
+        temp_max = self.world.chunks_vars['temperature_max']
         if temp_resist == 'c':
-            return ((self._actual_chunk().temperature ** 2 / (4 * (self.world.chunks_vars['temperature_max'] ** 2))) - (
-                self._actual_chunk().temperature / (2 * self.world.chunks_vars['temperature_max'])) + (1 / 4)) / \
-                   self.world.creatures_vars['temp_death_prob_coeff']
-
+            rel_temp = chunk_temp / 2 * temp_max
+            prob = (rel_temp * (1 - rel_temp) + (1 / 4))
         elif temp_resist == 'l':
-            return ((self._actual_chunk().temperature ** 2 / (4 * (t ** 2))) + (
-                self._actual_chunk().temperature / (2 * t)) + (1 / 4)) / self.world.creatures_vars[
-                       'temp_death_prob_coeff']
-
+            rel_temp = chunk_temp / 2 * temp_max
+            prob = (rel_temp * (1 + rel_temp) + (1 / 4))
         elif temp_resist == 'N' or temp_resist == 'n':
-            return ((self._actual_chunk().temperature ** 2) / (self.world.chunks_vars['temperature_max'] ** 2)) / \
-                   self.world.creatures_vars['temp_death_prob_coeff']
+            prob = ((chunk_temp ** 2) / (temp_max ** 2))
+
+        return prob / self.world.creatures_vars['temp_death_prob_coeff']
 
     def _dest_calc(self):
         """
@@ -342,8 +339,8 @@ class Carnivore(Creature):
         """
         super(Carnivore, self).__init__(*args, **kwargs)
         self.prey = None
-        #self.genes['fertility'].phenotype /= self.world.creatures_vars['help_for_predator']
-        #self.genes['speed'].phenotype *= self.world.creatures_vars['help_for_predator']
+        # self.genes['fertility'].phenotype /= self.world.creatures_vars['help_for_predator']
+        # self.genes['speed'].phenotype *= self.world.creatures_vars['help_for_predator']
 
     def _dest_calc(self):
         """
@@ -370,8 +367,8 @@ class Carnivore(Creature):
                         self.prey = creature
                         self.dest_chunk = [i, j]
         if self.prey == None:
-            self.dest_chunk = [self.chunk_coord(0)+(-1+int(rnd()*2)*2)*6, self.chunk_coord(1)+(-1+int(rnd()*2)*2)*6]
-        self.dest_coord = [(self.dest_chunk[0] + 0.5) * self.world.chunk_dim, (self.dest_chunk[1]+ 0.5) * self.world.chunk_dim]
+            self.dest_chunk = [self.chunk_coord(0) + (-1 + int(rnd() * 2) * 2) * 6, self.chunk_coord(1) + (-1 + int(rnd() * 2) * 2) * 6]
+        self.dest_coord = [(self.dest_chunk[0] + 0.5) * self.world.chunk_dim, (self.dest_chunk[1] + 0.5) * self.world.chunk_dim]
 
     def _eat(self):
         """

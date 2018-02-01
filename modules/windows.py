@@ -302,7 +302,7 @@ class SimReplayControlWindow(BaseTkWindow):
             pass
         self._upd_tick(int(self.tick))
         super(SimReplayControlWindow, self).update()
-    
+
     def get_key_event(self, event):
         if event.char == ' ':
             self.start_play()
@@ -310,8 +310,7 @@ class SimReplayControlWindow(BaseTkWindow):
             self.inc_zoom()
         elif event.char == '-':
             self.dec_zoom()
-        
-    
+
     def destroy(self):
         """
         Destroys the canvas, all dependent windows and then the window itself
@@ -630,7 +629,7 @@ class NewSimWindow(BaseTkWindow):
         sim_name = frame.sim_name.get()
         if sim_name != '':
             sim_variables = self._get_from_sim_variables(frame.sim_variables)
-            self.new_window_substitute(ProgressStatusWindow, (World, (sim_name, sim_variables), {}))
+            self.new_window_substitute(ProgressStatusWindow, (World, (sim_name, sim_variables), {}), "new_sim " + sim_name)
 
 
 class ProgressStatusWindow(BaseTkWindow):
@@ -638,7 +637,7 @@ class ProgressStatusWindow(BaseTkWindow):
     class for the window which represent the status of the simulation
     """
 
-    def __init__(self, father, to_call):
+    def __init__(self, father, to_call, name):
         """
         creates the window
 
@@ -659,6 +658,7 @@ class ProgressStatusWindow(BaseTkWindow):
         self.thr_terminating = thr.Event()
         self.thr_terminated = thr.Event()
         self.thread = thr.Thread(target=self.thread_start, daemon=True)
+        self.thread.setName("Thread " + name)
         self.thread.start()
 
     def update(self):

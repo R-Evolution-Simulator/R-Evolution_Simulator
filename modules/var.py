@@ -12,41 +12,49 @@ TEMPLATES_PATH = os.path.join(DATA_PATH, "templates")
 
 # simulation
 
-DEFAULT_SIM_VARIABLES = {'dimension': {'width': 60, 'height': 45},
-                         'chunk_dim': 10,
-                         'max_lifetime': 10000,
-                         'initial_creatures': {
-                             'herbivores': 400,
-                             'carnivores': 100
-                         },
-                         'chunks_vars': {'growth_coeff': 0.0003,
-                                         'foodmax_max': 100,
-                                         'temperature_max': 100,
-                                         },
-                         'creatures_vars': {'view_ray': 3,
-                                            'en_dec_coeff': 0.02,
-                                            'eat_coeff': 0.005,
-                                            'en_inc_coeff': 1.5,
-                                            'average_age': 1000,
-                                            'dev_age_prob': 500,
-                                            'temp_death_prob_coeff': 100,
-                                            'genes_lim': {'agility': (10, 60),
-                                                          'bigness': (20, 80),
-                                                          'fertility': (150, 250),
-                                                          'num_control': (0, 100)
-                                                          },
-                                            'mutation_coeff': 0.05,
-                                            'initial_reprod_countdown': 50,
-                                            'reprod_energy_dec_coeff': 0.8,
-                                            'reprod_min_energy': 60,
-                                            'predator_eat_coeff': 0.5,
-                                            'help_for_predator': 1.5,
-                                            },
-                         'analysis': {'tick_interval': 100,
-                                      'percentile_parts': 4,
-                                      'parts': 8,
-                                      'rounding': 4}
-                         }
+DEFAULT_SIM_VARIABLES = {'dimension': {  # dimension in chunks of the simulation
+    'width': 60,
+    'height': 45
+},
+    'chunk_dim': 10,  # dimension of the chunk
+    'max_lifetime': 10000,  # max lifetime in ticks
+    'initial_creatures': {  # number of creatures at the start
+        'herbivores': 400,  # herbivores
+        'carnivores': 100  # carnivores
+    },
+    'chunks_vars': {
+        'growth_coeff': 0.0003,  # coefficient of growth of the food in the chunks
+        'foodmax_max': 100,  # max value of foodmax in a chunk
+        'temperature_max': 100,  # max value of temperature in a chunk
+    },
+    'creatures_vars': {
+        'view_ray': 3,  # creatures' distance of view in chunks
+        'en_dec_coeff': 0.02,  # coefficient of energy decrease in creatures
+        'eat_coeff': 0.005,  # creatures' coefficient of eating
+        'en_inc_coeff': 1.5,  # coefficient of energy increase in creatures per bite
+        'average_age': 1000,  # average age of natural death
+        'dev_age_prob': 200,  # standard deviation of age of natural death
+        'temp_death_prob_coeff': 100,  # coefficient for probability of death by temperature
+        'genes_lim': {  # limits of genes in initial randomization
+            'agility': (10, 60),
+            'bigness': (20, 80),
+            'fertility': (150, 250),
+            'num_control': (0, 100)
+        },
+        'mutation_coeff': 0.05,  # coefficient of mutation in genes reproduction
+        'initial_reprod_countdown': 50,  # time to add to countdown before first reproduction
+        'reprod_energy_dec_coeff': 0.8,  # coefficient of energy lost for reproduction
+        'reprod_energy_need_coeff': 15000,  # energy needed for reproduction is this coefficient divided by fertility
+        'predator_eat_coeff': 0.5,  # ?
+        'help_for_predator': 1.5,  # ?
+    },
+    'analysis': {
+        'tick_interval': 100,  # tick interval between analysis
+        'percentile_parts': 4,  # number of percentile parts numeric genes analysis should be divided into
+        'parts': 8,  # number of parts spreading genes analysis should be divided into
+        'rounding': 4  # decimal places of rounding
+    }
+}
 
 CHUNK_ATTRS = ('temperature', 'foodmax')
 
@@ -94,7 +102,7 @@ TO_RECORD = {
                                       'mutation_coeff': None,
                                       'initial_reprod_countdown': None,
                                       'reprod_energy_dec_coeff': None,
-                                      'reprod_min_energy': None,
+                                      'reprod_energy_need_coeff': None,
                                       'predator_eat_coeff': None,
                                       'help_for_predator': None,
                                       },
