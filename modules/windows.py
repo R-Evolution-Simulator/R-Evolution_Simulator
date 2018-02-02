@@ -317,7 +317,10 @@ class SimReplayControlWindow(BaseTkWindow):
 
         :return:
         """
-        self.canvas.destroy()
+        try:
+            self.canvas.destroy()
+        except AttributeError:
+            pass
         super(SimReplayControlWindow, self).destroy()
 
     def diagram_window_create(self):
@@ -673,7 +676,6 @@ class ProgressStatusWindow(BaseTkWindow):
 
     def thread_start(self):
         called = self.to_call[0](*self.to_call[1], **self.to_call[2], progress_queues=self.queues, termination_event=(self.thr_terminating, self.thr_terminated))
-        self.destroy()
 
     def destroy(self):
         self.thr_terminating.set()
