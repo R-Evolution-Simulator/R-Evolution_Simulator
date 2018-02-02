@@ -53,8 +53,13 @@ class BaseTkWindow(tk.Tk):
         for i in self.windows:
             if i.active:
                 i.destroy()
+        try:
+            super(BaseTkWindow, self).destroy()
+        except tk.TclError:
+            if self.active:
+                raise
         self.active = False
-        super(BaseTkWindow, self).destroy()
+
 
     def get_widget(self, frame, widget):
         """
@@ -680,6 +685,7 @@ class ProgressStatusWindow(BaseTkWindow):
     def destroy(self):
         self.thr_terminating.set()
         if self.thr_terminated.is_set():
+            print('destroying')
             super(ProgressStatusWindow, self).destroy()
 
     def _status_update(self, status):
