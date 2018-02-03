@@ -786,7 +786,7 @@ class LoadSimProgressWindow(ProgressStatusWindow):
         for line in files['creatures']:
             new_replay['creature_list'].add(CreaturesD(line))
             creature += 1
-            self._progress_update('details', ('creating chunks', (creature, tot_creatures)))
+            self._progress_update('details', ('creating creatures', (creature, tot_creatures)))
             self._progress_update('percent', creature / tot_creatures)
 
         self._progress_update('status', 'Starting...')
