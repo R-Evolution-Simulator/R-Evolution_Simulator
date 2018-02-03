@@ -332,7 +332,7 @@ class DiagramSet(BaseFrame):
     class used to create the different types of graphs
     """
 
-    SUPPORTED_FILES = ['numeric_analysis', 'spreading_analysis', 'demographic_analysis']
+    SUPPORTED_FILES = ['numeric_analysis', 'spreading_analysis', 'demographic_analysis', 'population_analysis']
 
     def __init__(self, father, windows):
         """

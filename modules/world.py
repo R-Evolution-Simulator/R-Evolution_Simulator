@@ -443,7 +443,7 @@ class World(object):
         total = 0
         for i in values:
             total += i
-        self._analysis_file_write("demographic_spreading", 'population_analysis', (total,), tick)
+        self._analysis_file_write("population", 'population_analysis', (total,), tick)
 
     def _draw_backgrounds(self):
         for attr in var.CHUNK_ATTRS:
