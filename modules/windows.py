@@ -190,6 +190,7 @@ class LoadSimWindow(BaseTkWindow):
         """
         self.FRAMES_TEMPLATE = {'load': (frm.LoadSim, {'windows': (self,)}, {'row': 0, 'column': 0})}
         super(LoadSimWindow, self).__init__(father)
+        self.simulation_choice = tk.StringVar(master=self)
         self.frames_load()
 
     def simulation_file_load(self):
@@ -198,7 +199,7 @@ class LoadSimWindow(BaseTkWindow):
 
         :return:
         """
-        sim_name = self.get_widget('load', 'entry').get()
+        sim_name = self.simulation_choice.get()
         self.new_window_substitute(LoadSimProgressWindow, sim_name)
 
 
@@ -640,6 +641,10 @@ class NewSimWindow(BaseTkWindow):
         else:
             if sim_name != '':
                 self.new_window_substitute(NewSimProgressWindow, sim_name, sim_variables)
+
+
+class NewMapWindow(BaseTkWindow):
+    pass
 
 
 class ProgressStatusWindow(BaseTkWindow):

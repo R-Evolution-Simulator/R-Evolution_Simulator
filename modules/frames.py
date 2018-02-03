@@ -158,12 +158,33 @@ class LoadSim(BaseFrame):
         :param father: the father window
         :param windows:
         """
-        self.WIDGETS = {'entry': (tk.Entry, {}, {}),
-                        'button': (
-                            tk.Button, {'text': "Load", 'command': windows[0].simulation_file_load}, {'side': tk.RIGHT}),
-                        'label': (tk.Label, {'text': "Insert simulation name"}, {'side': tk.LEFT})}
+        self.simulation_choice = windows[0].simulation_choice
+        self.simulation_choice.set('-')
+        self.WIDGETS = {'button': (
+            tk.Button, {'text': "Load", 'command': windows[0].simulation_file_load}, {'side': tk.RIGHT}),
+            'label': (tk.Label, {'text': "Insert simulation name"}, {'side': tk.LEFT})}
         super(LoadSim, self).__init__(father)
         self.widgets['entry'].focus_set()
+
+    def _widgets_load(self, wid_list):
+        """
+        it loads the widget in the frame
+
+        :param wid_list: list with all the widgets to be added
+
+        :return:
+        """
+        self.widgets['entry'] = tk.OptionMenu(self, self.simulation_choice, *self._get_choices())
+        self.widgets['entry'].pack(anchor=tk.W, fill=tk.X)
+        super(LoadSim, self)._widgets_load(wid_list)
+
+    def _get_choices(self):
+        """
+        it gets the possible characteristics that can be represented
+
+        :return: the list of the possible choices
+        """
+        return os.listdir(var.SIMULATIONS_PATH)
 
 
 class NewSim(GridFrame, BaseFrame):
@@ -372,7 +393,6 @@ class DiagramSet(BaseFrame):
 
         :return:
         """
-        self.widgets = dict()
         self.widgets['menu'] = tk.OptionMenu(self, self.diagram_choice, *self._get_choices())
         self.widgets['menu'].pack(anchor=tk.W, fill=tk.X)
         super(DiagramSet, self)._widgets_load(wid_list)
