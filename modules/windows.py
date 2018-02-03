@@ -477,6 +477,8 @@ class SimDiagramWindow(BaseTkWindow):
         elif ext == var.FILE_EXTENSIONS['spreading_analysis']:
             return frm.SpreadDiagram
         elif ext == var.FILE_EXTENSIONS['demographic_analysis']:
+            return frm.DemographicsDiagram
+        elif ext == var.FILE_EXTENSIONS['population_analysis']:
             return frm.PopulationDiagram
         else:
             self.destroy()
@@ -631,9 +633,13 @@ class NewSimWindow(BaseTkWindow):
         """
         frame = self.get_frame('new')
         sim_name = frame.sim_name.get()
-        if sim_name != '':
+        try:
             sim_variables = self._get_from_sim_variables(frame.sim_variables)
-            self.new_window_substitute(NewSimProgressWindow, sim_name, sim_variables)
+        except ValueError:
+            pass
+        else:
+            if sim_name != '':
+                self.new_window_substitute(NewSimProgressWindow, sim_name, sim_variables)
 
 
 class ProgressStatusWindow(BaseTkWindow):

@@ -33,9 +33,8 @@ class Chunk:
                 self.__dict__[i] = normalize(self.world.noises[i].noise(*coord)) * self.world.chunks_vars[i + '_max']
             if i == 'temperature':
                 self.__dict__[i] = (normalize(self.world.noises[i].noise(*coord)) - 0.5) * self.world.chunks_vars[i + '_max'] * 2
-        self.food = self.foodmax*random()
-        self.growth_rate = self.foodmax * self.world.chunks_vars[
-            'growth_coeff']  # la crescita e' direttamente proporzionale all'erba massima
+        self.food = self.foodmax * random() * self.world.chunks_vars['start_food']
+        self.growth_rate = self.foodmax * self.world.chunks_vars['growth_coeff']
         self.food_history = list()
         self.chunk_creature_set = set()
         self.ticks_record = list()

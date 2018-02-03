@@ -10,6 +10,7 @@ import os
 import matplotlib as mpl
 from matplotlib.figure import Figure
 from tkinter import ttk
+
 mpl.use("Tkagg")
 mpl.use('agg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -639,7 +640,7 @@ class GeneDiagram(BaseDiagramCanvasFrame):
         self.subplots[0].legend(reversed(handles), reversed(labels), loc=2, fontsize=7)
 
 
-class PopulationDiagram(BaseDiagramCanvasFrame):
+class DemographicsDiagram(BaseDiagramCanvasFrame):
     """
     class for the population diagram
     """
@@ -687,7 +688,7 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
     """
     class for spreading diagrams
     """
-    TEXTS = [["Spreading of ", "Tick", "Number of Creatures in 100 chunks"],
+    TEXTS = [["Spreading of ", "Tick", "# of creatures per chunk"],
              ["Percentual spreading of ", "Tick", "Percentage of Creatures"]]
     SUBPLOTS = 2
 
@@ -783,6 +784,25 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
             self.subplots[i].set_ylabel(self.TEXTS[i][2])
             handles, labels = self.subplots[i].get_legend_handles_labels()
             self.subplots[i].legend(reversed(handles), reversed(labels), loc=2, fontsize=7)
+        self.figure.subplots_adjust(hspace=.5)
+
+
+class PopulationDiagram(BaseDiagramCanvasFrame):
+    COLOURS = [['purple', ], ]
+    TEXTS = [["Creatures population", "Tick", "Number of Creatures"], ]
+
+    def _set_subplots(self):
+        """
+        function which creates the subplots of the diagram
+
+        :return:
+        """
+        self.subplots[0].plot(self.data[0], self.data[1], color=self.COLOURS[0][0])
+
+    def _set_titles(self):
+        self.subplots[0].set_title(self.TEXTS[0][0])
+        self.subplots[0].set_xlabel(self.TEXTS[0][1])
+        self.subplots[0].set_ylabel(self.TEXTS[0][2])
         self.figure.subplots_adjust(hspace=.5)
 
 

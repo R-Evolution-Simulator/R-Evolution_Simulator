@@ -440,13 +440,17 @@ class World(object):
             else:
                 correct[part] = 0
         self._analysis_file_write("demographic_spreading", 'spreading_analysis', values + correct, tick, attr)
+        total = 0
+        for i in values:
+            total += i
+        self._analysis_file_write("demographic_spreading", 'population_analysis', (total,), tick)
 
     def _draw_backgrounds(self):
         for attr in var.CHUNK_ATTRS:
             image = Img.new("RGB", (int(self.dimension['width']), int(self.dimension['height'])))
             draw = ImageDraw.Draw(image)
             if attr == 'foodmax':
-                count=0
+                count = 0
                 for chunk_row in self.chunk_list:
                     for chunk in chunk_row:
                         draw.rectangle((chunk.coord[0] * self.chunk_dim / 10,
@@ -458,7 +462,7 @@ class World(object):
                         self._progress_update('details', (attr, (count, self.tot_chunks)))
                         self._progress_update('percent', count / self.tot_chunks)
             elif attr == 'temperature':
-                count=0
+                count = 0
                 for chunk_row in self.chunk_list:
                     for chunk in chunk_row:
                         if chunk.temperature > 0:

@@ -111,8 +111,10 @@ class CreaturesD:
             try:
                 coord[i] = int(self.tick_history[tick - birth][i] * fact)
             except TypeError:
-                print(f"{self.ID} - {tick} - {self.tick_history[tick - birth][i]}")
-                return
+                if self.tick_history[tick - birth][i] == '':
+                    return
+                else:
+                    raise
 
         if dim_flag == 'energy':
             dim = int(self.tick_history[tick - birth][2] / 10 * fact)*self.DIMS['energy']

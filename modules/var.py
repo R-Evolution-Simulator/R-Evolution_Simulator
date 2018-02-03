@@ -27,6 +27,7 @@ DEFAULT_SIM_VARIABLES = {'dimension': {  # dimension in chunks of the simulation
         'growth_coeff': 0.0003,  # coefficient of growth of the food in the chunks
         'foodmax_max': 100,  # max value of foodmax in a chunk
         'temperature_max': 100,  # max value of temperature in a chunk
+        'start_food': 0.5,
     },
     'creatures_vars': {
         'view_ray': 3,  # creatures' distance of view in chunks
@@ -72,6 +73,7 @@ FILE_SEPARATORS = (';', '/', ',', '|', '§')
 FILE_EXTENSIONS = {'numeric_analysis': 'rsan',
                    'spreading_analysis': 'rsas',
                    'demographic_analysis': 'rsad',
+                   'population_analysis': 'rsap',
                    'chunks_attribute': 'rsca',
                    'creatures_data': 'rscr',
                    'chunks_data': 'rsch',
@@ -87,6 +89,7 @@ TO_RECORD = {
                    'chunks_vars': {'growth_coeff': None,
                                    'foodmax_max': None,
                                    'temperature_max': None,
+                                   'start_food': None,
                                    },
                    'creatures_vars': {'view_ray': None,
                                       'en_dec_coeff': None,
