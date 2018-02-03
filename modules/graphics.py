@@ -108,7 +108,11 @@ class CreaturesD:
         birth = max(self.birth_tick + 1, 1)
         coord = [0, 0]
         for i in range(2):
-            coord[i] = int(self.tick_history[tick - birth][i] * fact)
+            try:
+                coord[i] = int(self.tick_history[tick - birth][i] * fact)
+            except TypeError:
+                print(f"{self.ID} - {tick} - {self.tick_history[tick - birth][i]}")
+                return
 
         if dim_flag == 'energy':
             dim = int(self.tick_history[tick - birth][2] / 10 * fact)*self.DIMS['energy']

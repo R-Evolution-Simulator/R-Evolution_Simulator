@@ -53,13 +53,8 @@ class BaseTkWindow(tk.Tk):
         for i in self.windows:
             if i.active:
                 i.destroy()
-        try:
-            super(BaseTkWindow, self).destroy()
-        except tk.TclError:
-            if self.active:
-                raise
         self.active = False
-
+        super(BaseTkWindow, self).destroy()
 
     def get_widget(self, frame, widget):
         """
@@ -130,7 +125,8 @@ class BaseTkWindow(tk.Tk):
         for i in self.windows:
             if i.active:
                 i.update()
-        super(BaseTkWindow, self).update()
+        if self.active:
+            super(BaseTkWindow, self).update()
 
 
 class MainMenuWindow(BaseTkWindow):
@@ -637,7 +633,7 @@ class NewSimWindow(BaseTkWindow):
         sim_name = frame.sim_name.get()
         if sim_name != '':
             sim_variables = self._get_from_sim_variables(frame.sim_variables)
-            self.new_window_substitute(ProgressStatusWindow, (World, (sim_name, sim_variables), {}), "new_sim " + sim_name)
+            self.new_window_substitute(NewSimProgressWindow, sim_name, sim_variables)
 
 
 class ProgressStatusWindow(BaseTkWindow):
@@ -645,7 +641,7 @@ class ProgressStatusWindow(BaseTkWindow):
     class for the window which represent the status of the simulation
     """
 
-    def __init__(self, father, to_call, name):
+    def __init__(self, father, name):
         """
         creates the window
 
@@ -662,7 +658,6 @@ class ProgressStatusWindow(BaseTkWindow):
         self.FRAMES_TEMPLATE = {'progress_frame': (frm.ProgressStatus, to_pass, {'row': 0, 'column': 0}), }
         self.percent_int = 0
         self.frames_load()
-        self.to_call = to_call
         self.thr_terminating = thr.Event()
         self.thr_terminated = thr.Event()
         self.thread = thr.Thread(target=self.thread_start, daemon=True)
@@ -680,12 +675,11 @@ class ProgressStatusWindow(BaseTkWindow):
             self.destroy()
 
     def thread_start(self):
-        called = self.to_call[0](*self.to_call[1], **self.to_call[2], progress_queues=self.queues, termination_event=(self.thr_terminating, self.thr_terminated))
+        pass
 
     def destroy(self):
         self.thr_terminating.set()
-        if self.thr_terminated.is_set():
-            print('destroying')
+        if self.thr_terminated.is_set() and self.active:
             super(ProgressStatusWindow, self).destroy()
 
     def _status_update(self, status):
@@ -721,3 +715,17 @@ class ProgressStatusWindow(BaseTkWindow):
             self.eta.set(f"ETA: {datetime.timedelta(seconds=int(eta))}")
         else:
             self.eta.set('')
+
+
+class NewSimProgressWindow(ProgressStatusWindow):
+    def __init__(self, father, sim_name, sim_variables):
+        self.sim_name = sim_name
+        self.sim_variables = sim_variables
+        super(NewSimProgressWindow, self).__init__(father, "NewSim " + sim_name)
+
+    def thread_start(self):
+        try:
+            called = World(self.sim_name, self.sim_variables, progress_queues=self.queues, termination_event=(self.thr_terminating, self.thr_terminated))
+        except Exception as ex:
+            with open(os.path.join(var.ERRORS_PATH, f"simulation_{self.sim_name}.txt"), 'w') as file:
+                file.write(str(ex))

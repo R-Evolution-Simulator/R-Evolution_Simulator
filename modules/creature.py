@@ -83,7 +83,6 @@ class Creature(object):
         if self.energy > (self.world.creatures_vars['reprod_energy_need_coeff'] / self.genes['fertility'].get()) and self.reprod_countdown <= 0:
             self.reprod_ready = True
             self._dating_agency()
-
         else:
             self.reprod_ready = False
             self.reprod_countdown -= 1
@@ -218,13 +217,18 @@ class Creature(object):
         
         :return:
         """
-        for i in self._actual_chunk().chunk_creature_set:
-
-            if i.reprod_ready and i.sex != self.sex and type(self) == type(i):
-                self._reproduction(i)
-                self.reprod_ready = False
-                i.reprod_ready = False
-                break
+        x = self.chunk_coord(0)
+        y = self.chunk_coord(1)
+        for i in range(max(x - self.world.creatures_vars['view_ray'], 0),
+                       min(x + self.world.creatures_vars['view_ray'] + 1, self.world.dimension['width'])):
+            for j in range(max(y - self.world.creatures_vars['view_ray'], 0),
+                           min(y + self.world.creatures_vars['view_ray'] + 1, self.world.dimension['height'])):
+                for creature in self.world.chunk_list[i][j].chunk_creature_set:
+                    if creature.reprod_ready and creature.sex != self.sex and type(self) == type(creature):
+                        self._reproduction(creature)
+                        self.reprod_ready = False
+                        creature.reprod_ready = False
+                        return
 
     def _reproduction(self, other):
         """
