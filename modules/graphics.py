@@ -43,7 +43,7 @@ class ChunkD:
         return pyg.Color(0, int(self.food_history[int(tick) - 1] * 255 / 100), 0, 255)
 
     def _get_rect(self, chunk_dim, zoom):
-        fact = chunk_dim * zoom/10
+        fact = chunk_dim * zoom / 10
         return pyg.Rect(self.coord[0] * fact, self.coord[1] * fact, fact, fact)
 
 
@@ -111,13 +111,11 @@ class CreaturesD:
             try:
                 coord[i] = int(self.tick_history[tick - birth][i] * fact)
             except TypeError:
-                if self.tick_history[tick - birth][i] == '':
+                if tick - birth == -1:
                     return
-                else:
-                    raise
 
         if dim_flag == 'energy':
-            dim = int(self.tick_history[tick - birth][2] / 10 * fact)*self.DIMS['energy']
+            dim = int(self.tick_history[tick - birth][2] / 10 * fact) * self.DIMS['energy']
         else:
             dim = int(self.dims[dim_flag] * fact)
 
