@@ -199,7 +199,7 @@ class LoadSimWindow(BaseTkWindow):
         :return:
         """
         sim_name = self.get_widget('load', 'entry').get()
-        self.new_window_substitute(SimReplayControlWindow, sim_name)
+        self.new_window_substitute(LoadSimProgressWindow, sim_name)
 
 
 class SimReplayControlWindow(BaseTkWindow):
@@ -215,7 +215,7 @@ class SimReplayControlWindow(BaseTkWindow):
     }
     SHOWS_KEYS = ['ch', 'cc', 'cd']
 
-    def __init__(self, father, sim_name):
+    def __init__(self, father, loaded):
         """
         Creates a new simulation replay control window
 
@@ -224,17 +224,17 @@ class SimReplayControlWindow(BaseTkWindow):
         :param sim_name: the name of the simulation to load
         :type sim_name: str
         """
+        self.__dict__.update(self.START_VARIABLES)
+        self.__dict__.update(loaded)
         self.FRAMES_TEMPLATE = {'play_control': (frm.PlayControl, {}, {'row': 0, 'column': 0}),
                                 'map_set': (frm.SetSuperFrame, {'windows': (self,), }, {'row': 1, 'column': 0}),
                                 'screenshots_control': (frm.TakeScreenshot, {'windows': (self,), }, {'row': 2, 'column': 0}),
                                 }
-        self.TITLE = sim_name
+        self.TITLE = self.sim_name
         super(SimReplayControlWindow, self).__init__(father)
-        self.sim_name = sim_name
-        self.__dict__.update(self.START_VARIABLES)
         self.is_playing = False
         self.bind('<KeyPress>', self.get_key_event)
-        self._files_load()
+        # self._files_load()
         self.sim_width = self.dimension['width'] * self.chunk_dim
         self.sim_height = self.dimension['height'] * self.chunk_dim
         self.shows = dict()
@@ -648,6 +648,7 @@ class ProgressStatusWindow(BaseTkWindow):
         :param father: the father window
         :param to_call:
         """
+        self.TITLE = name
         super(ProgressStatusWindow, self).__init__(father)
         self.queues = dict()
         to_pass = dict()
@@ -729,3 +730,87 @@ class NewSimProgressWindow(ProgressStatusWindow):
         except Exception as ex:
             with open(os.path.join(var.ERRORS_PATH, f"simulation_{self.sim_name}.txt"), 'w') as file:
                 file.write(str(ex))
+
+
+class LoadSimProgressWindow(ProgressStatusWindow):
+    def __init__(self, father, sim_name):
+        self.sim_name = sim_name
+        self.new_replay = None
+        super(LoadSimProgressWindow, self).__init__(father, "LoadSim " + sim_name)
+
+    def thread_start(self):
+        new_replay = dict()
+        new_replay['sim_name'] = self.sim_name
+
+        self._progress_update('status', 'Initialising')
+        new_replay['directories'] = dict()
+        path = os.path.join(var.SIMULATIONS_PATH, new_replay['sim_name'])
+        for i in var.DIRECTORIES:
+            new_replay['directories'][i] = os.path.join(path, i)
+
+        self._progress_update('status', 'Opening files')
+        files = dict()
+        self._progress_update('details', ('simulation parameters',))
+        simulation_params = self._file_open(os.path.join(path, f"params.{var.FILE_EXTENSIONS['simulation_data']}"))
+        for i in ['chunks', 'creatures']:
+            self._progress_update('details', (i,))
+            files[i] = self._file_open(os.path.join(new_replay['directories']['data'], f"{i}.{var.FILE_EXTENSIONS[i+'_data']}"))
+
+        self._progress_update('status', 'Loading parameters')
+        sim_data = simulation_params.readline()
+        restored = utl.get_from_string(sim_data, 0, var.TO_RECORD['simulation'])
+        new_replay.update(restored)
+
+        self._progress_update('status', 'Loading chunks')
+        self._progress_update('details', tuple())
+        new_replay['chunk_list'] = []
+        tot_chunks = new_replay['dimension']['width'] * new_replay['dimension']['height']
+        chunk = 0
+        for line in files['chunks']:
+            new_replay['chunk_list'].append(ChunkD(line))
+            chunk += 1
+            self._progress_update('details', ('creating chunks', (chunk, tot_chunks)))
+            self._progress_update('percent', chunk / tot_chunks)
+
+        self._progress_update('status', 'Loading creatures')
+        self._progress_update('details', tuple())
+        new_replay['creature_list'] = set()
+        tot_creatures = new_replay['ID_count']
+        creature = 0
+        for line in files['creatures']:
+            new_replay['creature_list'].add(CreaturesD(line))
+            creature += 1
+            self._progress_update('details', ('creating chunks', (creature, tot_creatures)))
+            self._progress_update('percent', creature / tot_creatures)
+
+        self._progress_update('status', 'Starting...')
+        self._progress_update('details', tuple())
+        self._progress_update('percent', None)
+        self.new_replay = new_replay
+        self.thr_terminated.set()
+        exit()
+
+    def update(self):
+        if self.thr_terminated.is_set() and self.new_replay:
+            self.new_window_substitute(SimReplayControlWindow, self.new_replay)
+        else:
+            super(LoadSimProgressWindow, self).update()
+
+    def _file_open(self, path):
+        try:
+            return open(path)
+        except FileNotFoundError:
+            self._progress_update('status', '- ERROR -')
+            self._progress_update('details', ('file not found',))
+            self._progress_update('percent', None)
+            self.thr_terminated.set()
+            exit()
+
+    def _progress_update(self, type, msg):
+        self._termination_control()
+        self.queues[type].put(msg)
+
+    def _termination_control(self):
+        if self.thr_terminating.is_set():
+            self.thr_terminated.set()
+            exit()
