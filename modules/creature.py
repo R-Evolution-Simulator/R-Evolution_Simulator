@@ -150,7 +150,7 @@ class Creature(object):
         elif temp_resist == 'N' or temp_resist == 'n':
             prob = ((chunk_temp ** 2) / (temp_max ** 2))
 
-        return prob / self.world.creatures_vars['temp_death_prob_coeff']
+        return prob * self.world.creatures_vars['temp_death_prob_coeff']
 
     def _dest_calc(self):
         """
