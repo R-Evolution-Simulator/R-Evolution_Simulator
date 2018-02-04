@@ -6,6 +6,7 @@ a creature (numeric, mendelian etc.), how they are transmitted and their mutatio
 from random import random as rnd, gauss
 from .alleles import *
 
+
 class BaseGene(object):
     """
     generic gene object
@@ -72,7 +73,7 @@ class MendelGene(BaseGene):
     """
     class of mendelian genes
     """
-    ALLELES = [] #list of all possible alleles
+    ALLELES = []  # list of all possible alleles
 
     def randomize(self, lims=None):
         """
@@ -149,12 +150,9 @@ class NumberGene(BaseGene):
 
         :return: the new gene
         """
+        parents = (self, other)
         random = int(rnd() * 2)
-        if random:
-            chosen = self
-        else:
-            chosen = other
-        return type(self)(gen=(chosen.phenotype * max(0, gauss(1, sigma))))
+        return type(self)(gen=(parents[random].phenotype * max(0, gauss(1, sigma))))
 
 
 class SecondaryGene(BaseGene):
@@ -254,6 +252,7 @@ class Speed(SecondaryGene, NumberGene):
     """
     class of the speed gene
     """
+
     def _phenotype_calc(self):
         """
         it evaluates the phenotype of the speed gene depending of bigness and agility
