@@ -154,7 +154,7 @@ class NumberGene(BaseGene):
             chosen = self
         else:
             chosen = other
-        return type(self)(gen=(chosen.phenotype * (1 + gauss(0, sigma))))
+        return type(self)(gen=(chosen.phenotype * max(0, gauss(1, sigma))))
 
 
 class SecondaryGene(BaseGene):
