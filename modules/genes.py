@@ -152,7 +152,7 @@ class NumberGene(BaseGene):
         """
         parents = (self, other)
         random = int(rnd() * 2)
-        return type(self)(gen=(parents[random].phenotype * max(0, gauss(1, sigma))))
+        return type(self)(gen=(parents[random].phenotype * gauss(1, sigma)))
 
 
 class SecondaryGene(BaseGene):
