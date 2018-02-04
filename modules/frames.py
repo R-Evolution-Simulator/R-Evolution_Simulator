@@ -231,7 +231,7 @@ class NewSim(GridFrame, BaseFrame):
         :return: the entry where you can place the values
         """
         self.WIDGETS[f'{name}_label'] = (tk.Label, {'text': name}, {'row': self.row, 'column': column})
-        if type(object) == int or type(object) == float:
+        if object is None:
             variable = tk.Entry(self)
             variable.grid(row=self.row, column=column + 1)
         elif type(object) == tuple or type(object) == list:
