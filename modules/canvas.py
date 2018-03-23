@@ -8,6 +8,8 @@ from . import utility as utl
 from . import var
 import os
 
+pyg.init()
+
 
 class PygameCanvas(object):
     START_RESOLUTION = (100, 100)
@@ -20,7 +22,12 @@ class PygameCanvas(object):
         self.father = father
         self.backgrounds = dict()
         self.resized_backgrounds = dict()
-        self.surface = pyg.display.set_mode(self.START_RESOLUTION)
+        self.resolution = self.START_RESOLUTION
+        info = pyg.display.Info()
+        self.fullscreen_zoom = min(info.current_w * 10 / self.father.sim_width, info.current_h * 10 / self.father.sim_height)
+        self.last_zoom = None
+        self.fullscreen = False
+        self.surface = self.set_display()
         self._background_creation()
 
     def destroy(self):
@@ -46,8 +53,8 @@ class PygameCanvas(object):
         """
         for i in self.backgrounds:
             self.resized_backgrounds[i] = utl.img_resize(self.backgrounds[i], self.father.zoom)
-        self.surface = pyg.display.set_mode(
-            (int(self.father.sim_width * self.father.zoom / 10), int(self.father.sim_height * self.father.zoom / 10)))
+        self.resolution = (int(self.father.sim_width * self.father.zoom / 10), int(self.father.sim_height * self.father.zoom / 10))
+        self.surface = self.set_display()
 
     def update(self, tick, shows):
         """
@@ -56,19 +63,35 @@ class PygameCanvas(object):
         :param shows: which characteristic is showed
         :return:
         """
-        events = pyg.event.get()
-        for event in events:
-            if event.type == pyg.KEYDOWN:
-                char=event.unicode
-                if char == ' ':
-                    self.father.start_play()
-                elif char == '+':
-                    self.father.inc_zoom()
-                elif char == '-':
-                    self.father.dec_zoom()
+        self.get_key_event()
         self.chunk_display(tick, shows['ch'])
         self.creatures_display(tick, shows)
         pyg.display.update()
+
+    def get_key_event(self):
+        events = pyg.event.get()
+        for event in events:
+            if event.type == pyg.KEYDOWN:
+                char = event.unicode
+                self.father.get_key_event(char)
+
+    def fullscreen_toggle(self):
+        if self.fullscreen:
+            self.father.zoom = self.last_zoom
+        else:
+            self.last_zoom = self.father.zoom
+            self.father.zoom = self.fullscreen_zoom
+        self.fullscreen = not self.fullscreen
+        self.resize()
+        self.set_display()
+
+    def set_display(self):
+        try:
+            if self.fullscreen:
+                return pyg.display.set_mode(self.resolution, pyg.FULLSCREEN)
+        except pyg.error:
+            pass
+        return pyg.display.set_mode(self.resolution)
 
     def chunk_display(self, tick, to_show):
         """

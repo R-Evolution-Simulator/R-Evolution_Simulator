@@ -212,7 +212,9 @@ class SimReplayControlWindow(BaseTkWindow):
         'zoom': 10,
         'speed': 1,
         'max_speed': 100,
+        'speed_step': 10,
         'graph_tick': 100,
+        'cyclic': False
     }
     SHOWS_KEYS = ['ch', 'cc', 'cd']
 
@@ -235,7 +237,6 @@ class SimReplayControlWindow(BaseTkWindow):
         super(SimReplayControlWindow, self).__init__(father)
         self.is_playing = False
         self.bind('<KeyPress>', self.get_key_event)
-        # self._files_load()
         self.sim_width = self.dimension['width'] * self.chunk_dim
         self.sim_height = self.dimension['height'] * self.chunk_dim
         self.shows = dict()
@@ -245,7 +246,7 @@ class SimReplayControlWindow(BaseTkWindow):
         self.diagram_choice = tk.StringVar(master=self)
         self.frames_load()
         self.canvas = PygameCanvas(self)
-        self._resize(0)
+        self.resize(0)
 
     def _files_load(self):
         """
@@ -289,8 +290,11 @@ class SimReplayControlWindow(BaseTkWindow):
         if self.is_playing:
             self.tick += self.time_diff * self.speed
             if int(self.tick) >= self.lifetime:
-                self.start_play()
-                self.tick = self.lifetime
+                if self.cyclic:
+                    self.tick = 1.0
+                else:
+                    self.start_play()
+                    self.tick = self.lifetime
             self.graph_tick = ceil(self.tick / 100) * 100
         shows = dict()
         for i in self.shows:
@@ -306,12 +310,37 @@ class SimReplayControlWindow(BaseTkWindow):
         super(SimReplayControlWindow, self).update()
 
     def get_key_event(self, event):
-        if event.char == ' ':
+        try:
+            char = event.char
+        except AttributeError:
+            char = event
+        if char == ' ':
             self.start_play()
-        elif event.char == '+':
+        elif char == '.':
             self.inc_zoom()
-        elif event.char == '-':
+        elif char == ',':
             self.dec_zoom()
+        elif char == '+':
+            scale = self.get_widget('play_control', 'speed_slider')
+            scale.set(min(scale.get() + self.speed_step, 100))
+        elif char == '-':
+            scale = self.get_widget('play_control', 'speed_slider')
+            scale.set(max(scale.get() - self.speed_step, 0))
+        elif char == 'f':
+            self.canvas.fullscreen_toggle()
+        elif char == 'c':
+            self.cyclic = not self.cyclic
+        elif char == 'r' or char == '\\':
+            self.tick = 1.0
+        elif char == '0':
+            self.tick = self.lifetime
+        else:
+            try:
+                perc = int(char)
+            except ValueError:
+                pass
+            else:
+                self.tick = self.lifetime * perc / 10
 
     def destroy(self):
         """
@@ -334,7 +363,7 @@ class SimReplayControlWindow(BaseTkWindow):
         subject = self.diagram_choice.get()
         self.new_window_dependent(SimDiagramWindow, subject)
 
-    def _resize(self, increase):
+    def resize(self, increase):
         """
         Increases/Reduces the canvas' zoom by a coeff
 
@@ -342,7 +371,9 @@ class SimReplayControlWindow(BaseTkWindow):
         :type increase: int
         :return:
         """
-        self.zoom = max(1, self.zoom + increase)
+        if not self.canvas.fullscreen:
+            self.zoom = max(1, self.zoom + increase)
+            self._upd_zoom()
         self.canvas.resize()
 
     def start_play(self):
@@ -384,8 +415,7 @@ class SimReplayControlWindow(BaseTkWindow):
 
         :return:
         """
-        self._resize(-1)
-        self._upd_zoom()
+        self.resize(-1)
 
     def inc_zoom(self):
         """
@@ -393,8 +423,7 @@ class SimReplayControlWindow(BaseTkWindow):
 
         :return:
         """
-        self._resize(1)
-        self._upd_zoom()
+        self.resize(1)
 
     def take_screenshot(self):
         name = str(int(self.tick))
@@ -464,6 +493,7 @@ class SimDiagramWindow(BaseTkWindow):
         super(SimDiagramWindow, self).__init__(father)
         self.__dict__.update(self.START_VARIABLES)
         self.graph_width = father.analysis['tick_interval']
+        self.bind('<KeyPress>', self._get_key_event)
         self.frames_load()
 
     def _get_frame_class(self):
@@ -483,6 +513,18 @@ class SimDiagramWindow(BaseTkWindow):
             return frm.PopulationDiagram
         else:
             self.destroy()
+
+    def _get_key_event(self, event):
+        char = event.char
+        if char == 'o':
+            self.toggle_follow_play()
+        elif char == 'p':
+            self.change_show_tick()
+        elif char == '\x1b':
+            self.destroy()
+        else:
+            print(char)
+            self.father.get_key_event(char)
 
     def graph_width_set(self):
         """
