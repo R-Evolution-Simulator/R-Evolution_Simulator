@@ -86,9 +86,10 @@ class PygameCanvas(object):
         self.set_display()
 
     def set_display(self):
+        # TODO: This is just a temporary setup
         try:
             if self.fullscreen:
-                return pyg.display.set_mode(self.resolution, pyg.FULLSCREEN)
+                return pyg.display.set_mode(self.resolution)
         except pyg.error:
             pass
         return pyg.display.set_mode(self.resolution)

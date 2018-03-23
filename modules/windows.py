@@ -523,7 +523,6 @@ class SimDiagramWindow(BaseTkWindow):
         elif char == '\x1b':
             self.destroy()
         else:
-            print(char)
             self.father.get_key_event(char)
 
     def graph_width_set(self):
