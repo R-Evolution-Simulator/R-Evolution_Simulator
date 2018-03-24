@@ -328,6 +328,8 @@ class SimReplayControlWindow(BaseTkWindow):
             scale.set(max(scale.get() - self.speed_step, 0))
         elif char == 'f':
             self.canvas.fullscreen_toggle()
+        elif char == 'g':
+            self.canvas.full_mode_toggle()
         elif char == 'c':
             self.cyclic = not self.cyclic
         elif char == 'r' or char == '\\':

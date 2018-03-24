@@ -47,8 +47,8 @@ DEFAULT_SIM_VARIABLES = {'dimension': {  # dimension in chunks of the simulation
         'initial_reprod_countdown': None,  # time to add to countdown before first reproduction
         'reprod_energy_dec_coeff': None,  # coefficient of energy lost for reproduction
         'reprod_energy_need_coeff': None,  # energy needed for reproduction is this coefficient divided by fertility
-        'predator_eat_coeff': None,  # ?
-        'help_for_predator': None,  # ?
+        #'predator_eat_coeff': None,  # ?
+        #'help_for_predator': None,  # ?
     },
     'analysis': {
         'tick_interval': None,  # tick interval between analysis
@@ -107,8 +107,8 @@ TO_RECORD = {
                                       'initial_reprod_countdown': None,
                                       'reprod_energy_dec_coeff': None,
                                       'reprod_energy_need_coeff': None,
-                                      'predator_eat_coeff': None,
-                                      'help_for_predator': None,
+                                      #'predator_eat_coeff': None,
+                                      #'help_for_predator': None,
                                       },
                    'analysis': {'tick_interval': None,
                                 'percentile_parts': None,

@@ -8,7 +8,7 @@ from . import utility as utl
 from . import var
 import os
 
-pyg.init()
+
 
 
 class PygameCanvas(object):
@@ -23,10 +23,12 @@ class PygameCanvas(object):
         self.backgrounds = dict()
         self.resized_backgrounds = dict()
         self.resolution = self.START_RESOLUTION
+        pyg.display.init()
         info = pyg.display.Info()
         self.fullscreen_zoom = min(info.current_w * 10 / self.father.sim_width, info.current_h * 10 / self.father.sim_height)
         self.last_zoom = None
         self.fullscreen = False
+        self.full_mode = False
         self.surface = self.set_display()
         self._background_creation()
 
@@ -85,13 +87,15 @@ class PygameCanvas(object):
         self.resize()
         self.set_display()
 
+    def full_mode_toggle(self):
+        self.full_mode = not self.full_mode
+
     def set_display(self):
-        # TODO: This is just a temporary setup
-        try:
-            if self.fullscreen:
-                return pyg.display.set_mode(self.resolution)
-        except pyg.error:
-            pass
+        if self.fullscreen and self.full_mode:
+            try:
+                return pyg.display.set_mode(self.resolution, pyg.FULLSCREEN)
+            except pyg.error:
+                pass
         return pyg.display.set_mode(self.resolution)
 
     def chunk_display(self, tick, to_show):
