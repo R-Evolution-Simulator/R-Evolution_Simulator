@@ -14,9 +14,10 @@ while True:
         print(name)
         try:
             new = World(name, variables)
-        except Exception:
-            print("\n\n\n\nERROR: "+name)
+        except KeyboardInterrupt:
             shutil.rmtree(os.path.join(var.SIMULATIONS_PATH, name))
             exit()
-        else:
-            i += 1
+        except Exception:
+            print(f"ERROR {name}:   {e}")
+            i -= 1
+    i += 1
