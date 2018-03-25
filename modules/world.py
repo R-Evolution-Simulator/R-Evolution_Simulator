@@ -490,7 +490,7 @@ class World(object):
         if self.prgr_que:
             self.prgr_que[type].put(msg)
         else:
-            if not type == 'eta':
+            if type == 'status':
                 print(f"{self.name} - {type}: {msg} ")
 
     def _termination_control(self):
@@ -500,4 +500,6 @@ class World(object):
                 self.thr_termination[1].set()
                 exit()
         except AttributeError:
+            pass
+        except TypeError:
             pass
