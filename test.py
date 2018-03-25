@@ -17,7 +17,7 @@ while True:
         except KeyboardInterrupt:
             shutil.rmtree(os.path.join(var.SIMULATIONS_PATH, name))
             exit()
-        except Exception:
+        except Exception as e:
             print(f"ERROR {name}:   {e}")
             i -= 1
     i += 1

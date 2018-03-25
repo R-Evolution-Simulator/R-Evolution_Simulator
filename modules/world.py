@@ -100,8 +100,12 @@ class World(object):
         self._progress_update('status', 'Finished')
         self._progress_update('details', tuple())
         self._progress_update('percent', None)
-        self.thr_termination[1].set()
-        exit()
+        try:
+            self.thr_termination[1].set()
+        except TypeError:
+            pass
+        else:
+            exit()
 
     def get_ID(self):
         """
