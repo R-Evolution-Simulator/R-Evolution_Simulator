@@ -278,8 +278,8 @@ class World(object):
         genes.update(var.CREATURES_SECONDARY_GENES)
 
         for tick in range(0, self.lifetime, self.analysis['tick_interval']):
-            self._progress_update('details', ('analysing tick #', (tick, self.lifetime // self.analysis['tick_interval'])))
-            self._progress_update('percent', tick / (self.lifetime // self.analysis['tick_interval']))
+            self._progress_update('details', ('analysing tick #', (tick, self.lifetime)))
+            self._progress_update('percent', tick / self.lifetime)
             alive = self._tick_creature_get(tick)
 
             for gene in genes:
@@ -490,7 +490,7 @@ class World(object):
         if self.prgr_que:
             self.prgr_que[type].put(msg)
         else:
-            if not type == 'eta':
+            if type == 'status':
                 print(f"{self.name} - {type}: {msg} ")
 
     def _termination_control(self):
@@ -500,4 +500,6 @@ class World(object):
                 self.thr_termination[1].set()
                 exit()
         except AttributeError:
+            pass
+        except TypeError:
             pass
