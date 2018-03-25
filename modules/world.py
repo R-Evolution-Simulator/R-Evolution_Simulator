@@ -278,8 +278,8 @@ class World(object):
         genes.update(var.CREATURES_SECONDARY_GENES)
 
         for tick in range(0, self.lifetime, self.analysis['tick_interval']):
-            self._progress_update('details', ('analysing tick #', (tick, self.lifetime // self.analysis['tick_interval'])))
-            self._progress_update('percent', tick / (self.lifetime // self.analysis['tick_interval']))
+            self._progress_update('details', ('analysing tick #', (tick, self.lifetime)))
+            self._progress_update('percent', tick / self.lifetime)
             alive = self._tick_creature_get(tick)
 
             for gene in genes:
