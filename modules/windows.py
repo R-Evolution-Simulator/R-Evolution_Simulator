@@ -216,6 +216,7 @@ class SimReplayControlWindow(BaseTkWindow):
         'max_speed': 100,
         'speed_step': 10,
         'graph_tick': 100,
+        'cow_countdown': 10000,
         'cyclic': False
     }
     SHOWS_KEYS = ['ch', 'cc', 'cd']
