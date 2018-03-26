@@ -10,6 +10,7 @@ SIMULATIONS_PATH = os.path.join(os.getcwd(), "simulations")
 DATA_PATH = os.path.join(os.getcwd(), "data")
 TEMPLATES_PATH = os.path.join(DATA_PATH, "templates")
 ERRORS_PATH = os.path.join(DATA_PATH, "errors")
+SOUNDS_PATH = os.path.join(DATA_PATH, "sounds")
 
 # simulation
 

@@ -16,6 +16,8 @@ from math import ceil
 import json
 from .world import World
 import datetime
+import pygame as pyg
+from random import randint
 
 
 class FinishError(BaseException):
@@ -332,6 +334,8 @@ class SimReplayControlWindow(BaseTkWindow):
             self.canvas.full_mode_toggle()
         elif char == 'c':
             self.cyclic = not self.cyclic
+        elif char == 's':
+            self.play_sound()
         elif char == 'r' or char == '\\':
             self.tick = 1.0
         elif char == '0':
@@ -433,6 +437,10 @@ class SimReplayControlWindow(BaseTkWindow):
             name += '-' + self.shows[i].get()
         path = os.path.join(self.directories['images'], "screenshots", name + ".jpeg")
         self.canvas.take_screenshot(path)
+
+    def play_sound(self):
+        number = randint(0, len(self.cow_sounds) - 1)
+        self.cow_sounds[number].play()
 
     def _upd_speed(self):
         """
@@ -836,6 +844,20 @@ class LoadSimProgressWindow(ProgressStatusWindow):
             creature += 1
             self._progress_update('details', ('creating creatures', (creature, tot_creatures)))
             self._progress_update('percent', creature / tot_creatures)
+
+        self._progress_update('status', 'Loading sounds')
+        self._progress_update('details', tuple())
+        sound_path = os.path.join(var.SOUNDS_PATH, 'cows')
+        sound_files = os.listdir(sound_path)
+        new_replay['cow_sounds'] = list()
+        i = 0
+        tot_sounds = len(sound_files)
+        for sound in sound_files:
+            pyg.mixer.init()
+            new_replay['cow_sounds'].append(pyg.mixer.Sound(file=os.path.join(sound_path, sound)))
+            i += 1
+            self._progress_update('details', ('sound', (i, tot_sounds)))
+            self._progress_update('percent', i / tot_sounds)
 
         self._progress_update('status', 'Starting...')
         self._progress_update('details', tuple())
