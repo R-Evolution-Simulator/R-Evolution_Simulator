@@ -7,6 +7,7 @@
     4. Artificial Neural Network (ANN): 
         far dedurre alle creature dove andare per il cibo (ma forse è istintivo?) e per la temperatura
     5. Vedere bene per la licenza
+    6. Fare l'installer
 
 Graphics: finestra dettaglio Creatura
 
