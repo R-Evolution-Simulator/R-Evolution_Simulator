@@ -1,7 +1,2 @@
-# R-Evolution Simulator
-Project about an evolution simulator, developed in Python, with reproduces genetics rules, natural selection and adaptation
-
-# Istruzioni per il funzionamento del programma
-
-
-# Programmi da scaricare per il funzionamento del programma
+# (R)Evolution Simulator
+A simulator of the functioning of a natural system in wich different creatures live
