@@ -3,10 +3,11 @@
 - Features:
     1. Specie: Carnivori/Erbivori (?) [Equazioni di Lotka-Volterra]
     2. Malattie/Vaccini  
-    4. Fiumi (???)
-    5. Stagioni
-    6. Altitudine
-   
+    3. Corredo genomico delle creature (ricondurre geni numerici a alleli e geni mendeliani)
+    4. Artificial Neural Network (ANN): 
+        far dedurre alle creature dove andare per il cibo (ma forse è istintivo?) e per la temperatura
+    5. Vedere bene per la licenza
+
 Graphics: finestra dettaglio Creatura
 
 Consigli FAST:
