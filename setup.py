@@ -4,8 +4,8 @@ if __name__ == "__main__":
     setup(
         name="R-Evolution Simulator",
         version='1.0.0',
-        packages=['modules', 'modules.noise', 'modules.noise.simplexnoise', 'data', 'data.templates', 'data.sounds.cows', ],
-        scripts=['R-Evolution_Simulator.py'],
+        #packages=['modules', 'modules.noise', 'modules.noise.simplexnoise', 'data', 'data.templates', 'data.sounds.cows', ],
+        #scripts=['R-Evolution_Simulator.py'],
         author="Federico Malnati, Matteo Palmieri, Alessandro Sosso",
         author_email="revolution.simulator@gmail.com",
         url="https://r-evolution-simulator.github.io/",
