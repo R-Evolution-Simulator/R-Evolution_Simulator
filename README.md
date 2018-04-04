@@ -8,7 +8,10 @@ Once you have got Python 3.6, download the repository on your pc. Get in the fol
 
 <code>pip install -r requires.txt"</code>
 
-In some cases, if you have already installed another version of Python, you may have to run <code>pip3</code> instead of <code>pip</code>
+In some cases, if you have already installed another version of Python, you may have to run <code>pip3</code> instead of <code>pip</code>.
+After the program has installed the dependencies, write
+
+<code>python3.6 R-Evolution_Simulator.py</code>
 
 # How to use
 Run R-Evolution_Simulator.py. It will appear the GUI.
