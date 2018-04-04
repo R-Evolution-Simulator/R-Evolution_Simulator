@@ -8,6 +8,8 @@ Once you have got Python 3.6, download the repository on your pc. Get in the fol
 
 <code>pip install -r requires.txt"</code>
 
+In some cases, if you have already installed another version of Python, you may have to run <code>pip3</code> instead of <code>pip</code>
+
 # How to use
 Run R-Evolution_Simulator.py. It will appear the GUI.
 * If you want to produce a new simulation, press the "New Simulation" button. Then load one of the templates and change the values your are interested in (we recommend not to change too much the values because it is not easy to balance them). Enter the name of the simulation and press "Start". When the simulation is finished close the window
