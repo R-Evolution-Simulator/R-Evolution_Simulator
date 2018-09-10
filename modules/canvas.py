@@ -3,33 +3,46 @@ this modulo is used to created the canvas where pygame will represent the
 world, especially the background (of foodmax and temperature)
 """
 
-import pygame as pyg
-from . import utility as utl
-from . import var
 import os
 
+import pygame as pyg
 
+from . import utility as utl
+from . import var
 
 
 class PygameCanvas(object):
     START_RESOLUTION = (100, 100)
 
-    def __init__(self, father):
+    def __init__(self):
         """
         initialiser of the pygame canvas
         :param father: the simulation window
         """
-        self.father = father
+        self.focus = None
         self.backgrounds = dict()
         self.resized_backgrounds = dict()
         self.resolution = self.START_RESOLUTION
         pyg.display.init()
-        info = pyg.display.Info()
-        self.fullscreen_zoom = min(info.current_w * 10 / self.father.sim_width, info.current_h * 10 / self.father.sim_height)
         self.last_zoom = None
+        self.fullscreen_zoom = None
         self.fullscreen = False
         self.full_mode = False
         self.surface = self.set_display()
+
+    def set_focus(self, focus):
+        try:
+            self.focus.has_focus = False
+            self.focus.set_underline()
+        except AttributeError:
+            pass
+        if self.fullscreen:
+            self.fullscreen_toggle()
+        self.focus = focus
+        self.focus.has_focus = True
+        self.focus.set_underline()
+        info = pyg.display.Info()
+        self.fullscreen_zoom = min(info.current_w * 10 / self.focus.sim_width, info.current_h * 10 / self.focus.sim_height)
         self._background_creation()
 
     def destroy(self):
@@ -45,7 +58,7 @@ class PygameCanvas(object):
         :return:
         """
         for attr in var.CHUNK_ATTRS:
-            path = os.path.join(self.father.directories['images'], f"{attr}_background.gif")
+            path = os.path.join(self.focus.directories['images'], f"{attr}_background.gif")
             self.backgrounds[attr] = utl.img_load(path)
 
     def resize(self):
@@ -54,8 +67,8 @@ class PygameCanvas(object):
         :return:
         """
         for i in self.backgrounds:
-            self.resized_backgrounds[i] = utl.img_resize(self.backgrounds[i], self.father.zoom)
-        self.resolution = (int(self.father.sim_width * self.father.zoom / 10), int(self.father.sim_height * self.father.zoom / 10))
+            self.resized_backgrounds[i] = utl.img_resize(self.backgrounds[i], self.focus.zoom)
+        self.resolution = (int(self.focus.sim_width * self.focus.zoom / 10), int(self.focus.sim_height * self.focus.zoom / 10))
         self.surface = self.set_display()
 
     def update(self, tick, shows):
@@ -75,14 +88,14 @@ class PygameCanvas(object):
         for event in events:
             if event.type == pyg.KEYDOWN:
                 char = event.unicode
-                self.father.get_key_event(char)
+                self.focus.get_key_event(char)
 
     def fullscreen_toggle(self):
         if self.fullscreen:
-            self.father.zoom = self.last_zoom
+            self.focus.zoom = self.last_zoom
         else:
-            self.last_zoom = self.father.zoom
-            self.father.zoom = self.fullscreen_zoom
+            self.last_zoom = self.focus.zoom
+            self.focus.zoom = self.fullscreen_zoom
         self.fullscreen = not self.fullscreen
         self.resize()
         self.set_display()
@@ -106,8 +119,8 @@ class PygameCanvas(object):
         :return:
         """
         if to_show == 'food':
-            for chunk in self.father.chunk_list:
-                chunk.draw(self.surface, tick, self.father.chunk_dim, self.father.zoom)
+            for chunk in self.focus.chunk_list:
+                chunk.draw(self.surface, tick, self.focus.chunk_dim, self.focus.zoom)
         else:
             self.surface.blit(self.resized_backgrounds[to_show], (0, 0))
 
@@ -117,7 +130,7 @@ class PygameCanvas(object):
         :return: the list of all the creature alive in a certain tick
         """
         L = []
-        for i in self.father.creature_list:
+        for i in self.focus.creature_list:
             if i.birth_tick <= tick <= i.death_tick:
                 L.append(i)
         return L
@@ -134,7 +147,7 @@ class PygameCanvas(object):
         dim = shows['cd']
 
         for creature in self.tick_creature_list(tick):
-            creature.draw(self.surface, tick, color, dim, self.father.zoom)
+            creature.draw(self.surface, tick, color, dim, self.focus.zoom)
 
     def take_screenshot(self, path):
         pyg.image.save(self.surface, path)

@@ -2,22 +2,24 @@
 this module contains classes which control the windows of the graphic interface
 """
 
+import datetime
+import json
+import os
+import queue as que
+import threading as thr
 import tkinter as tk
-from time import time, sleep
+from math import ceil
+from random import randint
+from time import time
+
+import pygame as pyg
+
 from . import frames as frm
+from . import utility as utl
+from . import var
 from .canvas import PygameCanvas
 from .graphics import CreaturesD, ChunkD
-from . import var
-from . import utility as utl
-import threading as thr
-import queue as que
-import os
-from math import ceil
-import json
 from .world import World
-import datetime
-import pygame as pyg
-from random import randint
 
 
 class FinishError(BaseException):
@@ -151,6 +153,21 @@ class MainMenuWindow(BaseTkWindow):
         self.windows = list()
         self.canvas = None
 
+    def get_canvas(self):
+        if not self.canvas:
+            self.canvas = PygameCanvas()
+        return self.canvas
+
+    def canvas_destroy(self):
+        for i in self.windows:
+            if i.active and type(i) == SimReplayControlWindow:
+                i.take_focus()
+                return
+        try:
+            self.canvas.destroy()
+        except AttributeError:
+            pass
+
     def destroy(self):
         """
         it destroys the object and exit the program
@@ -232,9 +249,10 @@ class SimReplayControlWindow(BaseTkWindow):
         """
         self.__dict__.update(self.START_VARIABLES)
         self.__dict__.update(loaded)
-        self.FRAMES_TEMPLATE = {'play_control': (frm.PlayControl, {}, {'row': 0, 'column': 0}),
-                                'map_set': (frm.SetSuperFrame, {'windows': (self,), }, {'row': 1, 'column': 0}),
-                                'screenshots_control': (frm.TakeScreenshot, {'windows': (self,), }, {'row': 2, 'column': 0}),
+        self.FRAMES_TEMPLATE = {'sim_info': (frm.SimInfo, {}, {'row': 0, 'column': 0}),
+                                'play_control': (frm.PlayControl, {}, {'row': 1, 'column': 0}),
+                                'map_set': (frm.SetSuperFrame, {'windows': (self,), }, {'row': 2, 'column': 0}),
+                                'screenshots_control': (frm.TakeScreenshot, {'windows': (self,), }, {'row': 3, 'column': 0}),
                                 }
         self.TITLE = self.sim_name
         super(SimReplayControlWindow, self).__init__(father)
@@ -248,8 +266,9 @@ class SimReplayControlWindow(BaseTkWindow):
             self.shows[i] = tk.StringVar(master=self)
         self.diagram_choice = tk.StringVar(master=self)
         self.frames_load()
-        self.canvas = PygameCanvas(self)
-        self.resize(0)
+        self.has_focus = False
+        self.canvas = self.father.get_canvas()
+        self.take_focus()
 
     def _files_load(self):
         """
@@ -302,7 +321,8 @@ class SimReplayControlWindow(BaseTkWindow):
         shows = dict()
         for i in self.shows:
             shows[i] = self.shows[i].get()
-        self.canvas.update(int(self.tick), shows)
+        if self.has_focus:
+            self.canvas.update(int(self.tick), shows)
         self.time_diff = time() - self.last_frame_time
         self.last_frame_time = time()
         try:
@@ -355,10 +375,8 @@ class SimReplayControlWindow(BaseTkWindow):
 
         :return:
         """
-        try:
-            self.canvas.destroy()
-        except AttributeError:
-            pass
+        self.active = False
+        self.father.canvas_destroy()
         super(SimReplayControlWindow, self).destroy()
 
     def diagram_window_create(self):
@@ -378,10 +396,21 @@ class SimReplayControlWindow(BaseTkWindow):
         :type increase: int
         :return:
         """
-        if not self.canvas.fullscreen:
-            self.zoom = max(1, self.zoom + increase)
-            self._upd_zoom()
-        self.canvas.resize()
+        if self.has_focus:
+            if not self.canvas.fullscreen:
+                self.zoom = max(1, self.zoom + increase)
+                self._upd_zoom()
+            self.canvas.resize()
+
+    def take_focus(self):
+        """
+        Gets the focus of the canvas
+
+        :return:
+        """
+        if not self.has_focus:
+            self.canvas.set_focus(self)
+            self.resize(0)
 
     def start_play(self):
         """
@@ -416,6 +445,12 @@ class SimReplayControlWindow(BaseTkWindow):
         self.speed = int(self.max_speed ** (float(speed_cursor) / 100))
         self._upd_speed()
 
+    def set_underline(self):
+        if self.has_focus:
+            self.get_widget('sim_info', 'focus').config(bg='#00ff00')
+        else:
+            self.get_widget('sim_info', 'focus').config(bg='#ff0000')
+
     def dec_zoom(self):
         """
         Decreases the zoom by one
@@ -433,11 +468,12 @@ class SimReplayControlWindow(BaseTkWindow):
         self.resize(1)
 
     def take_screenshot(self):
-        name = str(int(self.tick))
-        for i in self.shows:
-            name += '-' + self.shows[i].get()
-        path = os.path.join(self.directories['images'], "screenshots", name + ".jpeg")
-        self.canvas.take_screenshot(path)
+        if self.has_focus:
+            name = str(int(self.tick))
+            for i in self.shows:
+                name += '-' + self.shows[i].get()
+            path = os.path.join(self.directories['images'], "screenshots", name + ".jpeg")
+            self.canvas.take_screenshot(path)
 
     def play_sound(self):
         number = randint(0, len(self.cow_sounds) - 1)
@@ -497,7 +533,7 @@ class SimDiagramWindow(BaseTkWindow):
         :type subject: str
         """
         self.subject = subject
-        self.TITLE = self.subject.split('.')[0]
+        self.TITLE = father.sim_name + ' - ' + self.subject.split('.')[0]
         self.FRAMES_TEMPLATE = {
             'diagram_canvas': (self._get_frame_class(), {'directories': father.directories, 'subject': subject, 'params': father.analysis}, {'row': 0, 'column': 0}),
             'command_bar': (frm.DiagramCommandBar, {'windows': (self, father), 'tick_interval': father.analysis['tick_interval']}, {'row': 1, 'column': 0}), }
@@ -693,10 +729,6 @@ class NewSimWindow(BaseTkWindow):
         else:
             if sim_name != '':
                 self.new_window_substitute(NewSimProgressWindow, sim_name, sim_variables)
-
-
-class NewMapWindow(BaseTkWindow):
-    pass
 
 
 class ProgressStatusWindow(BaseTkWindow):

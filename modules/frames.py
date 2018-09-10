@@ -3,13 +3,15 @@ This modulo contains classes for the frames used to allow the user to creat,
 represent and control a simulation
 """
 
-import tkinter as tk
-from . import var
-from . import utility as utl
 import os
+import tkinter as tk
+from tkinter import ttk
+
 import matplotlib as mpl
 from matplotlib.figure import Figure
-from tkinter import ttk
+
+from . import utility as utl
+from . import var
 
 mpl.use("Tkagg")
 mpl.use('agg')
@@ -267,6 +269,23 @@ class NewSim(GridFrame, BaseFrame):
         self.widgets['load_options'] = tk.OptionMenu(self, self.load_choice, *self._get_template_choices())
         self.widgets['load_options'].grid(row=self.row, column=0)
         super(NewSim, self)._widgets_load(wid_list)
+
+
+class SimInfo(BaseFrame):
+    """
+    class for the frame used to control the simulation
+    """
+
+    def __init__(self, father):
+        """
+        it creates the frame with all the widgets used
+
+        :param father: th father window
+        """
+        self.WIDGETS = {'name': (tk.Label, {'text': father.sim_name}, {'side': tk.LEFT}),
+                        'focus': (tk.Button, {'text': "Focus", 'command': father.take_focus}, {'side': tk.RIGHT}),
+                        }
+        super(SimInfo, self).__init__(father)
 
 
 class PlayControl(BaseFrame):
