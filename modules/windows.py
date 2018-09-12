@@ -939,6 +939,8 @@ class NewSimProgressWindow(ProgressStatusWindow):
             except Exception as ex:
                 with open(os.path.join(var.ERRORS_PATH, f"simulation_{self.sim_name}.txt"), 'w') as file:
                     file.write(str(ex))
+        self.thr_terminated.set()
+        exit()
 
 
 class LoadSimProgressWindow(ProgressStatusWindow):
