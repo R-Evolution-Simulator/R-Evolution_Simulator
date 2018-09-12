@@ -259,8 +259,9 @@ class NewSim(GridFrame):
         super(NewSim, self).__init__(father)
         self.WIDGETS = {'name_label': (tk.Label, {'text': 'name'}, {'row': 0, 'column': 0}),
                         'start_button': (tk.Button, {'text': "Start", 'command': father.start_simulation}, {'row': 0, 'column': 2}),
-                        'map_label': (tk.Label, {'text': 'map'}, {'row': 1, 'column': 0}),
-                        'new_map_button': (tk.Button, {'text': "New Map", 'command': father.new_map}, {'row': 1, 'column': 2}),
+                        'num_label': (tk.Label, {'text': 'number of sims'}, {'row': 1, 'column': 0}),
+                        'map_label': (tk.Label, {'text': 'map'}, {'row': 2, 'column': 0}),
+                        'new_map_button': (tk.Button, {'text': "New Map", 'command': father.new_map}, {'row': 2, 'column': 2}),
 
                         }
         self.load_choice = tk.StringVar(master=self)  # list of the possible templates
@@ -270,9 +271,11 @@ class NewSim(GridFrame):
 
         self.sim_name = tk.Entry(self)  # entry for chosing the name of the simulation
         self.sim_name.grid(row=0, column=1)
+        self.sim_num = tk.Entry(self)  # entry for chosing the name of the simulation
+        self.sim_num.grid(row=1, column=1)
 
         # for all the variables, the program adds the widgets
-        self.row = 2
+        self.row = 3
         self.sim_variables = self._add_widgets_from_dict(var.DEFAULT_SIM_VARIABLES)
 
         # widget used to load a new template or to save another one just created
@@ -285,7 +288,7 @@ class NewSim(GridFrame):
 
     def _widgets_load(self, wid_list):
         self.widgets = dict()
-        self._add_option_menu('map_options', 1, 1, self.map_choice, var.MAPS_PATH)
+        self._add_option_menu('map_options', 2, 1, self.map_choice, var.MAPS_PATH)
         self._add_option_menu('load_options', self.row, 0, self.load_choice, var.SIMS_TEMPLATES_PATH)
         super(NewSim, self)._widgets_load(wid_list)
 

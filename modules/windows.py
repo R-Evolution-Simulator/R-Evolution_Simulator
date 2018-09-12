@@ -726,11 +726,19 @@ class NewSimWindow(BaseTkWindow):
         try:
             sim_variables = self._get_from_sim_variables(frame.sim_variables)
             sim_variables['map_name'] = self.get_frame('new').map_choice.get()
+            sim_num = int(frame.sim_num.get())
         except ValueError:
             pass
         else:
             if sim_name != '':
-                self.new_window_substitute(NewSimProgressWindow, sim_name, sim_variables)
+                try:
+                    sim_num = int(frame.sim_num.get())
+                    if sim_num < 1:
+                        raise ValueError
+                except ValueError:
+                    self.new_window_substitute(NewSimProgressWindow, sim_name, sim_variables)
+                else:
+                    self.new_window_substitute(NewSimProgressWindow, sim_name, sim_variables, sim_num)
 
     def new_map(self):
         self.new_window_dependent(NewMapWindow)
@@ -829,7 +837,6 @@ class NewMapWindow(BaseTkWindow):
             info = frm.MapInfo(self)
             info.grid(**{'row': 0, 'column': 1})
             self.frames['info'] = info
-            
 
 
 class ProgressStatusWindow(BaseTkWindow):
@@ -915,18 +922,23 @@ class ProgressStatusWindow(BaseTkWindow):
 
 
 class NewSimProgressWindow(ProgressStatusWindow):
-    def __init__(self, father, sim_name, sim_variables):
+    def __init__(self, father, sim_name, sim_variables, sim_num=1):
         self.sim_name = sim_name
+        self.sim_num = sim_num
         self.sim_variables = sim_variables
         super(NewSimProgressWindow, self).__init__(father, "NewSim " + sim_name)
 
     def thread_start(self):
-        try:
-            called = World(self.sim_name, self.sim_variables, progress_queues=self.queues, termination_event=(self.thr_terminating, self.thr_terminated))
-        except Exception as ex:
-            raise
-            with open(os.path.join(var.ERRORS_PATH, f"simulation_{self.sim_name}.txt"), 'w') as file:
-                file.write(str(ex))
+        simulations = list()
+        for i in range(self.sim_num):
+            try:
+                name = self.sim_name
+                if self.sim_num > 1:
+                    name += '_' + str(i)
+                simulations.append(World(name, self.sim_variables, progress_queues=self.queues, termination_event=(self.thr_terminating, self.thr_terminated)))
+            except Exception as ex:
+                with open(os.path.join(var.ERRORS_PATH, f"simulation_{self.sim_name}.txt"), 'w') as file:
+                    file.write(str(ex))
 
 
 class LoadSimProgressWindow(ProgressStatusWindow):
