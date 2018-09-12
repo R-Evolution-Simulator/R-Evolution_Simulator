@@ -6,9 +6,9 @@ It controls all the functions and variables of each creature (eating, moving, re
 import math
 import random
 from random import random as rnd
+
 from . import utility as utl
 from . import var
-from . import genes as gns
 
 
 class Creature(object):
@@ -140,7 +140,7 @@ class Creature(object):
         """
         temp_resist = self.genes['temp_resist'].get()
         chunk_temp = self._actual_chunk().temperature
-        temp_max = self.world.chunks_vars['temperature_max']
+        temp_max = self.world.map_maxes['temperature']
         if temp_resist == 'c':
             rel_temp = chunk_temp / (2 * temp_max)
             prob = (rel_temp * (rel_temp - 1) + (1 / 4))

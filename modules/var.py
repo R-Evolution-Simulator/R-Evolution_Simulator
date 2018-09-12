@@ -3,22 +3,49 @@ this module contains all the variables used and their values
 """
 
 import os
+
 import pygame as pyg
+
 from . import genes as gns
 
-SIMULATIONS_PATH = os.path.join(os.getcwd(), "simulations")
 DATA_PATH = os.path.join(os.getcwd(), "data")
+SIMULATIONS_PATH = os.path.join(DATA_PATH, "simulations")
+MAPS_PATH = os.path.join(DATA_PATH, "maps")
 TEMPLATES_PATH = os.path.join(DATA_PATH, "templates")
+SIMS_TEMPLATES_PATH = os.path.join(TEMPLATES_PATH, "sims")
+MAPS_TEMPLATES_PATH = os.path.join(TEMPLATES_PATH, "maps")
 ERRORS_PATH = os.path.join(DATA_PATH, "errors")
 SOUNDS_PATH = os.path.join(DATA_PATH, "sounds")
 
 # simulation
-
-DEFAULT_SIM_VARIABLES = {'dimension': {  # dimension in chunks of the simulation
-    'width': None,
-    'height': None
-},
+DEFAULT_MAP_VARIABLES = {
+    'dimension': {  # dimension in chunks of the simulation
+        'width': None,
+        'height': None
+    },
     'chunk_dim': None,  # dimension of the chunk
+    'map_maxes': {
+        'foodmax': None,  # max value of foodmax in a chunk
+        'temperature': None,  # max value of temperature in a chunk
+    },
+
+    'noises_params': {
+        'foodmax': {
+            'num_octaves': None,
+            'persistence': None,
+            'dimensions': None,
+            'noise_scale': None, },
+        'temperature': {
+            'num_octaves': None,
+            'persistence': None,
+            'dimensions': None,
+            'noise_scale': None, }
+    },
+    'map_rounding': None
+
+}
+
+DEFAULT_SIM_VARIABLES = {
     'max_lifetime': None,  # max lifetime in ticks
     'initial_creatures': {  # number of creatures at the start
         'herbivores': None,  # herbivores
@@ -26,8 +53,6 @@ DEFAULT_SIM_VARIABLES = {'dimension': {  # dimension in chunks of the simulation
     },
     'chunks_vars': {
         'growth_coeff': None,  # coefficient of growth of the food in the chunks
-        'foodmax_max': None,  # max value of foodmax in a chunk
-        'temperature_max': None,  # max value of temperature in a chunk
         'start_food': None,
     },
     'creatures_vars': {
@@ -48,8 +73,8 @@ DEFAULT_SIM_VARIABLES = {'dimension': {  # dimension in chunks of the simulation
         'initial_reprod_countdown': None,  # time to add to countdown before first reproduction
         'reprod_energy_dec_coeff': None,  # coefficient of energy lost for reproduction
         'reprod_energy_need_coeff': None,  # energy needed for reproduction is this coefficient divided by fertility
-        #'predator_eat_coeff': None,  # ?
-        #'help_for_predator': None,  # ?
+        # 'predator_eat_coeff': None,  # ?
+        # 'help_for_predator': None,  # ?
     },
     'analysis': {
         'tick_interval': None,  # tick interval between analysis
@@ -79,7 +104,10 @@ FILE_EXTENSIONS = {'numeric_analysis': 'rsan',
                    'creatures_data': 'rscr',
                    'chunks_data': 'rsch',
                    'simulation_data': 'rssd',
-                   'simulation_template': 'rsst'}
+                   'map_data': 'rsmd',
+                   'simulation_template': 'rsst',
+                   'map_template': 'rsmt',
+                   }
 
 TO_RECORD = {
     'simulation': {'name': None, 'dimension': {'width': None, 'height': None}, 'lifetime': None,
@@ -87,9 +115,9 @@ TO_RECORD = {
                        'herbivores': None,
                        'carnivores': None
                    }, 'chunk_dim': None, 'tick_count': None,
+                   'map_maxes': {'foodmax': None, 'temperature': None, }, 'noises_params': {'foodmax': {'num_octaves': None, 'persistence': None, 'dimensions': None, 'noise_scale': None, }, 'temperature': {'num_octaves': None, 'persistence': None, 'dimensions': None, 'noise_scale': None}},
+                   'map_rounding': None,
                    'chunks_vars': {'growth_coeff': None,
-                                   'foodmax_max': None,
-                                   'temperature_max': None,
                                    'start_food': None,
                                    },
                    'creatures_vars': {'view_ray': None,
@@ -108,8 +136,8 @@ TO_RECORD = {
                                       'initial_reprod_countdown': None,
                                       'reprod_energy_dec_coeff': None,
                                       'reprod_energy_need_coeff': None,
-                                      #'predator_eat_coeff': None,
-                                      #'help_for_predator': None,
+                                      # 'predator_eat_coeff': None,
+                                      # 'help_for_predator': None,
                                       },
                    'analysis': {'tick_interval': None,
                                 'percentile_parts': None,
@@ -126,9 +154,14 @@ TO_RECORD = {
                            'speed': None
                            },
                  'death_tick': None, 'death_cause': None, 'tick_history': 1},
-    'chunk': {'coord': None, 'foodmax': None, 'growth_rate': None, 'temperature': None, 'food_history': 1}}
+    'chunk': {'coord': None, 'foodmax': None, 'growth_rate': None, 'temperature': None, 'food_history': 1},
+    'map': {'dimension': {'width': None, 'height': None}, 'chunk_dim': None, 'map_maxes': {'foodmax': None, 'temperature': None, }, 'noises_params': {'foodmax': {'num_octaves': None, 'persistence': None, 'dimensions': None, 'noise_scale': None, }, 'temperature': {'num_octaves': None, 'persistence': None, 'dimensions': None, 'noise_scale': None}},
+            'map_rounding': None},
+    'map_chunk': {'x': None, 'y': None, 'foodmax': None, 'temperature': None}
+}
 
 # graphics
+
 
 DEFAULT_CREATURES_COLORS = {'none': pyg.Color(255, 255, 255, 255),
                             'sex': (pyg.Color(255, 255, 0, 255), pyg.Color(0, 255, 255, 255)),

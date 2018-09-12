@@ -1,21 +1,20 @@
 import os
 import shutil
-from random import random as rnd
-import scipy
-import numpy
-from PIL import ImageDraw, Image as Img
 import time
-from .noise.simplexnoise.noise import SimplexNoise
+from random import random as rnd
+
+import numpy
+import scipy
+
+from . import genes as gns
+from . import utility as utl
+from . import var
 from .chunk import Chunk
 from .creature import Herbivore, Carnivore
-from . import var
-from . import utility as utl
-from . import genes as gns
 
 
 class World(object):
     """class of the world where creatures live"""
-    TO_RECORD = var.TO_RECORD['simulation']
 
     def __init__(self, name, sim_variables, progress_queues=None, termination_event=None):
         """
@@ -35,22 +34,28 @@ class World(object):
         self.directories = dict()
         self.__dict__.update(sim_variables)
         self.tick_count = 0
-        self.noises = {'foodmax': SimplexNoise(num_octaves=6, persistence=0.1, dimensions=2, noise_scale=700),
-                       'temperature': SimplexNoise(num_octaves=6, persistence=0.1, dimensions=2, noise_scale=700)}
         self.ID_count = 0
-        self.coords_limits = (self.dimension['width'], self.dimension['height'])
-        self.chunk_list = [[None for x in range(self.dimension['height'])] for y in
-                           range(self.dimension['width'])]
+        # self.noises = {'foodmax': SimplexNoise(num_octaves=6, persistence=0.1, dimensions=2, noise_scale=700),
+        #               'temperature': SimplexNoise(num_octaves=6, persistence=0.1, dimensions=2, noise_scale=700)}
         self.creature_list = set()
         self.alive_creatures = set()
         self.tick_dead = set()
         self.new_born = set()
         self._directory_setup()
-        self.tot_chunks = self.dimension['width'] * self.dimension['height']
-        chunk = 0
-        for i in range(len(self.chunk_list)):  # quindi ogni 0 e' sostituito con un Chunk
-            for j in range(len(self.chunk_list[0])):
-                self.chunk_list[i][j] = Chunk(self, (i, j))
+
+        with open(os.path.join(var.MAPS_PATH, self.map_name, f"params.{var.FILE_EXTENSIONS['map_data']}"), 'r') as map_file:
+            map_params = map_file.readline()
+            self.__dict__.update(utl.get_from_string(map_params, var.TO_RECORD['map']))
+
+            self.coords_limits = (self.dimension['width'], self.dimension['height'])
+            self.chunk_list = [[None for x in range(self.dimension['height'])] for y in
+                               range(self.dimension['width'])]
+
+            self.tot_chunks = self.dimension['width'] * self.dimension['height']
+            chunk = 0
+            for line in map_file.readlines():
+                ch_params = utl.get_from_string(line, var.TO_RECORD['map_chunk'])
+                self.chunk_list[ch_params['x']][ch_params['y']] = Chunk(self, **ch_params)
                 chunk += 1
                 self._progress_update('details', ('creating chunks', (chunk, self.tot_chunks)))
                 self._progress_update('percent', chunk / self.tot_chunks)
@@ -94,7 +99,7 @@ class World(object):
         self._progress_update('status', 'Simulation analysis')
         self._analysis()
         self._progress_update('status', 'Drawing backgrounds')
-        self._draw_backgrounds()
+        self._copy_backgrounds()
         self._progress_update('status', 'Cleaning up and terminating')
         self._finalize()
         self._progress_update('status', 'Finished')
@@ -193,7 +198,7 @@ class World(object):
 
         self._progress_update('details', ('saving simulation data',))
         to_write = str()
-        for i in self.TO_RECORD:
+        for i in var.TO_RECORD['simulation']:
             to_write += utl.add_to_write(self.__dict__[i], self.analysis['rounding'])
         with open(os.path.join(self.path, f"params.{var.FILE_EXTENSIONS['simulation_data']}"), 'w') as file:
             try:
@@ -338,7 +343,7 @@ class World(object):
             for chunk_row in self.chunk_list:
                 for chunk in chunk_row:
                     values.append(chunk.__dict__[attr])
-            parts = numpy.histogram(values, self.analysis['parts'], (0, self.chunks_vars[attr + '_max']))[0]
+            parts = numpy.histogram(values, self.analysis['parts'], (0, self.map_maxes[attr]))[0]
             self.chunk_attrs_freq[attr] = parts
             self._analysis_file_write(attr, 'chunks_attribute', parts)
 
@@ -376,7 +381,7 @@ class World(object):
         index = tick // self.analysis['tick_interval']
         gene_class = var.CREATURES_GENES[gene]
         attr = gene_class.REC_CHUNK_ATTR
-        attr_max = self.chunks_vars[attr + '_max']
+        attr_max = self.map_maxes[attr]
         classes = gene_class.REC_CLASSES
         values = [[0 for i in range(self.analysis['parts'])] for j in classes]
         for chunk_row in self.chunk_list:
@@ -425,7 +430,7 @@ class World(object):
     def _analysis_demographic_spreading(self, tick):
         index = tick // self.analysis['tick_interval']
         attr = 'foodmax'
-        attr_max = self.chunks_vars['foodmax_max']
+        attr_max = self.map_maxes['foodmax']
         values = [0 for i in range(self.analysis['parts'])]
         for chunk_row in self.chunk_list:
             for chunk in chunk_row:
@@ -449,45 +454,11 @@ class World(object):
             total += i
         self._analysis_file_write("population", 'population_analysis', (total,), tick)
 
-    def _draw_backgrounds(self):
+    def _copy_backgrounds(self):
         for attr in var.CHUNK_ATTRS:
-            image = Img.new("RGB", (int(self.dimension['width']), int(self.dimension['height'])))
-            draw = ImageDraw.Draw(image)
-            if attr == 'foodmax':
-                count = 0
-                for chunk_row in self.chunk_list:
-                    for chunk in chunk_row:
-                        draw.rectangle((chunk.coord[0] * self.chunk_dim / 10,
-                                        chunk.coord[1] * self.chunk_dim / 10,
-                                        (chunk.coord[0] + 1) * self.chunk_dim / 10,
-                                        (chunk.coord[1] + 1) * self.chunk_dim / 10),
-                                       fill=(0, int(chunk.foodmax * 255 / 100), 0))
-                        count += 1
-                        self._progress_update('details', (attr, (count, self.tot_chunks)))
-                        self._progress_update('percent', count / self.tot_chunks)
-            elif attr == 'temperature':
-                count = 0
-                for chunk_row in self.chunk_list:
-                    for chunk in chunk_row:
-                        if chunk.temperature > 0:
-                            draw.rectangle((chunk.coord[0] * self.chunk_dim / 10,
-                                            chunk.coord[1] * self.chunk_dim / 10,
-                                            (chunk.coord[0] + 1) * self.chunk_dim / 10,
-                                            (chunk.coord[1] + 1) * self.chunk_dim / 10),
-                                           fill=(255, int(255 - (chunk.temperature / 100 * 255)),
-                                                 int(255 - (chunk.temperature / 100 * 255))))
-                        else:
-                            draw.rectangle((chunk.coord[0] * self.chunk_dim / 10,
-                                            chunk.coord[1] * self.chunk_dim / 10,
-                                            (chunk.coord[0] + 1) * self.chunk_dim / 10,
-                                            (chunk.coord[1] + 1) * self.chunk_dim / 10),
-                                           fill=(int(255 + (chunk.temperature / 100 * 255)),
-                                                 int(255 + (chunk.temperature / 100 * 255)), 255))
-                        count += 1
-                        self._progress_update('details', (attr, (count, self.tot_chunks)))
-                        self._progress_update('percent', count / self.tot_chunks)
+            map_path = os.path.join(var.MAPS_PATH, self.map_name, f"{attr}.gif")
             path = os.path.join(self.directories['images'], f"{attr}_background.gif")
-            image.save(path, "GIF")
+            shutil.copyfile(map_path, path)
 
     def _progress_update(self, type, msg):
         self._termination_control()

@@ -61,6 +61,61 @@ class GridFrame(BaseFrame):
     when placing a widget in the frame
     """
 
+    def __init__(self, father):
+        super(BaseFrame, self).__init__(father)
+        self.row = 0
+
+    def _add_widgets_from_dict(self, var_dict):
+        variables = dict()
+        for i in var_dict:
+            variables[i] = self._add_widget('', i, var_dict[i], 0)
+            self.row += 1
+        return variables
+
+    def _add_widget(self, prec, name, object, column):
+        """
+        function which adds a couple of widgets for every parameter of the world created
+
+        :param name: name to be written in the label
+        :param object: object that has to be inserted in the widgets
+        :param column: column where the entry and label has to be placed (it increases with dict or list)
+        :return: the entry where you can place the values
+        """
+        self.WIDGETS[f'{prec}{name}_label'] = (tk.Label, {'text': name}, {'row': self.row, 'column': column})
+        if object is None:
+            variable = tk.Entry(self)
+            variable.grid(row=self.row, column=column + 1)
+        elif type(object) == tuple or type(object) == list:
+            variable = list()
+            for i in range(len(object)):
+                new_variable = tk.Entry(self)
+                new_variable.grid(row=self.row, column=column + 1 + i)
+                variable.append(new_variable)
+        else:
+            variable = dict()
+            if prec == '':
+                prec = name
+            else:
+                prec += '.' + name
+            for i in object:
+                variable[i] = self._add_widget(prec, i, object[i], column + 1)
+        self.row += 1
+        return variable
+
+    def _add_option_menu(self, name, row, column, variable, directory):
+        """
+        it loads the widget in the frame
+
+        :param wid_list: list with all the widgets to be added
+
+        :return:
+        """
+        values = os.listdir(directory)
+        if len(values) == 0:
+            values = ['-']
+        self.widgets[name] = tk.OptionMenu(self, variable, *values)
+        self.widgets[name].grid(row=row, column=column)
+
     def _widgets_load(self, wid_list):
         """
         it loads the widget in the frame
@@ -117,7 +172,6 @@ class Logo(BaseFrame):
     """
     frame used to place the logo of the project
     """
-    START_LOGO = os.path.join(var.DATA_PATH, "logo.gif")
 
     def __init__(self, father):
         """
@@ -125,7 +179,8 @@ class Logo(BaseFrame):
 
         :param father: father window
         """
-        self.photo = tk.PhotoImage(file=os.path.join(os.getcwd(), self.START_LOGO))
+        address = os.path.join(os.getcwd(), var.DATA_PATH, "logo.gif")
+        self.photo = tk.PhotoImage(file=address)
         self.WIDGETS = {'image': (tk.Label, {'image': self.photo}, {})}
         super(Logo, self).__init__(father)
 
@@ -189,7 +244,7 @@ class LoadSim(BaseFrame):
         return os.listdir(var.SIMULATIONS_PATH)
 
 
-class NewSim(GridFrame, BaseFrame):
+class NewSim(GridFrame):
     """
     class used to start a new simulation
     """
@@ -201,75 +256,119 @@ class NewSim(GridFrame, BaseFrame):
         :param father: the father window
         :param load_choice: list of the possible templates already created
         """
-        super(BaseFrame, self).__init__(father)
-        self.WIDGETS = dict()
-        self.sim_variables = dict()
+        super(NewSim, self).__init__(father)
+        self.WIDGETS = {'name_label': (tk.Label, {'text': 'name'}, {'row': 0, 'column': 0}),
+                        'start_button': (tk.Button, {'text': "Start", 'command': father.start_simulation}, {'row': 0, 'column': 2}),
+                        'map_label': (tk.Label, {'text': 'map'}, {'row': 1, 'column': 0}),
+                        'new_map_button': (tk.Button, {'text': "New Map", 'command': father.new_map}, {'row': 1, 'column': 2}),
+
+                        }
         self.load_choice = tk.StringVar(master=self)  # list of the possible templates
         self.load_choice.set('-')
-        self.WIDGETS['name_label'] = (tk.Label, {'text': 'name'}, {'row': 0, 'column': 0})
+        self.map_choice = tk.StringVar(master=self)  # list of the possible maps
+        self.map_choice.set('-')
+
         self.sim_name = tk.Entry(self)  # entry for chosing the name of the simulation
         self.sim_name.grid(row=0, column=1)
-        self.WIDGETS['start_button'] = (tk.Button, {'text': "Start", 'command': father.start_simulation}, {'row': 0, 'column': 2})
-        self.row = 1
+
         # for all the variables, the program adds the widgets
-        for i in var.DEFAULT_SIM_VARIABLES:
-            self.sim_variables[i] = self._add_widget(i, var.DEFAULT_SIM_VARIABLES[i], 0)
-            self.row += 1
+        self.row = 2
+        self.sim_variables = self._add_widgets_from_dict(var.DEFAULT_SIM_VARIABLES)
+
         # widget used to load a new template or to save another one just created
         self.WIDGETS['load_button'] = (tk.Button, {'text': "Load template", 'command': father.load_template}, {'row': self.row, 'column': 1})
         self.save_choice = tk.Entry(self)
         self.save_choice.grid(row=self.row, column=2)
         self.WIDGETS['save_button'] = (tk.Button, {'text': "Save template", 'command': father.save_template}, {'row': self.row, 'column': 3})
-        self.widgets = dict()
+
         self._widgets_load(self.WIDGETS)
 
-    def _add_widget(self, name, object, column):
-        """
-        function which adds a couple of widgets for every parameter of the world created
-
-        :param name: name to be written in the label
-        :param object: object that has to be inserted in the widgets
-        :param column: column where the entry and label has to be placed (it increases with dict or list)
-        :return: the entry where you can place the values
-        """
-        self.WIDGETS[f'{name}_label'] = (tk.Label, {'text': name}, {'row': self.row, 'column': column})
-        if object is None:
-            variable = tk.Entry(self)
-            variable.grid(row=self.row, column=column + 1)
-        elif type(object) == tuple or type(object) == list:
-            variable = list()
-            for i in range(len(object)):
-                new_variable = tk.Entry(self)
-                new_variable.grid(row=self.row, column=column + 1 + i)
-                variable.append(new_variable)
-        else:
-            variable = dict()
-            for i in object:
-                variable[i] = self._add_widget(i, object[i], column + 1)
-        self.row += 1
-        return variable
-
-    def _get_template_choices(self):
-        """
-        function to get the possible templates already created from the folder
-
-        :return: the list of the templates
-        """
-        return os.listdir(var.TEMPLATES_PATH)
-
     def _widgets_load(self, wid_list):
-        """
-        it loads the widget in the frame
-
-        :param wid_list: list with all the widgets to be added
-
-        :return:
-        """
         self.widgets = dict()
-        self.widgets['load_options'] = tk.OptionMenu(self, self.load_choice, *self._get_template_choices())
-        self.widgets['load_options'].grid(row=self.row, column=0)
+        self._add_option_menu('map_options', 1, 1, self.map_choice, var.MAPS_PATH)
+        self._add_option_menu('load_options', self.row, 0, self.load_choice, var.SIMS_TEMPLATES_PATH)
         super(NewSim, self)._widgets_load(wid_list)
 
+
+class NewMap(GridFrame):
+    """
+    class used to start a new simulation
+    """
+
+    def __init__(self, father):
+        """
+        it creates the frame
+
+        :param father: the father window
+        :param load_choice: list of the possible templates already created
+        """
+        super(NewMap, self).__init__(father)
+        self.WIDGETS = {'name_label': (tk.Label, {'text': 'name'}, {'row': 0, 'column': 0}),
+                        'generate_button': (tk.Button, {'text': "Generate", 'command': father.generate_map}, {'row': 0, 'column': 2}),
+                        'close_button': (tk.Button, {'text': "Close", 'command': father.destroy}, {'row': 0, 'column': 3}),
+
+                        }
+        self.load_choice = tk.StringVar(master=self)  # list of the possible templates
+        self.load_choice.set('-')
+
+        self.map_name = tk.Entry(self)  # entry for chosing the name of the simulation
+        self.map_name.grid(row=0, column=1)
+
+        # for all the variables, the program adds the widgets
+        self.row = 1
+        self.map_variables = self._add_widgets_from_dict(var.DEFAULT_MAP_VARIABLES)
+
+        # widget used to load a new template or to save another one just created
+        self.WIDGETS['load_button'] = (tk.Button, {'text': "Load template", 'command': father.load_template}, {'row': self.row, 'column': 1})
+        self.save_choice = tk.Entry(self)
+        self.save_choice.grid(row=self.row, column=2)
+        self.WIDGETS['save_button'] = (tk.Button, {'text': "Save template", 'command': father.save_template}, {'row': self.row, 'column': 3})
+
+        self._widgets_load(self.WIDGETS)
+
+    def _widgets_load(self, wid_list):
+        self.widgets = dict()
+        self._add_option_menu('load_options', self.row, 0, self.load_choice, var.MAPS_TEMPLATES_PATH)
+        super(NewMap, self)._widgets_load(wid_list)
+
+
+class MapInfo(BaseFrame):
+    MAP_CREATION_ZOOM = 0.4
+
+    def __init__(self, father):
+        """
+        it creates the frame with the map images
+
+        :param father: th father window
+        """
+        self.father = father
+        self.photos = dict()
+        self.WIDGETS = dict()
+        super(MapInfo, self).__init__(father)
+        self.load_images()
+
+    def load_images(self):
+        with open(os.path.join(var.MAPS_PATH, self.father.map_name, f"params.{var.FILE_EXTENSIONS['map_data']}"), 'r') as map_file:
+            map_params = utl.get_from_string(map_file.readline(), var.TO_RECORD['map'])
+            for i in map_params['dimension']:
+                map_params['dimension'][i] *= map_params['chunk_dim'] * self.MAP_CREATION_ZOOM
+            for attr in var.CHUNK_ATTRS:
+                self.WIDGETS[attr] = (tk.Canvas, map_params['dimension'], {'side': tk.TOP})
+            self._widgets_load(self.WIDGETS)
+            for line in map_file.readlines():
+                chunk = utl.get_from_string(line, var.TO_RECORD['map_chunk'])
+                coords = (chunk['x'] * map_params['chunk_dim'] * self.MAP_CREATION_ZOOM,
+                          chunk['y'] * map_params['chunk_dim'] * self.MAP_CREATION_ZOOM,
+                          (chunk['x'] + 1) * map_params['chunk_dim'] * self.MAP_CREATION_ZOOM,
+                          (chunk['y'] + 1) * map_params['chunk_dim'] * self.MAP_CREATION_ZOOM,)
+
+                colors = {'foodmax': "#%02x%02x%02x" % (0, int(chunk['foodmax'] * 255 / 100), 0)}
+                if chunk['temperature'] > 0:
+                    colors['temperature'] = "#%02x%02x%02x" % (255, int(255 - (chunk['temperature'] / 100 * 255)), int(255 - (chunk['temperature'] / 100 * 255)))
+                else:
+                    colors['temperature'] = "#%02x%02x%02x" % (int(255 + (chunk['temperature'] / 100 * 255)), int(255 + (chunk['temperature'] / 100 * 255)), 255)
+                for i in colors:
+                    self.get_widget(i).create_rectangle(*coords, fill=colors[i], outline=colors[i])
 
 class SimInfo(BaseFrame):
     """
@@ -516,7 +615,7 @@ class BaseDiagramCanvasFrame(BaseFrame):
         raw_data = list()
         file = open(os.path.join(self.directories['analysis'], self.subject))
         for line in file:
-            raw_data.append(utl.get_from_string(line, 0, None))
+            raw_data.append(utl.get_from_string(line, None))
         self.data = [[raw_data[j][i] for j in range(len(raw_data))] for i in range(len(raw_data[0]))]
 
     def _data_calc(self):
@@ -740,7 +839,7 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
         raw_data = list()
         file = open(os.path.join(self.directories['analysis'], self.subject))
         for line in file:
-            raw_data.append(utl.get_from_string(line, 0, None))
+            raw_data.append(utl.get_from_string(line, None))
         self.chunk_attribute = raw_data[0][:-1]
         raw_data = raw_data[1:]
         self.data = [[raw_data[j][i] for j in range(len(raw_data))] for i in range(len(raw_data[0]))]

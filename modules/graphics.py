@@ -2,10 +2,12 @@
 this module contains the instructions to create the graphics of a chunk or a creature
 """
 
-import pygame as pyg
-from . import var
-from . import utility as utl
 import math
+
+import pygame as pyg
+
+from . import utility as utl
+from . import var
 
 
 class ChunkD:
@@ -20,7 +22,7 @@ class ChunkD:
         :param chunk_data: string with all the data of the chunk to be represented
         :type chunk_data: str
         """
-        restored = utl.get_from_string(chunk_data, 0, var.TO_RECORD['chunk'])
+        restored = utl.get_from_string(chunk_data, var.TO_RECORD['chunk'])
         self.__dict__.update(restored)
 
     def draw(self, surface, tick, chunk_dim, zoom):
@@ -62,7 +64,7 @@ class CreaturesD:
         :param creature_data: string with all the data of the chunk to be represented
         :type creature_data: str
         """
-        restored = utl.get_from_string(creature_data, 0, var.TO_RECORD['creature'])
+        restored = utl.get_from_string(creature_data, var.TO_RECORD['creature'])
         self.__dict__.update(restored)
         self.colors = dict()
         self.dims = dict()

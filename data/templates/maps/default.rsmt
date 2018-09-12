@@ -1,0 +1,1 @@
+{"dimension": {"width": 60, "height": 45}, "chunk_dim": 10, "map_maxes": {"foodmax": 100, "temperature": 100}, "noises_params": {"foodmax": {"num_octaves": 6, "persistence": 0.1, "dimensions": 2, "noise_scale": 700}, "temperature": {"num_octaves": 6, "persistence": 0.1, "dimensions": 2, "noise_scale": 700}}, "map_rounding": 4}

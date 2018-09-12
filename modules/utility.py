@@ -3,7 +3,9 @@ this module contains some functions useful somwwhere in the other parts of the p
 """
 
 import pygame as pyg
+
 from . import var
+
 
 def img_load(path):
     """
@@ -73,7 +75,7 @@ def add_to_write(object, rounding, level=0):
         return str(object) + var.FILE_SEPARATORS[level]
 
 
-def get_from_string(string, level, keys=None):
+def get_from_string(string, keys=None, level=0):
     """
     it takes data from a string, recognising the separators
 
@@ -98,11 +100,11 @@ def get_from_string(string, level, keys=None):
     if not keys or keys == 1:
         to_return = list()
         for split in splits:
-            to_return.append(get_from_string(split, level + 1))
+            to_return.append(get_from_string(split, level=level + 1))
     else:
         to_return = dict()
         i = 0
         for key in keys:
-            to_return[key] = get_from_string(splits[i], level + 1, keys[key])
+            to_return[key] = get_from_string(splits[i], keys[key], level + 1)
             i += 1
     return to_return

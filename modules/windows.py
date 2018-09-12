@@ -19,6 +19,7 @@ from . import utility as utl
 from . import var
 from .canvas import PygameCanvas
 from .graphics import CreaturesD, ChunkD
+from .map import Map
 from .world import World
 
 
@@ -286,7 +287,7 @@ class SimReplayControlWindow(BaseTkWindow):
         except FileNotFoundError:
             self.destroy()
         sim_data = simulation_params.readline()
-        restored = utl.get_from_string(sim_data, 0, var.TO_RECORD['simulation'])
+        restored = utl.get_from_string(sim_data, var.TO_RECORD['simulation'])
         self.__dict__.update(restored)
 
         files = dict()
@@ -665,7 +666,7 @@ class NewSimWindow(BaseTkWindow):
         :return:
         """
         name = self.get_frame('new').load_choice.get()
-        with open(os.path.join(var.TEMPLATES_PATH, name)) as file:
+        with open(os.path.join(var.SIMS_TEMPLATES_PATH, name)) as file:
             variables = json.loads(file.readline())
 
             def add_to_sim_variables(obj, to_add):
@@ -688,7 +689,7 @@ class NewSimWindow(BaseTkWindow):
         :param obj: the object containing the variable
         :return:
         """
-        if type(obj) == tk.Entry or type(obj) == tk.Entry:
+        if type(obj) == tk.Entry:
             try:
                 return int(obj.get())
             except ValueError:
@@ -711,7 +712,7 @@ class NewSimWindow(BaseTkWindow):
         :return:
         """
         name = self.get_frame('new').save_choice.get().split('.')[0]
-        with open(os.path.join(var.TEMPLATES_PATH, name + '.' + var.FILE_EXTENSIONS['simulation_template']), 'w') as file:
+        with open(os.path.join(var.SIMS_TEMPLATES_PATH, name + '.' + var.FILE_EXTENSIONS['simulation_template']), 'w') as file:
             file.write(json.dumps(self._get_from_sim_variables(self.get_frame('new').sim_variables)))
 
     def start_simulation(self):
@@ -724,11 +725,111 @@ class NewSimWindow(BaseTkWindow):
         sim_name = frame.sim_name.get()
         try:
             sim_variables = self._get_from_sim_variables(frame.sim_variables)
+            sim_variables['map_name'] = self.get_frame('new').map_choice.get()
         except ValueError:
             pass
         else:
             if sim_name != '':
                 self.new_window_substitute(NewSimProgressWindow, sim_name, sim_variables)
+
+    def new_map(self):
+        self.new_window_dependent(NewMapWindow)
+
+
+class NewMapWindow(BaseTkWindow):
+    """
+    New map window class
+    """
+    TITLE = "New Map"
+
+    def __init__(self, father):
+        """
+        Creates a new simulation window
+
+        :param father: the father of the window
+        :type father: BaseTkWindow
+        """
+        super(NewMapWindow, self).__init__(father)
+        self.FRAMES_TEMPLATE = {'new': (frm.NewMap, {}, {'row': 0, 'column': 0}),
+                                }
+        self.frames_load()
+
+    def load_template(self):
+        """
+        loads the template already saved
+
+        :return:
+        """
+        name = self.get_frame('new').load_choice.get()
+        with open(os.path.join(var.MAPS_TEMPLATES_PATH, name)) as file:
+            variables = json.loads(file.readline())
+
+            def add_to_sim_variables(obj, to_add):
+                if type(to_add) == int or type(to_add) == float:
+                    obj.delete(0, tk.END)
+                    obj.insert(0, str(to_add))
+                elif type(to_add) == tuple or type(to_add) == list:
+                    for i in range(len(to_add)):
+                        add_to_sim_variables(obj[i], to_add[i])
+                else:
+                    for i in to_add:
+                        add_to_sim_variables(obj[i], to_add[i])
+
+            add_to_sim_variables(self.get_frame('new').map_variables, variables)
+
+    def _get_from_map_variables(self, obj):
+        """
+        gets the variable inserted
+
+        :param obj: the object containing the variable
+        :return:
+        """
+        if type(obj) == tk.Entry or type(obj) == tk.Entry:
+            try:
+                return int(obj.get())
+            except ValueError:
+                return float(obj.get())
+        elif type(obj) == tuple or type(obj) == list:
+            to_return = list()
+            for i in range(len(obj)):
+                to_return.append(self._get_from_map_variables(obj[i]))
+            return to_return
+        else:
+            to_return = dict()
+            for i in obj:
+                to_return[i] = self._get_from_map_variables(obj[i])
+            return to_return
+
+    def save_template(self):
+        """
+        saves a new template created
+
+        :return:
+        """
+        name = self.get_frame('new').save_choice.get().split('.')[0]
+        with open(os.path.join(var.MAPS_TEMPLATES_PATH, name + '.' + var.FILE_EXTENSIONS['map_template']), 'w') as file:
+            file.write(json.dumps(self._get_from_map_variables(self.get_frame('new').map_variables)))
+
+    def generate_map(self):
+        frame = self.get_frame('new')
+        self.map_name = frame.map_name.get()
+        try:
+            map_variables = self._get_from_map_variables(frame.map_variables)
+        except ValueError:
+            pass
+        else:
+            try:
+                self.frames['info'].destroy()
+            except KeyError:
+                pass
+            else:
+                self.update()
+            new_map = Map(self.map_name, map_variables)
+            new_map.generate()
+            info = frm.MapInfo(self)
+            info.grid(**{'row': 0, 'column': 1})
+            self.frames['info'] = info
+            
 
 
 class ProgressStatusWindow(BaseTkWindow):
@@ -823,6 +924,7 @@ class NewSimProgressWindow(ProgressStatusWindow):
         try:
             called = World(self.sim_name, self.sim_variables, progress_queues=self.queues, termination_event=(self.thr_terminating, self.thr_terminated))
         except Exception as ex:
+            raise
             with open(os.path.join(var.ERRORS_PATH, f"simulation_{self.sim_name}.txt"), 'w') as file:
                 file.write(str(ex))
 
@@ -853,7 +955,7 @@ class LoadSimProgressWindow(ProgressStatusWindow):
 
         self._progress_update('status', 'Loading parameters')
         sim_data = simulation_params.readline()
-        restored = utl.get_from_string(sim_data, 0, var.TO_RECORD['simulation'])
+        restored = utl.get_from_string(sim_data, var.TO_RECORD['simulation'])
         new_replay.update(restored)
 
         self._progress_update('status', 'Loading chunks')
