@@ -905,7 +905,7 @@ class SpreadDiagram(BaseDiagramCanvasFrame):
         :return: the string
         """
         parts = self.params['parts']
-        max = self.father.father.chunks_vars[f'{self.chunk_attribute}_max']
+        max = self.father.father.map_maxes[self.chunk_attribute]
         section = max / parts
         if self.chunk_attribute == 'temperature':
             section *= 2
