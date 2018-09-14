@@ -726,7 +726,6 @@ class NewSimWindow(BaseTkWindow):
         try:
             sim_variables = self._get_from_sim_variables(frame.sim_variables)
             sim_variables['map_name'] = self.get_frame('new').map_choice.get()
-            sim_num = int(frame.sim_num.get())
         except ValueError:
             pass
         else:

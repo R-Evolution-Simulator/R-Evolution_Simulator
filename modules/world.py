@@ -337,7 +337,10 @@ class World(object):
             for chunk_row in self.chunk_list:
                 for chunk in chunk_row:
                     values.append(chunk.__dict__[attr])
-            parts = numpy.histogram(values, self.analysis['parts'], (0, self.map_maxes[attr]))[0]
+            min = 0
+            if attr == 'temperature':
+                min = -self.map_maxes[attr]
+            parts = numpy.histogram(values, self.analysis['parts'], (min, self.map_maxes[attr]))[0]
             self.chunk_attrs_freq[attr] = parts
             self._analysis_file_write(attr, 'chunks_attribute', parts)
 
@@ -362,6 +365,13 @@ class World(object):
         parts.append(scipy.average(values))
         self._analysis_file_write(gene, 'numeric_analysis', parts, tick)
 
+    def _get_ch_index(self, chunk, attr):
+        attr_max = self.map_maxes[attr]
+        if attr == 'temperature':
+            return int((chunk.__dict__[attr] + attr_max) * self.analysis['parts'] / (2 * attr_max))
+        else:
+            return int(chunk.__dict__[attr] * self.analysis['parts'] / attr_max)
+
     def _analysis_spr_gene(self, gene, tick):
         """
         Prints to the file the different spreading of creatures by their gene's phenotype
@@ -375,12 +385,11 @@ class World(object):
         index = tick // self.analysis['tick_interval']
         gene_class = var.CREATURES_GENES[gene]
         attr = gene_class.REC_CHUNK_ATTR
-        attr_max = self.map_maxes[attr]
         classes = gene_class.REC_CLASSES
         values = [[0 for i in range(self.analysis['parts'])] for j in classes]
         for chunk_row in self.chunk_list:
             for chunk in chunk_row:
-                chunk_index = int(chunk.__dict__[attr] * self.analysis['parts'] / attr_max)
+                chunk_index = self._get_ch_index(chunk, attr)
                 for creature in chunk.ticks_record[index]:
                     i = 0
                     for phens in classes:
