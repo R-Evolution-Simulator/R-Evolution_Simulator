@@ -373,6 +373,7 @@ class MapInfo(BaseFrame):
                 for i in colors:
                     self.get_widget(i).create_rectangle(*coords, fill=colors[i], outline=colors[i])
 
+
 class SimInfo(BaseFrame):
     """
     class for the frame used to control the simulation
@@ -939,6 +940,7 @@ class PopulationDiagram(BaseDiagramCanvasFrame):
         :return:
         """
         self.subplots[0].plot(self.data[0], self.data[1], color=self.COLOURS[0][0])
+        self.subplots[0].set_ylim(ymin=0)
 
     def _set_titles(self):
         self.subplots[0].set_title(self.TEXTS[0][0])
