@@ -6,6 +6,7 @@ import datetime
 import json
 import os
 import queue as que
+import random as rnd
 import threading as thr
 import tkinter as tk
 from math import ceil
@@ -268,7 +269,10 @@ class SimReplayControlWindow(BaseTkWindow):
         self.diagram_choice = tk.StringVar(master=self)
         self.frames_load()
         self.has_focus = False
+        self.auto_sound = False
+        self.auto_sound_times = var.AUTO_SOUND_TIME.copy()
         self.canvas = self.father.get_canvas()
+        self.next_sound_time = time()
         self.take_focus()
 
     def _files_load(self):
@@ -310,6 +314,8 @@ class SimReplayControlWindow(BaseTkWindow):
 
         :return:
         """
+        if self.auto_sound and self.next_sound_time < time():
+            self.play_sound()
         if self.is_playing:
             self.tick += self.time_diff * self.speed
             if int(self.tick) >= self.lifetime:
@@ -358,6 +364,12 @@ class SimReplayControlWindow(BaseTkWindow):
             self.cyclic = not self.cyclic
         elif char == 's':
             self.play_sound()
+        elif char == 'd':
+            self._toggle_auto_sound()
+        elif char == 'o':
+            self._dec_auto_sound()
+        elif char == 'p':
+            self._inc_auto_sound()
         elif char == 'r' or char == '\\':
             self.tick = 1.0
         elif char == '0':
@@ -476,9 +488,19 @@ class SimReplayControlWindow(BaseTkWindow):
             path = os.path.join(self.directories['images'], "screenshots", name + ".jpeg")
             self.canvas.take_screenshot(path)
 
+    def _toggle_auto_sound(self):
+        self.auto_sound = not self.auto_sound
+
     def play_sound(self):
         number = randint(0, len(self.cow_sounds) - 1)
         self.cow_sounds[number].play()
+        self.next_sound_time = time() + rnd.gauss(self.auto_sound_times[0], self.auto_sound_times[0] * self.auto_sound_times[1])
+
+    def _dec_auto_sound(self):
+        self.auto_sound_times[0] -= 0.1 * var.AUTO_SOUND_TIME[0]
+
+    def _inc_auto_sound(self):
+        self.auto_sound_times[0] += 0.1 * var.AUTO_SOUND_TIME[0]
 
     def _upd_speed(self):
         """

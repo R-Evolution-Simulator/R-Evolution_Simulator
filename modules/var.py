@@ -181,3 +181,5 @@ DEFAULT_CREATURES_DIMS = {'none': 49,
                           'energy': 5}
 
 DEFAULT_CREATURES_BORDER = {'color': pyg.Color(0, 0, 0, 255), 'width': 1}
+
+AUTO_SOUND_TIME = [10.0, 0.2]
